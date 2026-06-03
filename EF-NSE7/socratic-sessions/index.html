@@ -179,6 +179,8 @@ footer{color:#9a7070;border-top-color:#e8d5cc}
 .btn-done-toggle{border-color:#e8d5cc;color:#9a7070}
 .btn-done-toggle:hover{border-color:var(--session-color);color:var(--session-color)}
 .btn-done-toggle.is-done{border-color:var(--green,#5ab288);color:var(--green,#5ab288);background:#f0f8f0}
+.btn-completed{background:#edf8f2;border-color:#5ab288;color:#2d7a55;font-weight:600}
+.btn-completed:hover{background:#ddf3e8;border-color:#3a9a6a}
 .session-card:hover{border-color:#c8a898}
 .session-card.done{opacity:.5}
 /* Image prompt */
@@ -367,6 +369,8 @@ const SESSIONS=[
    subtopic:'Understand the Enterprise Firewall Solution',
    prereqs:['Basic FortiGate administration experience','Familiarity with firewall zones and perimeter models','General understanding of firewall policy concepts'],
    prevTitle:null,
+   done:true,
+   notesPath:'completed-socratic-sessions/ch01-sub01-enterprise-firewall-solution.html',
    sgPath:'../study-guides/Chapter 01 - Network Security Architecture/subtopic-01-enterprise-firewall-solution.html',
    prPath:'session-01-enterprise-firewall-solution.html'},
 
@@ -375,6 +379,8 @@ const SESSIONS=[
    subtopic:'Design Secure Networks Using Fortinet Solutions',
    prereqs:['Session 01 — Enterprise Firewall Solution'],
    prevTitle:'Enterprise Firewall Solution (Session 01)',
+   done:true,
+   notesPath:'completed-socratic-sessions/session-02-design-secure-networks.html',
    sgPath:'../study-guides/Chapter 01 - Network Security Architecture/subtopic-02-design-secure-networks.html',
    prPath:'session-02-design-secure-networks.html'},
 
@@ -637,7 +643,7 @@ function daysLeft(){
 /* ── Progress ── */
 function getStatus(id){return localStorage.getItem('soc-s'+id)||'';}
 function setStatus(id,v){localStorage.setItem('soc-s'+id,v);}
-function completedCount(){return SESSIONS.filter(s=>getStatus(s.id)==='done').length;}
+function completedCount(){return SESSIONS.filter(s=>s.done||getStatus(s.id)==='done').length;}
 
 function updateProgress(){
   const done=completedCount();
@@ -731,16 +737,18 @@ function render(){
     </div>`;
 
     chSessions.forEach(s=>{
-      const status=getStatus(s.id);
+      const isDone=s.done||getStatus(s.id)==='done';
+      const status=isDone?'done':getStatus(s.id);
       const card=document.createElement('div');
-      card.className='session-card'+(status==='done'?' done':'');
+      card.className='session-card'+(isDone?' done':'');
       card.id='session-'+s.id;
 
-      const sLabel=status==='done'?'Done':status==='started'?'In Progress':'Not Started';
-      const sClass=status==='done'?'status-done':status==='started'?'status-started':'status-none';
+      const sLabel=isDone?'Done':status==='started'?'In Progress':'Not Started';
+      const sClass=isDone?'status-done':status==='started'?'status-started':'status-none';
       const prereqsHtml=s.prereqs.map(p=>`<li>${p}</li>`).join('');
-      const doneClass=status==='done'?' is-done':'';
-      const doneText=status==='done'?'✓ Done':'Mark Done';
+      const doneClass=isDone?' is-done':'';
+      const doneText=isDone?'✓ Done':'Mark Done';
+      const completedBtn=s.notesPath?`<a class="btn btn-completed" href="${s.notesPath}">✅ View Completed</a>`:'';
 
       card.innerHTML=`
         <div class="session-card-top">
@@ -759,6 +767,7 @@ function render(){
           <a class="btn btn-prereading" href="${s.prPath}">📖 Pre-Reading</a>
           <button class="btn btn-copy" onclick="copyPrompt(this,${s.id})">⎘ Copy Prompt</button>
           <a class="btn btn-sg" href="${s.sgPath}">📚 Study Guide</a>
+          ${completedBtn}
           <button class="btn-done-toggle${doneClass}" onclick="toggleDone(${s.id},this)">${doneText}</button>
         </div>`;
       sec.appendChild(card);

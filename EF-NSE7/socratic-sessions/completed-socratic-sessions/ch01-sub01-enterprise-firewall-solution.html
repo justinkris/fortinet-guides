@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subtopic 01 — Understand the Enterprise Firewall Solution</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Epilogue:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ── DESIGN TOKENS ── */
+  :root {
+    --bg:#fff5f5; --surface:#ffffff; --surface-2:#fef2f2;
+    --border:#f0c8c8; --border-dim:#fde8e8;
+    --text:#1a0606; --text-soft:#4a1212; --text-muted:#8a3a3a;
+    --red:#c0392b; --red-vivid:#e03e2d; --red-glow:rgba(192,57,43,0.07);
+    --red-dim:#f8b4b4; --red-deep:#7f1d1d; --red-light:#fef2f2; --red-border:#f8b4b4;
+    --green:#1a7c4a; --green-light:#d4f0e0; --green-border:#a7e0c0;
+    --amber:#b45309; --amber-light:#fef9c3; --amber-border:#fde68a;
+  }
+  html{scroll-behavior:smooth;transition:opacity .3s ease;}
+  html.pt-init body{opacity:0;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Epilogue',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+  /* HEADER */
+  header{padding:48px 60px 36px;background:#1a0606;display:flex;align-items:flex-end;gap:32px;}
+  .header-left{flex:1;}
+  .breadcrumb{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);letter-spacing:0.08em;margin-bottom:12px;flex-wrap:wrap;}
+  .breadcrumb a{color:#e87070;text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .breadcrumb-sep{color:rgba(232,112,112,0.35);}
+  .header-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(232,112,112,0.1);border:1px solid rgba(232,112,112,0.25);padding:5px 14px;border-radius:20px;font-size:11px;color:#e87070;letter-spacing:0.08em;margin-bottom:14px;}
+  .dot-live{width:6px;height:6px;background:#e87070;border-radius:50%;display:inline-block;animation:blink 2.4s ease-in-out infinite;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+  header h1{font-family:'Fraunces',serif;font-size:44px;font-weight:700;line-height:1.0;color:#fff;margin-bottom:10px;}
+  header h1 em{font-style:italic;font-weight:400;color:#e87070;}
+  header p{font-size:13px;color:rgba(255,255,255,0.42);margin-top:10px;line-height:1.7;}
+
+  /* MOTIVATION BANNER */
+  .motivation-banner{padding:20px 60px;min-height:84px;display:flex;flex-direction:column;justify-content:center;border-bottom:1px solid var(--border);background:var(--surface);}
+  .motivation-text{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--text);}
+  .motivation-text em{font-style:italic;color:var(--red);}
+  .motivation-sub{font-size:12px;color:var(--text-muted);line-height:1.7;margin-top:4px;}
+
+  /* TOP PANELS */
+  .top-panels{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+  .top-panels .qpanel{border-bottom:none;border-right:1px solid var(--border);}
+  .top-panels .qpanel-header{padding-left:32px;padding-right:32px;}
+  .top-panels .qpanel-body{padding-left:32px;padding-right:32px;}
+  .qpanel{background:var(--surface);}
+  .qpanel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 20px;cursor:pointer;background:var(--surface);border:none;font-family:'Epilogue',sans-serif;text-align:left;}
+  .qpanel-header:hover,.qpanel-header.open{background:var(--surface-2);}
+  .qpanel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+  .qpanel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+  .qpanel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+  .qpanel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+  .qpanel-body{display:none;padding:0 20px 22px;}
+  .qpanel-body.open{display:block;}
+  .notes-panel{background:var(--surface);}
+  .notes-panel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 32px;cursor:pointer;background:var(--surface);border:none;font-family:'Epilogue',sans-serif;text-align:left;}
+  .notes-panel-header:hover,.notes-panel-header.open{background:var(--surface-2);}
+  .notes-panel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+  .notes-panel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+  .notes-panel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+  .notes-panel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+  .notes-panel-body{display:none;padding:0 32px 22px;}
+  .notes-panel-body.open{display:block;}
+  .q-group{margin-bottom:16px;}
+  .q-group-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+  .q-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-dim);}
+  .q-item:last-child{border-bottom:none;}
+  .q-num{font-size:10px;font-weight:700;color:var(--red);min-width:16px;margin-top:2px;}
+  .q-text{font-size:12px;color:var(--text-soft);line-height:1.5;flex:1;}
+  .q-del{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 4px;margin-top:1px;}
+  .q-del:hover{color:var(--red);}
+  .no-questions{font-size:12px;color:var(--text-muted);padding:8px 0;}
+  .btn-add-q{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Epilogue',sans-serif;}
+  .btn-add-q:hover{opacity:0.85;}
+
+  /* STICKY SECTION NAV */
+  .section-nav{position:sticky;top:0;z-index:90;display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);padding:0 32px;overflow-x:auto;}
+  .nav-tab{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:12px 18px;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
+  .nav-tab:hover{color:var(--text);}
+  .nav-tab.active{color:var(--red);border-bottom-color:var(--red);}
+
+  /* MAIN GRID */
+  main{display:grid;grid-template-columns:1fr 320px;gap:0;align-items:start;max-width:1200px;margin:0 auto;padding:0;}
+  .main-content{padding:36px 40px 60px 60px;}
+  .sidebar{padding:32px 24px 60px 20px;position:sticky;top:57px;max-height:calc(100vh - 57px);overflow-y:auto;}
+
+  /* SECTION BLOCK */
+  .section-block{margin-bottom:48px;}
+  .section-label{font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+  .section-block h2{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1.15;margin-bottom:16px;padding-left:16px;border-left:3px solid var(--red);}
+  .section-block h2 em{font-style:italic;font-weight:400;color:var(--red);}
+  .section-block p{font-size:14px;line-height:1.8;color:var(--text-soft);margin-bottom:14px;}
+  .section-block p strong{color:var(--text);font-weight:600;}
+  .section-block p em{color:var(--red);font-style:italic;}
+  .section-block ul,.section-block ol{padding-left:22px;margin-bottom:14px;}
+  .section-block li{font-size:14px;line-height:1.75;color:var(--text-soft);margin-bottom:4px;}
+  .section-block li strong{color:var(--text);font-weight:600;}
+
+  /* CALLOUTS */
+  .callout{border-left:3px solid var(--red-border);background:var(--red-light);border-radius:0 10px 10px 0;padding:12px 18px;margin:16px 0;font-size:13.5px;line-height:1.65;color:var(--text-soft);}
+  .callout strong{color:var(--text);}
+  .callout-green{border-left-color:var(--green-border);background:var(--green-light);}
+  .callout-amber{border-left-color:var(--amber-border);background:var(--amber-light);}
+
+  /* DATA TABLE */
+  .data-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;}
+  .data-table th{background:#1a0606;color:#e87070;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:10px 14px;text-align:left;}
+  .data-table td{padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text-soft);line-height:1.5;}
+  .data-table tr:hover td{background:var(--red-glow);}
+  .data-table td:first-child{color:var(--text);font-weight:600;}
+
+  /* CODE BLOCK */
+  .code-block{background:#1a0606;border-radius:10px;padding:0;margin:16px 0;overflow:hidden;}
+  .code-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#e87070;padding:8px 16px;background:rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.08);}
+  .code-block pre{padding:16px;overflow-x:auto;}
+  .code-block code{font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:12.5px;line-height:1.65;color:#f0d0c0;}
+
+  /* SECTION IMAGE */
+  .img-caption{font-size:11px;color:var(--text-muted);text-align:center;margin-top:6px;line-height:1.4;font-style:italic;}
+  .section-img-wrap{margin:0 0 20px;display:flex;flex-direction:column;align-items:center;}
+  .section-img{width:260px;max-width:100%;border-radius:12px;cursor:zoom-in;transition:width 0.3s ease;border:1px solid var(--border);display:block;}
+  .section-img.si-expanded{width:100%;cursor:zoom-out;border-radius:16px;}
+  .si-placeholder{display:none;width:260px;max-width:100%;border:2px dashed var(--border);border-radius:12px;background:var(--surface-2);padding:14px 16px;flex-direction:column;align-items:flex-start;gap:8px;}
+  .si-placeholder.si-show{display:flex;}
+  .si-filename{font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'SF Mono','Fira Code',monospace;}
+
+  /* SOCRATIC */
+  .socratic-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:16px;border-top:3px solid var(--red);}
+  .socratic-header{display:flex;align-items:center;gap:8px;margin-bottom:0;cursor:pointer;user-select:none;}
+  .socratic-header::after{content:'▸ Expand';margin-left:auto;font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'Epilogue',sans-serif;}
+  .socratic-block.soc-open .socratic-header{margin-bottom:10px;}
+  .socratic-block.soc-open .socratic-header::after{content:'▾ Collapse';}
+  .socratic-block:not(.soc-open) .socratic-insight,
+  .socratic-block:not(.soc-open) .socratic-questions,
+  .socratic-block:not(.soc-open) .answer-area{display:none;}
+  .socratic-icon{font-size:17px;flex-shrink:0;}
+  .socratic-label{font-size:9px;font-weight:700;letter-spacing:0.18em;color:var(--text-muted);}
+  .socratic-insight{font-size:13px;color:var(--text-soft);line-height:1.75;margin-bottom:12px;border-left:3px solid var(--border);padding-left:12px;font-style:italic;}
+  .socratic-questions{list-style:none;padding:0;margin:0;}
+  .socratic-questions li{font-size:12.5px;color:var(--text);padding:7px 0 7px 22px;position:relative;border-bottom:1px solid var(--border-dim);line-height:1.6;}
+  .socratic-questions li:last-child{border-bottom:none;}
+  .socratic-questions li::before{content:'?';position:absolute;left:0;font-weight:700;font-size:12px;top:8px;color:var(--red);}
+  .answer-area{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+  .answer-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Epilogue',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+  .answer-textarea:focus{border-color:var(--text);}
+  .answer-textarea:disabled{opacity:0.7;background:var(--surface-2);cursor:default;}
+  .answer-buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+  .btn-add-answer{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Epilogue',sans-serif;}
+  .btn-add-answer:hover:not(:disabled){opacity:0.85;}
+  .btn-add-answer:disabled{opacity:0.5;cursor:default;}
+  .btn-see-answer{background:var(--surface);color:var(--text-muted);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Epilogue',sans-serif;}
+  .btn-see-answer:disabled{opacity:0.5;cursor:not-allowed;}
+  .btn-see-answer:not(:disabled){color:var(--red);border-color:var(--red);}
+  .btn-see-answer:hover:not(:disabled){background:var(--red-glow);}
+  .model-answers{margin-top:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+  .model-answer-item{padding:10px 0;border-bottom:1px solid var(--border-dim);}
+  .model-answer-item:first-child{padding-top:0;}
+  .model-answer-item:last-child{border-bottom:none;padding-bottom:0;}
+  .model-answer-q{font-size:9px;font-weight:700;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:4px;}
+  .model-answer-text{font-size:13px;color:var(--text-soft);line-height:1.7;}
+
+  /* MENTAL NOTE */
+  .mental-note-block{border-radius:10px;padding:12px 16px;margin:16px 0;display:flex;gap:10px;align-items:flex-start;background:rgba(192,57,43,0.07);border:1px solid var(--border);}
+  .mental-note-block-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+  .mental-note-block-inner{flex:1;}
+  .mental-note-block-label{font-size:9px;font-weight:700;letter-spacing:0.16em;color:var(--red);margin-bottom:3px;}
+  .mental-note-block-text{font-size:13px;font-weight:600;line-height:1.55;color:var(--text);}
+
+  /* ANALOGY BOX */
+  .analogy-box{background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #b45309;border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0;}
+  .analogy-label{display:flex;align-items:center;gap:6px;user-select:none;cursor:pointer;font-size:9px;font-weight:700;letter-spacing:0.16em;color:#b45309;margin-bottom:4px;}
+  .analogy-label::after{content:'▾  Reveal illustration';margin-left:auto;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:none;opacity:0.75;}
+  .analogy-label:hover::after{opacity:1;}
+  .analogy-box.expanded>.analogy-label::after{content:'▴  Hide illustration';}
+  .analogy-text{font-size:13px;color:#78350f;line-height:1.65;font-style:italic;}
+  .analogy-summary{font-style:normal;font-weight:600;color:#92400e;margin-bottom:10px;}
+
+  /* LESSON TOOLS */
+  .lesson-tools{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:40px;}
+  .lesson-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .tool-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+  .tool-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Epilogue',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+  .tool-textarea:focus{border-color:var(--red);}
+  .tool-row{margin-top:8px;display:flex;gap:8px;}
+
+  /* SIDEBAR */
+  .sidebar-section{margin-bottom:28px;}
+  .sidebar-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;}
+  .ssnav{display:flex;flex-direction:column;gap:2px;margin-top:4px;}
+  .ssnav-item{font-size:12px;color:var(--text-soft);padding:6px 10px;border-radius:6px;text-decoration:none;line-height:1.4;display:block;transition:background 0.15s,color 0.15s;}
+  .ssnav-item:hover,.ssnav-item.active{background:var(--red-glow);color:var(--red);}
+  .hub-link{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);margin-bottom:16px;transition:color 0.15s,border-color 0.15s,background 0.15s;}
+  .hub-link:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);}
+  .check-item{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;}
+  .check-input{accent-color:var(--red);width:14px;height:14px;flex-shrink:0;cursor:pointer;}
+  .check-label{font-size:12px;color:var(--text-soft);line-height:1.4;}
+  .check-item:has(.check-input:checked) .check-label{color:var(--text-muted);text-decoration:line-through;}
+  .quick-ref{background:#1a0606;border-radius:10px;padding:12px 16px;margin-bottom:8px;}
+  .quick-ref-term{font-size:10px;font-weight:700;letter-spacing:0.12em;color:#e87070;margin-bottom:3px;text-transform:uppercase;}
+  .quick-ref-def{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;}
+
+  /* SCORE BADGE */
+  .score-badge{display:inline-flex;align-items:center;gap:10px;background:#1a0606;border-radius:12px;padding:10px 20px;margin-bottom:24px;}
+  .score-num{font-family:'Fraunces',serif;font-size:28px;font-weight:700;color:#e87070;}
+  .score-label{font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:0.1em;}
+
+  /* PAGE NAV */
+  .page-nav{display:flex;border-top:2px solid var(--border);background:var(--surface);}
+  .page-nav-btn{flex:1;display:flex;flex-direction:column;gap:4px;padding:16px 28px;text-decoration:none;transition:background 0.15s;cursor:pointer;}
+  .page-nav-btn:hover:not(.page-nav-disabled){background:var(--surface-2);}
+  .page-nav-prev{border-right:1px solid var(--border);}
+  .page-nav-next{text-align:right;}
+  .page-nav-disabled{opacity:0.3;pointer-events:none;}
+  .page-nav-label{font-size:10px;font-weight:600;letter-spacing:0.14em;color:var(--text-muted);display:block;}
+  .page-nav-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;color:var(--red);display:block;}
+
+  /* FOOTER */
+  footer{font-size:11px;letter-spacing:0.12em;color:var(--text-muted);text-transform:uppercase;padding:20px 60px;border-top:1px solid var(--border);}
+  footer span{color:var(--red);}
+
+  /* RESPONSIVE */
+  @media(max-width:1000px){main{grid-template-columns:1fr;}.sidebar{position:static;max-height:none;padding:0 40px 40px;}}
+  @media(max-width:720px){header{padding:28px 24px 24px;}header h1{font-size:32px;}.motivation-banner{padding:16px 24px;}.main-content{padding:24px 24px 40px;}.section-nav{padding:0 16px;}.top-panels{grid-template-columns:1fr;}.top-panels .qpanel{border-right:none;border-bottom:1px solid var(--border);}.lesson-tools-grid{grid-template-columns:1fr;}footer{padding:16px 24px;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="breadcrumb">
+      <a href="../nse7-ef-study-guide-hub.html">EF-NSE7</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="index.html">Chapter 01 — Network Security Architecture</a>
+      <span class="breadcrumb-sep">›</span>
+      Subtopic 01
+    </div>
+    <div class="header-eyebrow"><span class="dot-live"></span> Study Guide · EF-NSE7 · Session 1 of 33</div>
+    <h1>Understand the <em>Enterprise Firewall</em> Solution</h1>
+    <p>How Fortinet maps FortiGate hardware roles to network zones — and why a perimeter-only approach always fails.</p>
+  </div>
+</header>
+
+<div class="motivation-banner">
+  <div class="motivation-text">Securing the front door means nothing if you <em>trust everything inside</em>.</div>
+  <p class="motivation-sub">Every advanced deployment topic in this exam — VDOMs, HA, ADVPN, Security Fabric — assumes you understand which FortiGate role belongs where and why. Get this wrong and every scenario question that follows becomes a guess.</p>
+</div>
+
+<div class="top-panels">
+  <div class="qpanel" id="qpanel">
+    <button class="qpanel-header" onclick="toggleQPanel()" id="qpanel-header">
+      <span class="qpanel-title">MY QUESTIONS</span>
+      <span class="qpanel-count" id="qpanel-count">0</span>
+      <span class="qpanel-hint">— click to expand</span>
+      <span class="qpanel-chevron" id="qpanel-chevron">▾</span>
+    </button>
+    <div class="qpanel-body" id="qpanel-body"></div>
+  </div>
+  <div class="notes-panel" id="notes-panel">
+    <button class="notes-panel-header" onclick="toggleNotesPanel()" id="notes-panel-header">
+      <span class="notes-panel-title">MY NOTES</span>
+      <span class="notes-panel-count" id="notes-panel-count">0</span>
+      <span class="notes-panel-hint">— click to expand</span>
+      <span class="notes-panel-chevron" id="notes-panel-chevron">▾</span>
+    </button>
+    <div class="notes-panel-body" id="notes-panel-body"></div>
+  </div>
+</div>
+
+<nav class="section-nav" id="section-nav">
+  <a class="nav-tab active" href="#section-traditional-vs-ngfw">Traditional vs NGFW</a>
+  <a class="nav-tab" href="#section-deployment-roles">Deployment Roles</a>
+  <a class="nav-tab" href="#section-fortimanager">FortiManager Architecture</a>
+</nav>
+
+<main>
+  <div class="main-content">
+
+    <!-- ══ SECTION 1 ══ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · TRADITIONAL VS NGFW</span>
+      </div>
+      <p class="socratic-insight">Traditional firewalls and NGFWs both inspect traffic — but they see completely different things. The difference isn't just feature depth, it's the OSI layer ceiling. Most misconfigured firewalls fail not because the rules are wrong, but because the firewall can't see what it's actually supposed to be blocking.</p>
+      <ul class="socratic-questions">
+        <li>A user runs Dropbox over TCP port 443. A traditional firewall has a rule permitting HTTPS outbound. What happens, and why can't the firewall stop it?</li>
+        <li>What specific FortiGate feature allows an NGFW to identify and block Dropbox regardless of the port it uses — and what OSI layer does it operate at?</li>
+      </ul>
+      <div class="answer-area" data-section="traditional-vs-ngfw">
+        <textarea class="answer-textarea" placeholder="Write your own answer before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">The traditional firewall sees TCP port 443, matches the permit rule, and allows it through. It has no visibility beyond Layer 4 — it cannot inspect the application-layer content of the session to determine it's Dropbox rather than legitimate HTTPS. The traffic passes unblocked.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Application Control is the FortiGate feature that identifies the application. It operates at Layer 7 (the application layer) using deep packet inspection and signature matching, identifying Dropbox regardless of the port it uses. A policy with Application Control can then block or restrict it.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="section-traditional-vs-ngfw">
+      <div class="section-label">SECTION 01</div>
+      <h2>Traditional Firewall vs <em>NGFW</em></h2>
+
+      <div class="section-img-wrap">
+        <div class="si-placeholder si-show">
+          <span class="si-filename">images/s1-traditional-vs-ngfw.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration, pastel palette, bold outlines. Two-panel left/right comparison. Left panel: traditional firewall inspecting only Layer 3/4 headers (IP address and port number visible, application content blurred/locked). Right panel: NGFW with all OSI layers visible including application identity icons (Dropbox, YouTube, Telnet) despite port 443. Label each layer clearly.</div>
+        </div>
+      </div>
+
+      <p>A <strong>traditional firewall</strong> operates at Layers 3 and 4 of the OSI model. It makes allow/deny decisions based on IP addresses, protocols, and port numbers — access control lists in their purest form. If TCP port 443 is permitted, all traffic on that port passes, regardless of what application is actually riding inside.</p>
+
+      <p>A <strong>Next-Generation Firewall (NGFW)</strong> extends inspection all the way to <em>Layer 7</em>. It incorporates traditional ACL capabilities, plus UTM security profiles (IPS, antivirus, web filter), plus application-layer analysis. This means an NGFW can identify that Dropbox is running over port 443, that Telnet is tunnelled inside SSH, or that a file transfer contains malware — and enforce policy on that knowledge. FortiGate achieves this through features like <strong>Application Control</strong>, <strong>SSL Deep Inspection</strong>, and <strong>IPS</strong>.</p>
+
+      <div class="callout">
+        <strong>⚑ NSE7 Exam Tip:</strong> Exam questions will describe traffic that bypasses a traditional firewall and ask what NGFW feature would catch it. Map the scenario to the correct profile: application tunnelling → Application Control; encrypted malware → SSL Deep Inspection + IPS; unknown executables → Antivirus with flow/proxy inspection.
+      </div>
+
+      <table class="data-table">
+        <thead><tr><th>Feature</th><th>Traditional Firewall</th><th>NGFW (FortiGate)</th></tr></thead>
+        <tbody>
+          <tr><td>OSI Layer Ceiling</td><td>Layer 4 (Transport)</td><td>Layer 7 (Application)</td></tr>
+          <tr><td>Decision Basis</td><td>IP address + port number</td><td>Application identity + content</td></tr>
+          <tr><td>Can block Dropbox on 443?</td><td>No — sees only HTTPS</td><td>Yes — Application Control identifies it</td></tr>
+          <tr><td>Inspects encrypted traffic?</td><td>No</td><td>Yes — via SSL Deep Inspection</td></tr>
+          <tr><td>UTM Profiles</td><td>None</td><td>IPS, AV, Web Filter, App Control, DLP</td></tr>
+        </tbody>
+      </table>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Traditional firewall = Layers 3 & 4 only. NGFW = Layers 3–7 with application awareness. The key exam word is "application-layer" — whenever you see it, the answer involves NGFW capability, not basic ACL rules. Application Control is the FortiGate feature that identifies apps regardless of port.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-section-traditional-vs-ngfw" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('section-traditional-vs-ngfw','Traditional vs NGFW')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-section-traditional-vs-ngfw" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('section-traditional-vs-ngfw')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SECTION 2 ══ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · DEPLOYMENT ROLES</span>
+      </div>
+      <p class="socratic-insight">Fortinet maps FortiGate hardware to three distinct deployment roles — and the NSE7 exam will describe a network scenario and expect you to name the correct role and hardware series without hesitation. The trap is that DCFW sounds like it should be at the perimeter — it isn't.</p>
+      <ul class="socratic-questions">
+        <li>A hospital has a radiology workstation segment and a pharmacy server segment on the same internal campus network. Which FortiGate deployment role and hardware series would you deploy between them, and why?</li>
+        <li>What is the defining characteristic that separates a DCFW from a perimeter firewall — where exactly does it sit, and what traffic does it inspect?</li>
+      </ul>
+      <div class="answer-area" data-section="deployment-roles">
+        <textarea class="answer-textarea" placeholder="Write your own answer before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">ISFW — Internal Segmentation Firewall — using the FortiGate 100-900 series. It sits inline between internal segments, inspecting east-west traffic to prevent lateral movement. This is exactly the gap that caused the MedCore breach: without an ISFW, a compromised workstation can move freely to any server segment.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">A DCFW sits inside the data centre itself, inspecting traffic between server tiers and workloads (east-west within the DC). It is not the internet-facing perimeter device. Its defining characteristics are hyperscale throughput (10 Gbps–1 Tbps), hardware SSL inspection, low latency, and segmentation via VRFs and VDOMs.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="section-deployment-roles">
+      <div class="section-label">SECTION 02</div>
+      <h2>The Three Fortinet <em>Deployment Roles</em></h2>
+
+      <div class="section-img-wrap">
+        <div class="si-placeholder si-show">
+          <span class="si-filename">images/s2-deployment-roles.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration, bird's-eye network architecture diagram. Three zones from left to right: Branch Office (small FortiGate 30/60 labelled DEFW), Campus/Internal (mid-size FortiGate 200/600 labelled ISFW between HR, Finance, and IT segments), Data Centre (large FortiGate 1000/7000 labelled DCFW between web tier, app tier, and DB tier). Use bold color-coded zones. No perimeter/internet firewall — emphasise the internal placement of DCFW.</div>
+        </div>
+      </div>
+
+      <p>Fortinet organises FortiGate deployments into three named roles, each mapped to a specific network location, hardware series, and set of capabilities. Understanding these roles is critical for NSE7 scenario questions — the exam will describe a problem and expect you to prescribe the correct deployment.</p>
+
+      <table class="data-table">
+        <thead><tr><th>Role</th><th>Full Name</th><th>Location</th><th>Primary Job</th><th>FortiGate Series</th></tr></thead>
+        <tbody>
+          <tr><td>DEFW</td><td>Distributed Enterprise Firewall</td><td>Branch office / remote site</td><td>Perimeter security, VPN, SD-WAN for branches</td><td>30–90 Series</td></tr>
+          <tr><td>ISFW</td><td>Internal Segmentation Firewall</td><td>Between internal segments (campus)</td><td>East-west inspection, reduce lateral movement, micro-segmentation</td><td>100–900 Series</td></tr>
+          <tr><td>DCFW</td><td>Data Centre Firewall</td><td>Inside the data centre, between workloads</td><td>Hyperscale throughput, inter-tier inspection, low latency, HW SSL</td><td>1000–7000 Series</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-amber">
+        <strong>Common misconception:</strong> The DCFW is NOT the internet-facing perimeter firewall. It lives inside the data centre inspecting traffic between server tiers (web → app → DB). Exam distractors will describe "protecting the data centre from the internet" — that is a perimeter role, not DCFW.
+      </div>
+
+      <p>The <strong>DCFW</strong> (FortiGate 1000-7000 series) is built for hyperscale environments — data centres handling 10 Gbps to 1 Tbps of traffic. It uses hardware security processors (NP/CP) to offload SSL inspection and packet processing from the CPU, and connects to multiple physical switches bundled as a single logical interface for redundancy.</p>
+
+      <p>The <strong>ISFW</strong> (FortiGate 100-900 series) is the answer to the flat-network problem. By placing it inline between internal segments — HR, Finance, IT, OT — it forces all east-west traffic through inspection. This is what MedCore was missing: if a compromised workstation cannot reach the pharmacy server without passing through an ISFW policy, lateral movement is stopped.</p>
+
+      <p>The <strong>DEFW</strong> (FortiGate 30-90 series) serves branch offices. It handles traditional perimeter firewall duties, site-to-site VPN back to HQ, and optionally SD-WAN for WAN link optimisation. Lower throughput hardware matched to branch traffic volumes.</p>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Series mapping is a known exam trap: 30-90 = DEFW (branch), 100-900 = ISFW (campus segmentation), 1000-7000 = DCFW (data centre workloads). The DCFW inspects east-west traffic inside the DC — not north-south to the internet. If a scenario mentions "hyperscale", "inter-tier", or "10Gbps+", the answer is DCFW.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-section-deployment-roles" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('section-deployment-roles','Deployment Roles')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-section-deployment-roles" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('section-deployment-roles')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SECTION 3 ══ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · FORTIMANAGER ARCHITECTURE</span>
+      </div>
+      <p class="socratic-insight">FortiManager doesn't just connect to devices — it separates what a device IS from what policies it RUNS. That architectural split is what makes large-scale management possible. If you blur those two layers, you'll misread every FortiManager scenario question on the exam.</p>
+      <ul class="socratic-questions">
+        <li>FortiManager has ADOMs disabled. What is the name of the default ADOM it operates in, and what two distinct databases does it contain?</li>
+        <li>A network engineer needs to push a new security policy to 200 branch FortiGates simultaneously. Which FortiManager layer makes this possible — Device layer or Policy layer — and why?</li>
+      </ul>
+      <div class="answer-area" data-section="fortimanager">
+        <textarea class="answer-textarea" placeholder="Write your own answer before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">The default ADOM is named "root". It contains two databases: the Device layer (device-specific configurations unique to each FortiGate) and the Policy layer (policy packages that can be pushed to multiple devices).</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">The Policy layer. A single policy package is created once in the Policy layer and then pushed to all 200 devices. The Device layer holds per-device configuration (interfaces, routes, hostnames) that differs per unit. This separation is the entire point of FortiManager's architecture.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="section-fortimanager">
+      <div class="section-label">SECTION 03</div>
+      <h2>FortiManager as the <em>Single Management Plane</em></h2>
+
+      <div class="section-img-wrap">
+        <div class="si-placeholder si-show">
+          <span class="si-filename">images/s3-fortimanager.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration, bold outlines. FortiManager at top as a central hub. Below it, one large ADOM box labelled "root" (or multiple ADOM boxes if ADOMs enabled). Inside each ADOM: two stacked layers — top layer labelled "Policy Layer" (policy packages, shared across devices), bottom layer labelled "Device Layer" (unique per device configs). Arrows from Policy Layer pointing down to multiple FortiGate icons (DEFW, ISFW, DCFW). Emphasise the one-to-many relationship from Policy Layer to devices.</div>
+        </div>
+      </div>
+
+      <p>FortiManager is Fortinet's centralised management solution — the single pane of glass that sits above all three firewall deployment roles (DEFW, ISFW, DCFW) and manages them through a unified interface. Without it, an enterprise with hundreds of FortiGates would require individual CLI or GUI access to every device for every change.</p>
+
+      <p>The core architectural concept is the <strong>ADOM (Administrative Domain)</strong>. ADOMs allow FortiManager to logically group and separate devices — for example, keeping branch FortiGates in one ADOM and data centre FortiGates in another, with different admins and policies for each. When ADOMs are disabled, FortiManager operates in a single default ADOM called <em>root</em>.</p>
+
+      <div class="callout">
+        <strong>⚑ NSE7 Critical:</strong> Every ADOM — including root — contains exactly two databases: the <strong>Device layer</strong> (device-specific configuration, unique per FortiGate) and the <strong>Policy layer</strong> (policy packages that can be created once and pushed to many devices). This separation is what enables fleet-scale management.
+      </div>
+
+      <table class="data-table">
+        <thead><tr><th>FortiManager Layer</th><th>Contains</th><th>Scope</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td>Device Layer</td><td>Device DB — unique per-device config</td><td>One device</td><td>Interface IPs, hostnames, static routes</td></tr>
+          <tr><td>Policy Layer</td><td>Policy packages — shareable across devices</td><td>Many devices</td><td>Firewall rules, UTM profiles, security policies</td></tr>
+        </tbody>
+      </table>
+
+      <p>The power of the Policy layer is that you can create a policy package once and push it to every FortiGate in the fleet — ensuring consistent security posture across 5 or 500 devices. The Device layer then holds the per-device configuration that cannot be shared: interface addresses, local routes, hostname, certificates. Dynamic objects (covered in Session 2) bridge the gap — allowing a single policy to reference different values per device at push time.</p>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Every ADOM has exactly two layers: Device (unique per FortiGate) and Policy (shared policy packages). The default ADOM when ADOMs are disabled is always called "root". If an exam question asks about pushing a consistent policy to many devices simultaneously — the answer is always the Policy layer and policy packages.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-section-fortimanager" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('section-fortimanager','FortiManager Architecture')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-section-fortimanager" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('section-fortimanager')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SESSION RESULTS ══ -->
+    <div class="section-block">
+      <div class="section-label">SESSION 1 RESULTS</div>
+      <h2>Quiz Score: <em>5 / 5</em></h2>
+      <div class="score-badge">
+        <span class="score-num">5/5</span>
+        <span class="score-label">PERFECT SCORE · SESSION 01</span>
+      </div>
+      <p>All five quiz questions answered correctly. Strong NSE4 foundation confirmed — deployment role mappings, NGFW capabilities, and FortiManager architecture all solid.</p>
+      <div class="callout callout-green">
+        <strong>Focus for review:</strong> Burn in the three series mappings (30-90 / 100-900 / 1000-7000) and their exact roles — NSE7 distractors will test this mapping in scenario questions where the series number is the deciding factor.
+      </div>
+
+      <table class="data-table">
+        <thead><tr><th>Q</th><th>Topic</th><th>Result</th><th>Key Point</th></tr></thead>
+        <tbody>
+          <tr><td>Q1</td><td>Traditional FW vs NGFW</td><td>✅ Correct</td><td>Traditional FW allows port 443; Application Control catches app regardless of port</td></tr>
+          <tr><td>Q2</td><td>ISFW identification</td><td>✅ Correct</td><td>East-west campus segmentation = ISFW = 100-900 series</td></tr>
+          <tr><td>Q3</td><td>DCFW misconception</td><td>✅ Correct</td><td>DCFW is inside DC between workloads — NOT the internet perimeter</td></tr>
+          <tr><td>Q4</td><td>FortiManager ADOM root</td><td>✅ Correct</td><td>Default ADOM = root; contains Device layer + Policy layer</td></tr>
+          <tr><td>Q5</td><td>Device vs Policy layer</td><td>✅ Correct</td><td>Policy layer = shared fleet-wide; Device layer = unique per device</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">ON THIS PAGE</div>
+      <nav class="ssnav">
+        <a class="ssnav-item" href="#section-traditional-vs-ngfw">Traditional vs NGFW</a>
+        <a class="ssnav-item" href="#section-deployment-roles">Deployment Roles</a>
+        <a class="ssnav-item" href="#section-fortimanager">FortiManager Architecture</a>
+      </nav>
+    </div>
+
+    <a class="hub-link" href="index.html">← Chapter 01 Hub</a>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">PROGRESS</div>
+      <div class="checklist" id="checklist">
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="section-traditional-vs-ngfw" onchange="toggleDone(this)">
+          <span class="check-label">Traditional vs NGFW</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="section-deployment-roles" onchange="toggleDone(this)">
+          <span class="check-label">Deployment Roles</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="section-fortimanager" onchange="toggleDone(this)">
+          <span class="check-label">FortiManager Architecture</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">QUICK REFERENCE</div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">DEFW</div>
+        <div class="quick-ref-def">Distributed Enterprise Firewall — FortiGate 30-90 series — branch office perimeter and VPN</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">ISFW</div>
+        <div class="quick-ref-def">Internal Segmentation Firewall — FortiGate 100-900 series — inline between internal campus segments, east-west inspection</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">DCFW</div>
+        <div class="quick-ref-def">Data Centre Firewall — FortiGate 1000-7000 series — inside DC between workload tiers, hyperscale throughput</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">NGFW vs Traditional</div>
+        <div class="quick-ref-def">Traditional = Layers 3-4 (IP + port). NGFW = Layer 7 (application identity via App Control, UTM profiles)</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">ADOM Root</div>
+        <div class="quick-ref-def">Default FortiManager ADOM when ADOMs disabled. Contains Device layer (per-device) and Policy layer (fleet-wide packages)</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Policy Layer</div>
+        <div class="quick-ref-def">FortiManager layer containing policy packages — created once, pushed to many devices for consistent fleet policy</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Device Layer</div>
+        <div class="quick-ref-def">FortiManager layer containing per-device configuration — interfaces, hostnames, routes — unique to each FortiGate</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">FortiGuard Labs</div>
+        <div class="quick-ref-def">AI-powered threat intelligence feeding all FortiGate deployments — SSL inspection, AV, URL filtering, malware detection</div>
+      </div>
+    </div>
+
+  </aside>
+</main>
+
+<div class="page-nav">
+  <a class="page-nav-btn page-nav-prev page-nav-disabled">
+    <span class="page-nav-label">← BACK TO HUB</span>
+    <span class="page-nav-title">Chapter 01 Hub</span>
+  </a>
+  <a class="page-nav-btn page-nav-next" href="ch01-sub02-network-security-reference-architecture.html">
+    <span class="page-nav-label">NEXT →</span>
+    <span class="page-nav-title">Session 2 — Central Management &amp; ADOMs</span>
+  </a>
+</div>
+
+<footer>
+  EF-NSE7<span>.</span> Chapter 01<span>.</span> Subtopic 01<span>.</span> Understand the Enterprise Firewall Solution
+</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-ch01-sub01-enterprise-firewall-solution';
+
+const SECTIONS = {
+  'section-traditional-vs-ngfw': 'Traditional vs NGFW',
+  'section-deployment-roles': 'Deployment Roles',
+  'section-fortimanager': 'FortiManager Architecture',
+};
+
+/* ── Fixed script — do not modify below ── */
+document.querySelectorAll('.socratic-header').forEach(function(h) {
+  h.addEventListener('click', function() { h.closest('.socratic-block').classList.toggle('soc-open'); });
+});
+function getQArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-qs') || '[]'); }
+function saveQArr(qs) { localStorage.setItem(PAGE_KEY+'-qs', JSON.stringify(qs)); }
+function addQuestion(key, name) {
+  const ta = document.getElementById('q-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const qs = getQArr(); qs.push({id: Date.now(), section: key, sectionName: name, text});
+  saveQArr(qs); ta.value = ''; renderQPanel();
+  if (!document.getElementById('qpanel-body').classList.contains('open')) toggleQPanel();
+}
+function deleteQ(id) { saveQArr(getQArr().filter(q => q.id !== id)); renderQPanel(); }
+function toggleQPanel() {
+  const body = document.getElementById('qpanel-body');
+  const header = document.getElementById('qpanel-header');
+  const chevron = document.getElementById('qpanel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-qpanel-open', open);
+}
+function renderQPanel() {
+  const qs = getQArr();
+  const count = document.getElementById('qpanel-count');
+  if (count) { count.textContent = qs.length; count.style.display = qs.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.qpanel-hint');
+  if (hint) hint.textContent = qs.length ? `— ${qs.length} question${qs.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('qpanel-body'); if (!body) return;
+  if (!qs.length) { body.innerHTML = '<p class="no-questions">No questions yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  qs.forEach(q => { if (groups[q.section]) groups[q.section].push(q); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(q => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${q.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteQ(${q.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+function getNotesArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-notes') || '[]'); }
+function saveNotesArr(ns) { localStorage.setItem(PAGE_KEY+'-notes', JSON.stringify(ns)); }
+function addNote(key) {
+  const ta = document.getElementById('note-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const ns = getNotesArr(); ns.push({id: Date.now(), section: key, sectionName: SECTIONS[key]||key, text});
+  saveNotesArr(ns); ta.value = ''; renderNotesPanel();
+  if (!document.getElementById('notes-panel-body').classList.contains('open')) toggleNotesPanel();
+}
+function deleteNote(id) { saveNotesArr(getNotesArr().filter(n => n.id !== id)); renderNotesPanel(); }
+function toggleNotesPanel() {
+  const body = document.getElementById('notes-panel-body');
+  const header = document.getElementById('notes-panel-header');
+  const chevron = document.getElementById('notes-panel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-notes-panel-open', open);
+}
+function renderNotesPanel() {
+  const ns = getNotesArr();
+  const count = document.getElementById('notes-panel-count');
+  if (count) { count.textContent = ns.length; count.style.display = ns.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.notes-panel-hint');
+  if (hint) hint.textContent = ns.length ? `— ${ns.length} note${ns.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('notes-panel-body'); if (!body) return;
+  if (!ns.length) { body.innerHTML = '<p class="no-questions">No notes yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  ns.forEach(n => { if (groups[n.section]) groups[n.section].push(n); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(n => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteNote(${n.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+function toggleDone(input) {
+  localStorage.setItem(PAGE_KEY+'-check-'+input.dataset.key, input.checked);
+}
+function initChecks() {
+  document.querySelectorAll('.check-input').forEach(function(inp) {
+    inp.checked = localStorage.getItem(PAGE_KEY+'-check-'+inp.dataset.key) === 'true';
+  });
+}
+function saveSocAnswer(btn) {
+  const area = btn.closest('.answer-area');
+  const ta = area.querySelector('.answer-textarea');
+  if (!ta.value.trim()) { ta.focus(); return; }
+  const key = PAGE_KEY+'-socans-'+area.dataset.section;
+  try { localStorage.setItem(key, ta.value); } catch(e) {}
+  ta.disabled = true; btn.textContent = '✓ Answer saved'; btn.disabled = true;
+  const seeBtn = area.querySelector('.btn-see-answer');
+  seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+}
+function revealSocAnswer(btn) {
+  if (btn.disabled) return;
+  const answers = btn.closest('.answer-area').querySelector('.model-answers');
+  const isHidden = answers.style.display === 'none' || !answers.style.display;
+  answers.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '▲ Hide Model Answer' : '💡 See Model Answer';
+}
+function togglePrompt(btn) {
+  const c = btn.nextElementSibling;
+  const isHidden = c.hasAttribute('hidden');
+  if (isHidden) { c.removeAttribute('hidden'); btn.textContent = '▴ Hide prompt'; }
+  else { c.setAttribute('hidden', ''); btn.textContent = '▾ Show image prompt'; }
+}
+if (sessionStorage.getItem('pt')) { document.documentElement.classList.remove('pt-init'); sessionStorage.removeItem('pt'); }
+document.querySelectorAll('a[href]').forEach(function(a) {
+  a.addEventListener('click', function() { sessionStorage.setItem('pt', '1'); });
+});
+document.addEventListener('DOMContentLoaded', function() {
+  renderQPanel(); renderNotesPanel(); initChecks();
+  if (localStorage.getItem(PAGE_KEY+'-qpanel-open') === 'true') toggleQPanel();
+  if (localStorage.getItem(PAGE_KEY+'-notes-panel-open') === 'true') toggleNotesPanel();
+  document.querySelectorAll('.answer-area').forEach(function(area) {
+    const key = PAGE_KEY+'-socans-'+area.dataset.section;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const ta = area.querySelector('.answer-textarea'); ta.value = saved; ta.disabled = true;
+        const addBtn = area.querySelector('.btn-add-answer'); addBtn.textContent = '✓ Answer saved'; addBtn.disabled = true;
+        const seeBtn = area.querySelector('.btn-see-answer'); seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+      }
+    } catch(e) {}
+  });
+});
+(function() {
+  var items = document.querySelectorAll('.ssnav-item');
+  if (!items.length) return;
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      var lnk = document.querySelector('.ssnav-item[href="#'+e.target.id+'"]');
+      if (lnk) lnk.classList.toggle('active', e.isIntersecting);
+    });
+  }, { rootMargin: '-10% 0% -70% 0%' });
+  document.querySelectorAll('.section-block[id]').forEach(function(el) { obs.observe(el); });
+})();
+</script>
+</body>
+</html>
