@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;transition:opacity .3s ease}
 body{font-family:'Inter',sans-serif;background:#0a0101;color:#e8ddd5;line-height:1.6;transition:opacity .25s ease;opacity:0}
 :root{
   --session-color:#5ab288;
@@ -162,6 +162,84 @@ footer{color:#9a7070;border-top-color:#e8d5cc}
 /* Preserve story section darkness */
 .story-section{background:linear-gradient(135deg,#1a0a08,#120606)!important}
 </style>
+<style>
+/* ── Story collapse (always dark) ── */
+.story-collapse{border-top:3px solid var(--session-color)}
+details.story-collapse>summary{list-style:none}
+details.story-collapse>summary::-webkit-details-marker{display:none}
+.story-summary{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:1.1rem 2rem;cursor:pointer;
+  background:linear-gradient(135deg,#1a0a08,#120606);
+  border-bottom:1px solid transparent;
+  gap:1rem;user-select:none
+}
+details.story-collapse[open] .story-summary{border-bottom-color:#2a1515}
+.story-sum-inner{display:flex;flex-direction:column;gap:.3rem}
+.story-sum-eyebrow{font-size:.7rem;text-transform:uppercase;letter-spacing:.14em;color:var(--session-color);font-weight:700}
+.story-sum-title{font-family:'Fraunces',serif;font-size:1.05rem;color:#fff;font-weight:600;line-height:1.3}
+.story-sum-arrow{color:var(--session-color);font-size:.85rem;flex-shrink:0;transition:transform .25s ease}
+details.story-collapse[open] .story-sum-arrow{transform:rotate(180deg)}
+.story-collapse .story-section{border-top:none}
+
+/* ── Header meta band (light) ── */
+.header-meta{margin-top:1.25rem;padding-top:1rem;border-top:1px solid #f0e0d8}
+.meta-chips{display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:.7rem;align-items:center}
+.meta-chip{
+  display:inline-flex;align-items:center;gap:.3rem;
+  padding:.28rem .72rem;border-radius:20px;
+  font-size:.78rem;font-weight:500;
+  background:#fdf5f0;border:1px solid #e8d5cc;
+  color:#7a5050;text-decoration:none;transition:border-color .15s,background .15s
+}
+.meta-chip-key{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:#c09090;margin-right:.1rem}
+a.meta-chip.sg-chip{color:var(--session-color);border-color:rgba(224,112,80,.35);background:rgba(224,112,80,.08)}
+a.meta-chip.sg-chip:hover{background:rgba(224,112,80,.18);text-decoration:none;border-color:var(--session-color)}
+.meta-prereqs{display:flex;align-items:baseline;gap:.55rem;flex-wrap:wrap}
+.meta-prereqs-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;color:#c09090;flex-shrink:0}
+.meta-prereqs-list{display:flex;flex-wrap:wrap;gap:0;list-style:none;padding:0;margin:0}
+.meta-prereqs-list li{font-size:.82rem;color:#8a5050}
+.meta-prereqs-list li:not(:last-child)::after{content:' · ';color:#c09090}
+
+/* ── Sidebar sticky + light ── */
+.sidebar{position:sticky;top:1.5rem;align-self:start}
+.card{background:#fff;border:1px solid #e8d5cc}
+.card h4{color:#9a6060;border-bottom:1px solid #f0e0d8}
+textarea.notes-area{background:#fdf5f0;border:1px solid #e8d5cc;color:#3a2020}
+textarea.notes-area::placeholder{color:#c09090}
+label.notes-label{color:#9a6060}
+
+/* ── Left column light ── */
+.section-block{background:#fff;border:1px solid #e8d5cc}
+.section-block h3{color:#1a0606;border-bottom:1px solid #f0e0d8}
+.section-block p{color:#5a3030}
+.questions-list li{border-bottom:1px solid #f0e0d8;color:#5a3030}
+/* session-07–12 style variants */
+.question-list li{background:#fff;border:1px solid #e8d5cc}
+.question-list li:hover{border-color:rgba(var(--session-rgb,224,112,80),.4)}
+.q-text{color:#5a3030}
+.questions-section h3{color:#1a0606}
+/* image – no placeholder chrome */
+.session-img{margin-bottom:1.5rem}
+.session-img img{max-width:100%;border-radius:8px;display:block;margin:0 auto;object-fit:cover}
+</style>
+<style>
+/* sessions 07-12 sidebar-card light + sticky */
+.sidebar-card{background:#fff;border:1px solid #e8d5cc;border-radius:10px;overflow:hidden;margin-bottom:1.1rem}
+.card-header{background:#fdf5f0;border-bottom:1px solid #f0e0d8;padding:.75rem 1.1rem;font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9a6060}
+.card-body{padding:1rem 1.1rem}
+.detail-row{border-bottom:1px solid #f5eae5;padding:.35rem 0;display:flex;justify-content:space-between;gap:.5rem;font-size:.85rem}
+.detail-row:last-child{border-bottom:none}
+.detail-label{color:#c09090;font-size:.8rem}
+.detail-value{color:#5a3030;font-weight:500;text-align:right;font-size:.83rem}
+.detail-value a{color:var(--session-color)}
+.field-wrap{margin-bottom:.85rem}
+.field-wrap:last-child{margin-bottom:0}
+.field-wrap label{display:block;font-size:.75rem;font-weight:600;color:#9a6060;margin-bottom:.4rem;letter-spacing:.04em}
+.field-wrap textarea{width:100%;background:#fdf5f0;border:1px solid #e8d5cc;border-radius:6px;color:#3a2020;font-family:'Inter',sans-serif;font-size:.83rem;line-height:1.55;padding:.65rem .75rem;resize:vertical;min-height:90px;outline:none;transition:border-color .15s}
+.field-wrap textarea::placeholder{color:#c09090}
+.field-wrap textarea:focus{border-color:rgba(224,112,80,.5)}
+</style>
 </head>
 <body>
 
@@ -177,9 +255,25 @@ footer{color:#9a7070;border-top-color:#e8d5cc}
     <div class="eyebrow">Session 09 &nbsp;·&nbsp; Chapter 04 — High Availability</div>
     <h1>Configure HA <em>Clusters</em></h1>
     <p class="tagline">FortiGate high availability — modes, cluster formation, failover, and session sync basics.</p>
+    <div class="header-meta">
+      <div class="meta-chips">
+        <span class="meta-chip"><span class="meta-chip-key">Session</span>09 of 33</span>
+        <span class="meta-chip"><span class="meta-chip-key">Chapter</span>04 — High Availability</span>
+        <a href="../study-guides/Chapter 04 - High Availability/subtopic-01-configure-ha-clusters.html" class="meta-chip sg-chip">Study Guide →</a>
+      </div>
+      <div class="meta-prereqs"><span class="meta-prereqs-label">Prerequisites</span><ul class="meta-prereqs-list"><li>Sessions 01–02 — Network security architecture</li><li>Basic understanding of redundancy concepts</li></ul></div>
+    </div>
   </div>
 </header>
 
+<details class="story-collapse">
+  <summary class="story-summary">
+    <div class="story-sum-inner">
+      <span class="story-sum-eyebrow">Real-World Scenario</span>
+      <span class="story-sum-title">"Finals Week"</span>
+    </div>
+    <span class="story-sum-arrow">▼</span>
+  </summary>
 <section class="story-section">
   <div class="story-inner">
     <div class="story-label">Pre-Reading Story</div>
@@ -189,6 +283,7 @@ footer{color:#9a7070;border-top-color:#e8d5cc}
     <p>The post-incident review produced one finding that stung the entire IT leadership team: an HA cluster proposal had been included in the IT infrastructure budget submission for three consecutive years. Each year it had been deferred to fund other priorities. The hardware cost for a second FortiGate unit — the one that would have handled failover in under a second — was a fraction of the reputational and operational cost of that one night. The proposal was approved at emergency pace the following week. The cluster was installed before the next semester's final examination period. HA configuration became a mandatory item in the university's infrastructure checklist, not an optional enhancement.</p>
   </div>
 </section>
+</details>
 
 <main>
   <div class="pr-grid">
@@ -203,19 +298,7 @@ footer{color:#9a7070;border-top-color:#e8d5cc}
         <p>The HA heartbeat interface carries the most critical cluster communication — each unit continuously sends heartbeat packets to announce its presence and health. If a unit stops receiving heartbeats from its peer beyond a configurable dead interval, it assumes the peer has failed and triggers the failover sequence. Best practice requires the heartbeat to run on a dedicated interface — preferably a direct cable between the two units — isolated from production network switches. Using a shared switch for the heartbeat introduces the risk of a split-brain scenario, which the next session covers in detail. Before your Socratic session, think about what "session synchronization" means in practical terms — what would happen to an active TCP connection during a failover if sessions were not synchronized?</p>
       </div>
 
-      <div class="img-placeholder">
-        <img src="images/session-09-ha-clusters.png" alt="Session 09 concept illustration" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 1rem;object-fit:cover;" onerror="this.style.display='none'">
-
-        <div class="img-placeholder-top">
-          <span>Session 09 Illustration</span>
-          <span>Image Prompt Below</span>
-        </div>
-        <div class="img-box">
-          <div class="img-icon">🖼</div>
-          <div class="img-prompt-label">Generate with your preferred image tool</div>
-          <div class="img-prompt-text">Flat illustration of FortiGate HA cluster: two FortiGate units side by side. Primary unit has a star/crown badge, secondary has a standby clock icon. Heartbeat cable between them labeled "FGCP Heartbeat". Session sync double-arrow between units. Upstream router above and downstream switch below both connected to both units. Pastel green palette, clean layout.</div>
-        </div>
-      </div>
+      <div class="session-img"><img src="images/session-09-ha-clusters.png" alt="Session 09 concept illustration" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 1rem;object-fit:cover;" onerror="this.style.display='none'"></div>
 
       <div class="questions-section">
         <div class="section-label">Target Questions</div>
@@ -256,37 +339,6 @@ footer{color:#9a7070;border-top-color:#e8d5cc}
 
     <aside class="sidebar">
 
-      <div class="sidebar-card">
-        <div class="card-header">Session Details</div>
-        <div class="card-body">
-          <div class="detail-row">
-            <span class="detail-label">Session</span>
-            <span class="detail-value">09 of 33</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Chapter</span>
-            <span class="detail-value">04 — High Availability</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Subtopic</span>
-            <span class="detail-value">Configure HA Clusters</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Study Guide</span>
-            <span class="detail-value"><a href="../study-guides/Chapter 04 - High Availability/subtopic-01-configure-ha-clusters.html">Open Study Guide →</a></span>
-          </div>
-        </div>
-      </div>
-
-      <div class="sidebar-card">
-        <div class="card-header">Prerequisites</div>
-        <div class="card-body">
-          <ul class="prereq-list">
-            <li>Sessions 01–02 — Network security architecture</li>
-            <li>Basic understanding of redundancy concepts</li>
-          </ul>
-        </div>
-      </div>
 
       <div class="sidebar-card notes-card">
         <div class="card-header">My Questions &amp; Notes</div>
@@ -301,7 +353,6 @@ footer{color:#9a7070;border-top-color:#e8d5cc}
           </div>
         </div>
       </div>
-
     </aside>
 
   </div>
@@ -326,7 +377,7 @@ const PAGE_KEY = 'ef-nse7-pr-s09';
   if(saved)el.value=saved;
   el.addEventListener('input',()=>localStorage.setItem(PAGE_KEY+'-'+id,el.value));
 });
-window.addEventListener('load',()=>{document.body.style.opacity='1';if(sessionStorage.getItem('pt'))sessionStorage.removeItem('pt');});
+window.addEventListener('load',()=>{document.documentElement.style.opacity='1';if(sessionStorage.getItem('pt'))sessionStorage.removeItem('pt');});
 document.querySelectorAll('a[href]').forEach(a=>{
   if(!a.getAttribute('href').startsWith('#'))a.addEventListener('click',()=>sessionStorage.setItem('pt','1'));
 });

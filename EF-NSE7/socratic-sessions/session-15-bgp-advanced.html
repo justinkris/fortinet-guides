@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;transition:opacity .3s ease}
 body{font-family:'Inter',sans-serif;background:#0a0101;color:#e8ddd5;line-height:1.6;transition:opacity .25s ease;opacity:1}
 :root{
   --session-color:#d2a541;
@@ -173,6 +173,67 @@ footer{color:#9a7070;border-top-color:#e8d5cc}
 /* Preserve story section darkness */
 .story-section{background:linear-gradient(135deg,#1a0a08,#120606)!important}
 </style>
+<style>
+/* ── Story collapse (always dark) ── */
+.story-collapse{border-top:3px solid var(--session-color)}
+details.story-collapse>summary{list-style:none}
+details.story-collapse>summary::-webkit-details-marker{display:none}
+.story-summary{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:1.1rem 2rem;cursor:pointer;
+  background:linear-gradient(135deg,#1a0a08,#120606);
+  border-bottom:1px solid transparent;
+  gap:1rem;user-select:none
+}
+details.story-collapse[open] .story-summary{border-bottom-color:#2a1515}
+.story-sum-inner{display:flex;flex-direction:column;gap:.3rem}
+.story-sum-eyebrow{font-size:.7rem;text-transform:uppercase;letter-spacing:.14em;color:var(--session-color);font-weight:700}
+.story-sum-title{font-family:'Fraunces',serif;font-size:1.05rem;color:#fff;font-weight:600;line-height:1.3}
+.story-sum-arrow{color:var(--session-color);font-size:.85rem;flex-shrink:0;transition:transform .25s ease}
+details.story-collapse[open] .story-sum-arrow{transform:rotate(180deg)}
+.story-collapse .story-section{border-top:none}
+
+/* ── Header meta band (light) ── */
+.header-meta{margin-top:1.25rem;padding-top:1rem;border-top:1px solid #f0e0d8}
+.meta-chips{display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:.7rem;align-items:center}
+.meta-chip{
+  display:inline-flex;align-items:center;gap:.3rem;
+  padding:.28rem .72rem;border-radius:20px;
+  font-size:.78rem;font-weight:500;
+  background:#fdf5f0;border:1px solid #e8d5cc;
+  color:#7a5050;text-decoration:none;transition:border-color .15s,background .15s
+}
+.meta-chip-key{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:#c09090;margin-right:.1rem}
+a.meta-chip.sg-chip{color:var(--session-color);border-color:rgba(224,112,80,.35);background:rgba(224,112,80,.08)}
+a.meta-chip.sg-chip:hover{background:rgba(224,112,80,.18);text-decoration:none;border-color:var(--session-color)}
+.meta-prereqs{display:flex;align-items:baseline;gap:.55rem;flex-wrap:wrap}
+.meta-prereqs-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;color:#c09090;flex-shrink:0}
+.meta-prereqs-list{display:flex;flex-wrap:wrap;gap:0;list-style:none;padding:0;margin:0}
+.meta-prereqs-list li{font-size:.82rem;color:#8a5050}
+.meta-prereqs-list li:not(:last-child)::after{content:' · ';color:#c09090}
+
+/* ── Sidebar sticky + light ── */
+.sidebar{position:sticky;top:1.5rem;align-self:start}
+.card{background:#fff;border:1px solid #e8d5cc}
+.card h4{color:#9a6060;border-bottom:1px solid #f0e0d8}
+textarea.notes-area{background:#fdf5f0;border:1px solid #e8d5cc;color:#3a2020}
+textarea.notes-area::placeholder{color:#c09090}
+label.notes-label{color:#9a6060}
+
+/* ── Left column light ── */
+.section-block{background:#fff;border:1px solid #e8d5cc}
+.section-block h3{color:#1a0606;border-bottom:1px solid #f0e0d8}
+.section-block p{color:#5a3030}
+.questions-list li{border-bottom:1px solid #f0e0d8;color:#5a3030}
+/* session-07–12 style variants */
+.question-list li{background:#fff;border:1px solid #e8d5cc}
+.question-list li:hover{border-color:rgba(var(--session-rgb,224,112,80),.4)}
+.q-text{color:#5a3030}
+.questions-section h3{color:#1a0606}
+/* image – no placeholder chrome */
+.session-img{margin-bottom:1.5rem}
+.session-img img{max-width:100%;border-radius:8px;display:block;margin:0 auto;object-fit:cover}
+</style>
 </head>
 <body>
 
@@ -191,9 +252,26 @@ footer{color:#9a7070;border-top-color:#e8d5cc}
     </div>
     <h1>BGP Advanced — <em>Path Selection</em> &amp; Filtering</h1>
     <p class="tagline">Weight, LOCAL_PREF, AS-path, MED — mastering the BGP decision process and route policy tools.</p>
+    <div class="header-meta">
+      <div class="meta-chips">
+        <span class="meta-chip"><span class="meta-chip-key">Session</span>15 of 20</span>
+        <span class="meta-chip"><span class="meta-chip-key">Chapter</span>05 — Dynamic Routing</span>
+        <span class="meta-chip"><span class="meta-chip-key">Est. time</span>25–35 min</span>
+        <a href="../study-guides/Chapter 05 - Dynamic Routing Protocols/subtopic-02-configure-bgp.html" class="meta-chip sg-chip">Study Guide →</a>
+      </div>
+      <div class="meta-prereqs"><span class="meta-prereqs-label">Prerequisites</span><ul class="meta-prereqs-list"><li>Session 14 — BGP Fundamentals</li></ul></div>
+    </div>
   </div>
 </header>
 
+<details class="story-collapse">
+  <summary class="story-summary">
+    <div class="story-sum-inner">
+      <span class="story-sum-eyebrow">Real-World Scenario</span>
+      <span class="story-sum-title">The Route Leak That Accidentally Became a Transit ISP</span>
+    </div>
+    <span class="story-sum-arrow">▼</span>
+  </summary>
 <section class="story-section">
   <div class="story-inner">
     <div class="story-label">Before You Begin · Real-World Scenario</div>
@@ -203,6 +281,7 @@ footer{color:#9a7070;border-top-color:#e8d5cc}
     <p>The post-incident review was humbling. The outbound filter that would have prevented the entire event was a prefix-list permitting only Northfield's own assigned /16 — six lines of configuration that had simply never been written. The team had focused on inbound traffic engineering (getting the LOCAL_PREF right, making ISP-A preferred) while completely neglecting outbound route advertisement policy. The BGP path selection attributes — LOCAL_PREF, Weight, AS-path length — are powerful tools for controlling where your traffic goes, but they are irrelevant if you are leaking routes you should never be advertising. This session covers both dimensions: the path selection decision process and the filtering mechanisms that keep BGP advertisements bounded to what you actually own.</p>
   </div>
 </section>
+</details>
 
 <main>
   <div class="pr-grid">
@@ -217,13 +296,7 @@ footer{color:#9a7070;border-top-color:#e8d5cc}
         <p>Route filtering in BGP is implemented through prefix-lists and route maps on FortiGate. A prefix-list matches on IP prefixes (with exact or range matching using the le/ge keywords) and is applied per-neighbor as an inbound or outbound filter. A route map provides more flexible matching — it can match on prefix-list, AS-path access-list, community, and other attributes — and can both permit/deny and modify attributes such as LOCAL_PREF, MED, or Weight. Applying outbound route maps to constrain what you advertise to each peer is fundamental operational hygiene in any BGP deployment.</p>
       </div>
 
-      <div class="img-placeholder">
-        <img src="images/session-15-bgp-advanced.png" alt="Session 15 concept illustration" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 1rem;object-fit:cover;" onerror="this.style.display='none'">
-
-        <div class="img-icon">&#128444;</div>
-        <div class="img-label"><strong>Image Placeholder — Session 15</strong><br/>BGP path selection decision flowchart</div>
-        <div class="img-prompt">Flat illustration of BGP path selection decision tree: a vertical flowchart with boxes labeled in order: "1. Weight (highest wins)" → "2. LOCAL_PREF (highest)" → "3. Locally originated?" → "4. AS-path length (shortest)" → "5. Origin code" → "6. MED (lowest)" → "7. eBGP over iBGP" → "SELECTED". Two competing paths enter from top, one is highlighted green at bottom as selected. Pastel gold palette, clean flowchart style.</div>
-      </div>
+      <div class="session-img"><img src="images/session-15-bgp-advanced.png" alt="Session 15 concept illustration" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 1rem;object-fit:cover;" onerror="this.style.display='none'"></div>
 
       <div class="section-block">
         <h3>Target Questions</h3>
@@ -243,22 +316,6 @@ footer{color:#9a7070;border-top-color:#e8d5cc}
 
     <!-- RIGHT SIDEBAR -->
     <aside class="sidebar">
-
-      <div class="card">
-        <h4>Session Details</h4>
-        <div class="detail-row"><span class="detail-key">Session</span><span class="detail-val">15 of 20</span></div>
-        <div class="detail-row"><span class="detail-key">Chapter</span><span class="detail-val">05 — Dynamic Routing</span></div>
-        <div class="detail-row"><span class="detail-key">Format</span><span class="detail-val">Socratic (Claude-led)</span></div>
-        <div class="detail-row"><span class="detail-key">Est. time</span><span class="detail-val">25–35 min</span></div>
-        <div class="detail-row"><span class="detail-key">Study guide</span><span class="detail-val"><a href="../study-guides/Chapter 05 - Dynamic Routing Protocols/subtopic-02-configure-bgp.html">Open &#8594;</a></span></div>
-      </div>
-
-      <div class="card">
-        <h4>Prerequisites</h4>
-        <ul class="prereq-list">
-          <li>Session 14 — BGP Fundamentals</li>
-        </ul>
-      </div>
 
       <div class="card">
         <h4>My Questions</h4>
@@ -303,7 +360,7 @@ const PAGE_KEY = 'ef-nse7-pr-s15';
   if(saved)el.value=saved;
   el.addEventListener('input',()=>localStorage.setItem(PAGE_KEY+'-'+id,el.value));
 });
-window.addEventListener('load',()=>{document.body.style.opacity='1';if(sessionStorage.getItem('pt'))sessionStorage.removeItem('pt');});
+window.addEventListener('load',()=>{document.documentElement.style.opacity='1';if(sessionStorage.getItem('pt'))sessionStorage.removeItem('pt');});
 document.querySelectorAll('a[href]').forEach(a=>{
   if(!a.getAttribute('href').startsWith('#'))a.addEventListener('click',()=>sessionStorage.setItem('pt','1'));
 });

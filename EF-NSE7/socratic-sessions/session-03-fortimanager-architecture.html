@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;transition:opacity .3s ease}
 body{font-family:'Inter',sans-serif;background:#0a0101;color:#e8ddd5;line-height:1.6;transition:opacity .25s ease;opacity:1}
 :root{
   --session-color:#c476b8;
@@ -157,6 +157,67 @@ footer{color:#9a7070;border-top-color:#e8d5cc}
 /* Preserve story section darkness */
 .story-section{background:linear-gradient(135deg,#1a0a08,#120606)!important}
 </style>
+<style>
+/* ── Story collapse (always dark) ── */
+.story-collapse{border-top:3px solid var(--session-color)}
+details.story-collapse>summary{list-style:none}
+details.story-collapse>summary::-webkit-details-marker{display:none}
+.story-summary{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:1.1rem 2rem;cursor:pointer;
+  background:linear-gradient(135deg,#1a0a08,#120606);
+  border-bottom:1px solid transparent;
+  gap:1rem;user-select:none
+}
+details.story-collapse[open] .story-summary{border-bottom-color:#2a1515}
+.story-sum-inner{display:flex;flex-direction:column;gap:.3rem}
+.story-sum-eyebrow{font-size:.7rem;text-transform:uppercase;letter-spacing:.14em;color:var(--session-color);font-weight:700}
+.story-sum-title{font-family:'Fraunces',serif;font-size:1.05rem;color:#fff;font-weight:600;line-height:1.3}
+.story-sum-arrow{color:var(--session-color);font-size:.85rem;flex-shrink:0;transition:transform .25s ease}
+details.story-collapse[open] .story-sum-arrow{transform:rotate(180deg)}
+.story-collapse .story-section{border-top:none}
+
+/* ── Header meta band (light) ── */
+.header-meta{margin-top:1.25rem;padding-top:1rem;border-top:1px solid #f0e0d8}
+.meta-chips{display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:.7rem;align-items:center}
+.meta-chip{
+  display:inline-flex;align-items:center;gap:.3rem;
+  padding:.28rem .72rem;border-radius:20px;
+  font-size:.78rem;font-weight:500;
+  background:#fdf5f0;border:1px solid #e8d5cc;
+  color:#7a5050;text-decoration:none;transition:border-color .15s,background .15s
+}
+.meta-chip-key{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:#c09090;margin-right:.1rem}
+a.meta-chip.sg-chip{color:var(--session-color);border-color:rgba(224,112,80,.35);background:rgba(224,112,80,.08)}
+a.meta-chip.sg-chip:hover{background:rgba(224,112,80,.18);text-decoration:none;border-color:var(--session-color)}
+.meta-prereqs{display:flex;align-items:baseline;gap:.55rem;flex-wrap:wrap}
+.meta-prereqs-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;color:#c09090;flex-shrink:0}
+.meta-prereqs-list{display:flex;flex-wrap:wrap;gap:0;list-style:none;padding:0;margin:0}
+.meta-prereqs-list li{font-size:.82rem;color:#8a5050}
+.meta-prereqs-list li:not(:last-child)::after{content:' · ';color:#c09090}
+
+/* ── Sidebar sticky + light ── */
+.sidebar{position:sticky;top:1.5rem;align-self:start}
+.card{background:#fff;border:1px solid #e8d5cc}
+.card h4{color:#9a6060;border-bottom:1px solid #f0e0d8}
+textarea.notes-area{background:#fdf5f0;border:1px solid #e8d5cc;color:#3a2020}
+textarea.notes-area::placeholder{color:#c09090}
+label.notes-label{color:#9a6060}
+
+/* ── Left column light ── */
+.section-block{background:#fff;border:1px solid #e8d5cc}
+.section-block h3{color:#1a0606;border-bottom:1px solid #f0e0d8}
+.section-block p{color:#5a3030}
+.questions-list li{border-bottom:1px solid #f0e0d8;color:#5a3030}
+/* session-07–12 style variants */
+.question-list li{background:#fff;border:1px solid #e8d5cc}
+.question-list li:hover{border-color:rgba(var(--session-rgb,224,112,80),.4)}
+.q-text{color:#5a3030}
+.questions-section h3{color:#1a0606}
+/* image – no placeholder chrome */
+.session-img{margin-bottom:1.5rem}
+.session-img img{max-width:100%;border-radius:8px;display:block;margin:0 auto;object-fit:cover}
+</style>
 </head>
 <body>
 
@@ -175,9 +236,26 @@ footer{color:#9a7070;border-top-color:#e8d5cc}
     </div>
     <h1>FortiManager <em>Architecture</em></h1>
     <p class="tagline">How FortiManager centralizes policy, device configuration, and change management at enterprise scale.</p>
+    <div class="header-meta">
+      <div class="meta-chips">
+        <span class="meta-chip"><span class="meta-chip-key">Session</span>03 of 20</span>
+        <span class="meta-chip"><span class="meta-chip-key">Chapter</span>02 — Central Management</span>
+        <span class="meta-chip"><span class="meta-chip-key">Est. time</span>25–35 min</span>
+        <a href="../study-guides/Chapter 02 - Central Management/subtopic-01-examine-fortimanager-architecture.html" class="meta-chip sg-chip">Study Guide →</a>
+      </div>
+      <div class="meta-prereqs"><span class="meta-prereqs-label">Prerequisites</span><ul class="meta-prereqs-list"><li>Sessions 01–02 covered</li><li>Basic awareness of FortiManager as a platform</li></ul></div>
+    </div>
   </div>
 </header>
 
+<details class="story-collapse">
+  <summary class="story-summary">
+    <div class="story-sum-inner">
+      <span class="story-sum-eyebrow">Real-World Scenario</span>
+      <span class="story-sum-title">The Policy That Went to the Wrong Customer</span>
+    </div>
+    <span class="story-sum-arrow">▼</span>
+  </summary>
 <section class="story-section">
   <div class="story-inner">
     <div class="story-label">Before You Begin · Real-World Scenario</div>
@@ -187,6 +265,7 @@ footer{color:#9a7070;border-top-color:#e8d5cc}
     <p>The post-incident review was technically straightforward but organizationally painful. In a properly configured FortiManager deployment for an MSSP, each customer exists in its own ADOM. Policies, devices, address objects, and administrator access are all scoped to the ADOM — it is structurally impossible to install Customer A's policy to Customer B's devices from within the customer A ADOM. The junior engineer would have seen only the hospital's devices in the policy install wizard. The architecture that prevents this kind of error is not a workaround or a best practice — it is the designed behavior of the ADOM system. This session is about understanding that architecture from first principles.</p>
   </div>
 </section>
+</details>
 
 <main>
   <div class="pr-grid">
@@ -200,13 +279,7 @@ footer{color:#9a7070;border-top-color:#e8d5cc}
         <p>Within an ADOM, the central workflow concept is the policy package. A policy package is a named set of firewall policies stored in FortiManager's database — it is the authoritative source of policy for the devices it is assigned to. Changes are made to the policy package in FortiManager, then explicitly installed to target devices. This separation of "authored in FortiManager" from "running on device" introduces a change workflow with review, approval, and rollback capability. Understanding the relationship between policy packages, device databases, and the install process is foundational to every FortiManager topic on the NSE7 exam.</p>
       </div>
 
-      <div class="img-placeholder">
-        <img src="images/session-03-fortimanager-architecture.png" alt="Session 03 concept illustration" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 1rem;object-fit:cover;" onerror="this.style.display='none'">
-
-        <div class="img-icon">🖼</div>
-        <div class="img-label"><strong>Image Placeholder — Session 03</strong><br/>Flat illustration of FortiManager ADOM architecture</div>
-        <div class="img-prompt">Flat illustration of FortiManager architecture: FortiManager server at top center with three ADOM boxes below (Customer A violet, Customer B blue, Customer C green). Each ADOM contains a policy package icon and device icons. Arrows from policy packages pointing down to FortiGate devices at the bottom. Pastel violet/gray palette, bold outlines.</div>
-      </div>
+      <div class="session-img"><img src="images/session-03-fortimanager-architecture.png" alt="Session 03 concept illustration" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 1rem;object-fit:cover;" onerror="this.style.display='none'"></div>
 
       <div class="section-block">
         <h3>Target Questions</h3>
@@ -225,23 +298,6 @@ footer{color:#9a7070;border-top-color:#e8d5cc}
     </div>
 
     <aside class="sidebar">
-
-      <div class="card">
-        <h4>Session Details</h4>
-        <div class="detail-row"><span class="detail-key">Session</span><span class="detail-val">03 of 20</span></div>
-        <div class="detail-row"><span class="detail-key">Chapter</span><span class="detail-val">02 — Central Management</span></div>
-        <div class="detail-row"><span class="detail-key">Format</span><span class="detail-val">Socratic (Claude-led)</span></div>
-        <div class="detail-row"><span class="detail-key">Est. time</span><span class="detail-val">25–35 min</span></div>
-        <div class="detail-row"><span class="detail-key">Study guide</span><span class="detail-val"><a href="../study-guides/Chapter 02 - Central Management/subtopic-01-examine-fortimanager-architecture.html">Open →</a></span></div>
-      </div>
-
-      <div class="card">
-        <h4>Prerequisites</h4>
-        <ul class="prereq-list">
-          <li>Sessions 01–02 covered</li>
-          <li>Basic awareness of FortiManager as a platform</li>
-        </ul>
-      </div>
 
       <div class="card">
         <h4>My Questions</h4>
@@ -286,7 +342,7 @@ const PAGE_KEY = 'ef-nse7-pr-s03';
   el.addEventListener('input',()=>localStorage.setItem(PAGE_KEY+'-'+id,el.value));
 });
 window.addEventListener('load',()=>{
-  document.body.style.opacity='1';
+  document.documentElement.style.opacity='1';
   if(sessionStorage.getItem('pt'))sessionStorage.removeItem('pt');
 });
 document.querySelectorAll('a[href]').forEach(a=>{

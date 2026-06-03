@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;transition:opacity .3s ease}
 body{font-family:'Inter',sans-serif;background:#0a0101;color:#e8ddd5;line-height:1.6;transition:opacity .25s ease}
 :root{
   --coral:#e07050;--violet:#c476b8;--sky:#5aa2d2;--green:#5ab288;
@@ -344,7 +344,7 @@ IMPORTANT RULES
 <script>
 /* ── Page transitions ── */
 window.addEventListener('load',()=>{
-  document.body.style.opacity='1';
+  document.documentElement.style.opacity='1';
   if(sessionStorage.getItem('pt')){sessionStorage.removeItem('pt');}
 });
 document.querySelectorAll('a[href]').forEach(a=>{
@@ -693,6 +693,18 @@ Do not go beyond today's subtopic unless I explicitly ask. If a tangent comes up
 
 10. FINAL QUIZ
 End with exactly 5 short-answer questions covering today's session. Present all 5 at once. Wait for all of my answers before responding. Then grade each one, explain what was right or wrong, and give me a final score out of 5 with one sentence on what to review.
+
+11. STUDY GUIDE OUTPUT
+After grading the Final Quiz — without waiting for permission — generate a complete, self-contained HTML study guide page for today's session using the template in your project instructions.
+
+Fill every {{PLACEHOLDER}} with content from our actual discussion:
+- PAGE_KEY: ef-nse7-ch${String(s.ch).padStart(2,'0')}-sub[NN]-[slug]
+- Save path: study-guides/Chapter ${String(s.ch).padStart(2,'0')} - ${s.chTitle}/subtopic-[NN]-[slug].html
+- 3–5 sections from today's major concepts, each with 2 Socratic questions + model answers from our discussion
+- Mental notes: 2–3 sentences, lead with a concrete number or key relationship
+- Image prompts: flat pastel illustration — comparisons = two-panel, pipelines = conveyor-belt, architectures = bird's-eye node graph
+- Quick-ref cards: 5–8 key terms, one precise sentence each
+- Output the complete file — no truncation
 
 ━━━ BEGIN ━━━
 Start with the story.`;
