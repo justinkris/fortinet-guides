@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 02 — Central Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Epilogue:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream:      #fff5f5;
+    --cream-dark: #fde8e8;
+    --ink:        #1a0606;
+    --ink-soft:   #4a1212;
+    --ink-muted:  #8a3a3a;
+    --red:        #c0392b;
+    --red-vivid:  #e03e2d;
+    --red-light:  #fef2f2;
+    --red-border: #f8b4b4;
+    --border:     #f0c8c8;
+    --card-bg:    #1a0606;
+    --card-border:#2e0c0c;
+  }
+
+  *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  html.pt-init body { opacity:0; }
+
+  body {
+    font-family: 'Epilogue', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 72px 40px 96px;
+  }
+
+  @keyframes pageEnter {
+    from { opacity: 0; transform: scale(1.03) translateY(-16px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  body { animation: pageEnter 0.5s cubic-bezier(0.15, 0.85, 0.2, 1.08) both; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── BACK LINK ── */
+  .back-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-muted); text-decoration: none;
+    margin-bottom: 48px; align-self: flex-start;
+    padding: 8px 16px; border-radius: 20px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.6);
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+  }
+  .back-link:hover { color: var(--red); border-color: var(--red-border); background: var(--red-light); }
+
+  /* ── CONTENT COLUMN ── */
+  .content { width: 100%; max-width: 860px; display: flex; flex-direction: column; }
+
+  /* ── CHAPTER LABEL ── */
+  .chapter-label {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--ink); color: var(--cream);
+    padding: 6px 16px; border-radius: 20px;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    align-self: flex-start; margin-bottom: 20px;
+  }
+  .label-dot { width: 5px; height: 5px; background: var(--red-vivid); border-radius: 50%; }
+
+  /* ── TITLE + SUBTITLE ── */
+  .chapter-title {
+    font-family: 'Fraunces', serif;
+    font-size: 48px; font-weight: 700; line-height: 1.05;
+    color: var(--ink); letter-spacing: -0.02em; margin-bottom: 8px;
+  }
+  .chapter-title em { font-style: italic; font-weight: 400; color: var(--red); }
+  .chapter-subtitle {
+    font-family: 'Fraunces', serif; font-style: italic; font-weight: 400;
+    font-size: 18px; color: var(--ink-muted); margin-bottom: 36px;
+  }
+
+  /* ── QUICK NAV ── */
+  .quick-nav { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 40px; }
+  .nav-pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 8px 18px; border-radius: 100px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-muted); text-decoration: none;
+    border: 1px solid var(--border); background: rgba(255,255,255,0.6);
+    transition: color 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  }
+  .nav-pill svg { flex-shrink: 0; transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+  .nav-pill:hover {
+    color: var(--red); border-color: var(--red-border);
+    background: var(--red-light);
+    box-shadow: 0 2px 10px rgba(192,57,43,0.12);
+  }
+  .nav-pill:hover svg { transform: translateY(3px); }
+
+  .nav-dropdown-wrap { position: relative; }
+  .nav-dropdown {
+    position: absolute; top: calc(100% + 8px); left: 0;
+    background: #fff; border: 1px solid var(--border);
+    border-radius: 14px; padding: 6px;
+    min-width: 260px;
+    box-shadow: 0 8px 28px rgba(26,6,6,0.10), 0 2px 8px rgba(26,6,6,0.06);
+    opacity: 0; pointer-events: none;
+    transform: translateY(-6px);
+    transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.34,1.56,0.64,1);
+    z-index: 100;
+  }
+  .nav-dropdown::before {
+    content: ''; position: absolute;
+    top: -10px; left: 0; right: 0; height: 10px;
+  }
+  .nav-dropdown-wrap:hover .nav-dropdown { opacity: 1; pointer-events: auto; transform: translateY(0); }
+  .nav-dropdown a {
+    display: flex; align-items: center; gap: 9px;
+    padding: 9px 12px; border-radius: 9px;
+    font-size: 12px; font-weight: 500; color: var(--ink-soft);
+    text-decoration: none; line-height: 1.3;
+    transition: background 0.15s, color 0.15s;
+  }
+  .nav-dropdown a:hover { background: var(--red-light); color: var(--red); }
+  .nav-dropdown a .dd-num {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-muted); flex-shrink: 0; opacity: 0.6;
+    transition: color 0.15s, opacity 0.15s;
+  }
+  .nav-dropdown a:hover .dd-num { color: var(--red); opacity: 1; }
+  .nav-dropdown-divider { height: 1px; background: var(--border); margin: 4px 6px; }
+
+  /* ── HERO IMAGE ── */
+  .hero-image-wrap {
+    width: 100%; border-radius: 24px; overflow: hidden;
+    border: 2px solid var(--card-border);
+    background: var(--card-bg);
+    margin-bottom: 16px;
+  }
+  .hero-image-wrap img { width: 100%; display: block; min-height: 340px; object-fit: cover; }
+  .hero-placeholder {
+    width: 100%; min-height: 340px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px;
+    padding: 48px 40px;
+    border: 2px dashed rgba(192,57,43,0.32); border-radius: 22px;
+    background: repeating-linear-gradient(
+      -45deg, transparent, transparent 10px,
+      rgba(192,57,43,0.025) 10px, rgba(192,57,43,0.025) 20px
+    );
+  }
+  .ph-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: rgba(192,57,43,0.13); border: 1.5px solid rgba(192,57,43,0.28);
+    display: flex; align-items: center; justify-content: center; color: #e87070;
+  }
+  .ph-label { font-family: 'Fraunces', serif; font-style: italic; font-size: 18px; color: rgba(255,255,255,0.45); text-align: center; }
+  .ph-filename { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; color: rgba(192,57,43,0.55); font-family: monospace; }
+
+  /* ── PROMPT BOX ── */
+  .prompt-box {
+    background: var(--card-bg); border: 1.5px solid var(--card-border);
+    border-radius: 14px; padding: 18px 22px; margin-bottom: 56px;
+  }
+  .prompt-header {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+    color: rgba(192,57,43,0.65); margin-bottom: 10px;
+  }
+  .prompt-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--red-vivid); }
+  .prompt-text { font-size: 12.5px; line-height: 1.7; color: rgba(255,255,255,0.5); font-style: italic; }
+  .prompt-text strong { color: rgba(255,255,255,0.78); font-style: normal; font-weight: 600; }
+  .prompt-filename { color: #e87070; font-family: monospace; font-style: normal; font-size: 11px; }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink-muted); margin-bottom: 28px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ── SUBTOPIC GRID ── */
+  .subtopic-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+    margin-bottom: 80px;
+  }
+  .subtopic-card {
+    position: relative;
+    background: var(--card-bg); border: 2px solid var(--card-border);
+    border-radius: 18px; padding: 26px 28px 22px;
+    text-decoration: none; color: inherit;
+    display: flex; flex-direction: column;
+    overflow: hidden; will-change: transform;
+    transition: transform 0.42s cubic-bezier(0.34,1.56,0.64,1),
+      box-shadow 0.35s ease, border-color 0.28s ease, background 0.3s ease;
+  }
+  .subtopic-card::before {
+    content: ''; position: absolute; top: 0; left: -80%; width: 50%; height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.05) 50%, transparent);
+    transform: skewX(-15deg); pointer-events: none; z-index: 1;
+  }
+  @keyframes card-shine { to { left: 160%; } }
+  .subtopic-card:hover::before { animation: card-shine 0.5s ease forwards; }
+  .subtopic-card:hover {
+    transform: translateY(-10px) scale(1.016);
+    background: #260808; border-color: var(--red);
+    box-shadow: 0 24px 50px rgba(192,57,43,0.34), 0 0 0 2px rgba(192,57,43,0.12);
+  }
+  .sub-icon {
+    width: 36px; height: 36px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(192,57,43,0.13); border: 1.5px solid rgba(192,57,43,0.26);
+    color: #e87070; margin-bottom: 16px;
+    transition: background 0.3s, border-color 0.3s, color 0.3s, box-shadow 0.32s,
+      transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .subtopic-card:hover .sub-icon {
+    background: var(--red); border-color: var(--red-vivid); color: #fff;
+    box-shadow: 0 5px 18px rgba(192,57,43,0.48);
+    transform: scale(1.12) rotate(360deg);
+  }
+  .sub-num { font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.24); margin-bottom: 5px; transition: color 0.3s; }
+  .subtopic-card:hover .sub-num { color: rgba(192,57,43,0.6); }
+  .sub-title { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 700; line-height: 1.15; color: #fff; margin-bottom: 10px; transition: color 0.3s; }
+  .subtopic-card:hover .sub-title { color: #ffe0e0; }
+  .sub-desc { font-size: 12.5px; line-height: 1.5; color: rgba(255,255,255,0.4); flex: 1; margin-bottom: 20px; transition: color 0.3s; }
+  .subtopic-card:hover .sub-desc { color: rgba(255,255,255,0.62); }
+  .sub-cta {
+    display: inline-flex; align-items: center; gap: 5px; align-self: flex-start;
+    padding: 6px 14px; border-radius: 100px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    background: rgba(192,57,43,0.16); border: 1.5px solid rgba(192,57,43,0.32); color: #e87070;
+    transition: background 0.3s, border-color 0.3s, color 0.3s, box-shadow 0.3s;
+  }
+  .sub-arrow { display: inline-block; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+  .subtopic-card:hover .sub-cta { background: var(--red); border-color: var(--red-vivid); color: #fff; box-shadow: 0 4px 14px rgba(192,57,43,0.46); }
+  .subtopic-card:hover .sub-arrow { transform: translateX(4px); }
+
+  /* ── OVERVIEW ── */
+  .overview { display: flex; flex-direction: column; gap: 0; margin-bottom: 56px; }
+  .topic-block { padding-bottom: 48px; }
+  .topic-block:last-child { padding-bottom: 0; }
+  .topic-heading {
+    font-family: 'Fraunces', serif;
+    font-size: 26px; font-weight: 700; line-height: 1.15;
+    color: var(--ink); letter-spacing: -0.01em;
+    margin-bottom: 14px; padding-left: 18px;
+    border-left: 3px solid var(--red);
+  }
+  .topic-heading em { font-style: italic; font-weight: 400; color: var(--red); }
+  .topic-body { font-size: 15.5px; line-height: 1.8; color: var(--ink-soft); margin-bottom: 28px; }
+  .topic-body strong { color: var(--ink); font-weight: 600; }
+  .topic-body em { color: var(--red); font-style: italic; }
+  .callout {
+    border-left: 3px solid var(--red-border);
+    background: var(--red-light); border-radius: 0 12px 12px 0;
+    padding: 14px 20px; margin: 20px 0 28px;
+    font-size: 14px; line-height: 1.65; color: var(--ink-soft);
+  }
+  .callout strong { color: var(--ink); }
+  .topic-divider { height: 1px; background: var(--border); margin: 0 0 48px; }
+
+  /* ── INLINE IMAGE WRAP ── */
+  .inline-img-wrap { margin-bottom: 12px; }
+  .inline-image {
+    width: 100%; display: block; border-radius: 18px;
+    border: 2px solid var(--card-border);
+    background: var(--card-bg); object-fit: cover;
+  }
+  .inline-placeholder {
+    width: 100%; border-radius: 18px;
+    border: 2px dashed var(--red-border);
+    background: var(--red-light);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 12px;
+    padding: 36px 32px; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .inline-placeholder::before {
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(-45deg, transparent, transparent 12px, rgba(192,57,43,0.04) 12px, rgba(192,57,43,0.04) 24px);
+    pointer-events: none;
+  }
+  .inline-ph-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: rgba(192,57,43,0.12); border: 1.5px solid rgba(192,57,43,0.26);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--red); position: relative; z-index: 1;
+  }
+  .inline-ph-label { font-family: 'Fraunces', serif; font-style: italic; font-size: 16px; color: var(--ink-muted); position: relative; z-index: 1; }
+  .inline-ph-file { font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; color: var(--red); font-family: monospace; position: relative; z-index: 1; }
+  .inline-prompt {
+    background: var(--card-bg); border: 1.5px solid var(--card-border);
+    border-radius: 0 0 14px 14px;
+    border-top: none; padding: 16px 22px; margin-bottom: 28px;
+  }
+  .inline-prompt .prompt-header { margin-bottom: 8px; }
+  .inline-prompt .prompt-text { font-size: 12px; }
+
+  /* ── KEY CONCEPTS ── */
+  .concepts-wrap { margin-top: 8px; }
+  .concepts-heading { font-size: 10px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 12px; }
+  .concepts { display: flex; flex-wrap: wrap; gap: 8px; }
+  .concept-pill {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase;
+    padding: 6px 14px; border-radius: 20px;
+    background: var(--red-light); border: 1px solid var(--red-border); color: var(--red);
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .concept-pill:hover { background: #fde0e0; border-color: #f0a0a0; }
+
+  /* ── BACK TO TOP ── */
+  .back-to-top {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 10px 22px; border-radius: 100px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-muted); text-decoration: none;
+    border: 1px solid var(--border); background: rgba(255,255,255,0.6);
+    transition: color 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    margin-top: 56px; margin-bottom: 32px;
+  }
+  .back-to-top svg { transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+  .back-to-top:hover {
+    color: var(--red); border-color: var(--red-border);
+    background: var(--red-light);
+    box-shadow: 0 4px 14px rgba(192,57,43,0.14);
+    transform: translateY(-2px);
+  }
+  .back-to-top:hover svg { transform: translateY(-3px); }
+
+  /* ── FOOTER ── */
+  footer {
+    font-size: 11px;
+    letter-spacing: 0.12em; color: var(--ink-muted); text-transform: uppercase;
+    margin-bottom: 60px;
+  }
+  footer span { color: var(--red); }
+
+  /* ── ENTRANCE ANIMATIONS ── */
+  .hero-image-wrap            { animation: fadeUp 0.48s 0.06s both; }
+  .prompt-box                 { animation: fadeUp 0.48s 0.10s both; }
+  .overview                   { animation: fadeUp 0.48s 0.14s both; }
+  .subtopic-card:nth-child(1) { animation: fadeUp 0.44s 0.20s both; }
+  .subtopic-card:nth-child(2) { animation: fadeUp 0.44s 0.26s both; }
+  .subtopic-card:nth-child(3) { animation: fadeUp 0.44s 0.32s both; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 720px) {
+    body { padding: 56px 20px 72px; }
+    .chapter-title { font-size: 34px; }
+    .subtopic-grid { grid-template-columns: 1fr; }
+    .topic-heading { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+  <a class="back-link" href="../nse7-ef-study-guide-hub.html" id="top">← NSE7 Study Hub</a>
+
+  <div class="content">
+
+    <!-- ── HEADER ── -->
+    <div class="chapter-label">
+      <span class="label-dot"></span>
+      EF-NSE7 &nbsp;·&nbsp; Chapter 02
+    </div>
+    <h1 class="chapter-title">Central <em>Management</em></h1>
+    <p class="chapter-subtitle">Centralized policy, device management, and automation using FortiManager</p>
+
+    <!-- ── QUICK NAV ── -->
+    <nav class="quick-nav">
+      <a class="nav-pill" href="#subtopics">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        Subtopics
+      </a>
+      <div class="nav-dropdown-wrap">
+        <a class="nav-pill" href="#overview">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          Chapter Overview
+        </a>
+        <div class="nav-dropdown">
+          <a href="#topic-1"><span class="dd-num">01</span> FortiManager Architecture</a>
+          <div class="nav-dropdown-divider"></div>
+          <a href="#topic-2"><span class="dd-num">02</span> Dynamic Objects &amp; Per-Device Mapping</a>
+          <div class="nav-dropdown-divider"></div>
+          <a href="#topic-3"><span class="dd-num">03</span> Scripts, Automation &amp; Deployment</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ── HERO IMAGE ── -->
+    <div class="hero-image-wrap">
+      <img
+        id="heroImg"
+        src="images/chapter-02-hero.png"
+        alt="Central Management overview illustration"
+      />
+      <div class="hero-placeholder" style="display:none;">
+        <div class="ph-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+        </div>
+        <div class="ph-label">Hero image not generated yet</div>
+        <div class="ph-filename">images/chapter-02-hero.png</div>
+      </div>
+    </div>
+
+    <!-- Hero prompt -->
+    <div class="prompt-box">
+      <div class="prompt-header">
+        <span class="prompt-dot"></span>
+        Image Generation Prompt &nbsp;→&nbsp; <span class="prompt-filename">images/chapter-02-hero.png</span>
+      </div>
+      <p class="prompt-text">
+        Detailed cartoon flat illustration of a <strong>FortiManager central management control room</strong>. Light cream background. At the center, a large cartoon server tower labeled <strong>'FortiManager'</strong> with a glowing screen showing a dashboard with charts and device counts. From it, colorful dashed lines radiate outward to four cartoon FortiGate firewall devices arranged in a semicircle, each a small red box with blinking LEDs — labeled <strong>'Branch 1'</strong>, <strong>'Branch 2'</strong>, <strong>'Data Center'</strong>, <strong>'HQ'</strong>. Above the FortiManager, a transparent layered stack shows two floating trays labeled <strong>'Device Layer'</strong> (soft mint green) and <strong>'Policy Layer'</strong> (pale lavender) with tiny icons inside — a gear for device, a shield for policy. A small cartoon sysadmin character in a headset sits at a control desk to the left, smiling and pointing at the dashboard. In the top corner, a small globe labeled <strong>'Global ADOM'</strong> with policy arrows flowing downward into smaller ADOM bubbles labeled <strong>'ADOM root'</strong> and <strong>'ADOM Site1'</strong>. <strong>Fully detailed cartoon style, soft flat fills, light pastel palette (mint green, pale lavender, soft coral, baby blue, warm cream), clean bold outlines, white background.</strong> Labels in a friendly rounded sans-serif.
+      </p>
+    </div>
+
+    <!-- ── SUBTOPIC BUTTONS ── -->
+    <div class="section-label" id="subtopics">Subtopics</div>
+    <div class="subtopic-grid">
+
+      <a class="subtopic-card" href="subtopic-01-examine-fortimanager-architecture.html">
+        <div class="sub-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+        </div>
+        <div class="sub-num">Subtopic 01</div>
+        <div class="sub-title">Examine FortiManager Architecture</div>
+        <div class="sub-desc">ADOMs, device and policy layers, global database, and the operations that sync FortiManager with FortiGate devices.</div>
+        <div class="sub-cta">Study <span class="sub-arrow">→</span></div>
+      </a>
+
+      <a class="subtopic-card" href="subtopic-02-explore-dynamic-objects.html">
+        <div class="sub-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+            <path d="M4.93 4.93a10 10 0 0 0 0 14.14"/>
+          </svg>
+        </div>
+        <div class="sub-num">Subtopic 02</div>
+        <div class="sub-title">Explore Dynamic Objects on FortiManager</div>
+        <div class="sub-desc">Normalized interfaces, per-device and per-platform mapping, dynamic configurations, and metadata variables.</div>
+        <div class="sub-cta">Study <span class="sub-arrow">→</span></div>
+      </a>
+
+      <a class="subtopic-card" href="subtopic-03-use-scripts.html">
+        <div class="sub-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6"/>
+            <polyline points="8 6 2 12 8 18"/>
+          </svg>
+        </div>
+        <div class="sub-num">Subtopic 03</div>
+        <div class="sub-title">Use Scripts on FortiManager</div>
+        <div class="sub-desc">Running CLI and Tcl scripts against FortiGate devices, device databases, and policy packages for bulk configuration at scale.</div>
+        <div class="sub-cta">Study <span class="sub-arrow">→</span></div>
+      </a>
+
+    </div>
+
+    <!-- ── OVERVIEW ── -->
+    <div class="section-label" id="overview">Chapter Overview</div>
+    <div class="overview">
+
+      <!-- Topic 1 -->
+      <div class="topic-block">
+        <h2 class="topic-heading" id="topic-1">FortiManager <em>Architecture</em></h2>
+        <p class="topic-body">
+          Managing dozens of FortiGate devices individually — each with its own policy set, firmware version, and configuration — is unsustainable at enterprise scale. <strong>FortiManager</strong> solves this with a single pane of glass: a centralized management platform where one administrator can push policies, retrieve configurations, and track revision history across every managed device. It structures everything using <strong>Administrative Domains (ADOMs)</strong>, which are virtual instances that isolate groups of devices. Each ADOM maintains two internal databases: the <strong>device layer</strong> for per-device settings (network, VPN, system), and the <strong>policy layer</strong> for firewall policies and shared objects.
+        </p>
+        <p class="topic-body">
+          Above all local ADOMs sits the <strong>Global ADOM</strong>, which holds a global database of objects and policies prefixed with <em>"g"</em> — reserved to prevent naming conflicts. A global ADOM at version 7.6 is compatible with local ADOMs at 7.6, 7.4, and 7.2. Key operations connect FortiManager to FortiGate: <strong>Retrieve</strong> captures the current firewall config as a new revision; <strong>Auto-retrieve</strong> fires automatically when a device is added; <strong>Install device settings</strong> pushes the device layer to FortiGate with a preview; <strong>Quick install</strong> does the same without a preview, ideal for zero-touch provisioning.
+        </p>
+
+        <div class="inline-img-wrap">
+          <img
+            class="inline-image"
+            src="images/chapter-02-architecture.png"
+            alt="FortiManager ADOM architecture with device and policy layers"
+          />
+          <div class="inline-placeholder" style="display:none;">
+            <div class="inline-ph-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+            </div>
+            <div class="inline-ph-label">Image not generated yet</div>
+            <div class="inline-ph-file">images/chapter-02-architecture.png</div>
+          </div>
+          <div class="inline-prompt">
+            <div class="prompt-header">
+              <span class="prompt-dot"></span>
+              Image Generation Prompt &nbsp;→&nbsp; <span class="prompt-filename">images/chapter-02-architecture.png</span>
+            </div>
+            <p class="prompt-text">
+              Detailed cartoon flat illustration of <strong>FortiManager's ADOM architecture</strong>. Light cream background. A tall cartoon building cross-section labeled <strong>'FortiManager'</strong> shows three floors. The top floor (pale gold) is labeled <strong>'Global ADOM'</strong> — a cartoon librarian character organizes shared policy folders with a big 'g' prefix stamp. The middle floor (soft lavender) is labeled <strong>'ADOM root 7.6'</strong> — split into two rooms: a <strong>'Device Layer'</strong> room (mint green) with gear icons and firewall device cards, and a <strong>'Policy Layer'</strong> room (pale blue) with stacked policy package files. The bottom floor (soft peach) is labeled <strong>'ADOM Site1 7.4'</strong> — same split layout, smaller scale. Outside the building, three small cartoon FortiGate boxes on the left labeled <strong>'FGT1'</strong>, <strong>'FGT2'</strong>, <strong>'FGTn'</strong> — connected by dashed arrows showing <strong>Retrieve ↑</strong> and <strong>Install ↓</strong> flows. A small <strong>FortiGuard</strong> cloud icon sits top-right with a lightning bolt feeding all floors. <strong>Fully detailed cartoon style, soft flat fills, light pastel palette (lavender, mint, peach, pale gold, baby blue), clean bold outlines, white background.</strong> Labels in a friendly rounded sans-serif.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="topic-divider"></div>
+
+      <!-- Topic 2 -->
+      <div class="topic-block">
+        <h2 class="topic-heading" id="topic-2">Dynamic Objects &amp; <em>Per-Device Mapping</em></h2>
+        <p class="topic-body">
+          A central management challenge: two FortiGate devices at different branch offices may use different physical interfaces for the same logical role. <strong>Normalized interfaces</strong> solve this by creating abstract interface names on FortiManager — like <em>LAN</em> or <em>WAN</em> — that map to the correct physical port on each device. Mapping can be <strong>per-platform</strong> (same port across all devices of the same model) or <strong>per-device</strong> (individual mapping per firewall). Interface names are <strong>case-sensitive</strong> on FortiManager — <em>LAN</em> and <em>lan</em> are treated as different objects.
+        </p>
+        <p class="topic-body">
+          Beyond interfaces, <strong>dynamic object configurations</strong> extend per-device mapping to firewall addresses, user/authentication objects, and metadata variables. For example, the same address object named <em>LAN</em> can resolve to <em>172.16.0.0/24</em> at Branch1 and <em>192.168.0.0/24</em> at Branch2. Not all objects support per-device mapping — <strong>security profiles</strong> (web filter, antivirus, etc.) do not, so if different settings are needed per device, unique profile names are required. <strong>Metadata variables</strong> act as placeholders (indicated by a magnifying glass with <em>$</em> in the GUI) that resolve to per-device values at install time.
+        </p>
+
+        <div class="callout">
+          <strong>Key mental model:</strong> Think of per-device mapping as a mail merge — the policy is the template, and each FortiGate device gets the template filled in with its own specific values at deployment time. The policy stays one object; the resolved value is different per recipient.
+        </div>
+
+        <div class="inline-img-wrap">
+          <img
+            class="inline-image"
+            src="images/chapter-02-dynamic-objects.png"
+            alt="Per-device mapping showing different branch subnets resolving from the same object"
+          />
+          <div class="inline-placeholder" style="display:none;">
+            <div class="inline-ph-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+            </div>
+            <div class="inline-ph-label">Image not generated yet</div>
+            <div class="inline-ph-file">images/chapter-02-dynamic-objects.png</div>
+          </div>
+          <div class="inline-prompt">
+            <div class="prompt-header">
+              <span class="prompt-dot"></span>
+              Image Generation Prompt &nbsp;→&nbsp; <span class="prompt-filename">images/chapter-02-dynamic-objects.png</span>
+            </div>
+            <p class="prompt-text">
+              Detailed cartoon flat illustration of <strong>per-device mapping as a mail merge process</strong>. Light cream background. On the left, a cartoon printing press labeled <strong>'FortiManager Policy'</strong> (soft lavender) prints identical template sheets — each sheet has a blank field labeled <em>LAN = $subnet</em>. The press feeds into a cartoon mail sorter in the center. From the sorter, three personalized envelopes slide out toward three small cartoon FortiGate boxes on the right: <strong>Branch1</strong> (soft blue, envelope reads <em>LAN = 172.16.0.0/24</em>), <strong>Branch2</strong> (soft peach, envelope reads <em>LAN = 192.168.0.0/24</em>), <strong>HQ</strong> (mint green, envelope reads <em>LAN = 10.0.0.0/24</em>). Above the sorter, a small cartoon magnifying glass with a dollar sign labeled <strong>'Metadata Variable'</strong>. Below, a red ✕ badge on a web filter icon labeled <em>'No per-device mapping'</em> next to a note saying <em>'Unique names required'</em>. <strong>Fully detailed cartoon style, soft flat fills, light pastel palette (lavender, soft peach, mint, baby blue, warm cream), clean bold outlines, white background.</strong> Friendly rounded sans-serif labels.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="topic-divider"></div>
+
+      <!-- Topic 3 -->
+      <div class="topic-block">
+        <h2 class="topic-heading" id="topic-3">Scripts, Automation &amp; <em>Deployment</em></h2>
+        <p class="topic-body">
+          When you need to create dozens of objects, run repetitive CLI commands, or make changes that the GUI doesn't expose cleanly, <strong>FortiManager scripts</strong> are the answer. Scripts can be written in <strong>CLI</strong> (standard FortiOS commands) or <strong>Tcl</strong> and can be run against three targets: directly on a FortiGate device, against the device database, or against a policy package. Running against the device layer or policy layer keeps FortiManager in sync without bypassing its management model.
+        </p>
+        <p class="topic-body">
+          Policy deployment is a deliberate multi-step workflow, not an instant push. <strong>Install policy package</strong> transfers the policy layer to both the device layer and FortiGate, providing a wizard and installation preview with a cancel option. <strong>Reinstall policy</strong> bypasses the wizard when devices are already selected, offering a preview but applying policy package settings <em>and</em> any modifications directly. The <strong>global ADOM</strong> distributes policies to local ADOMs via two methods: <strong>Automatically Install</strong> (direct, no preview) or <strong>Assign</strong> (marks the ADOM as modified, requiring a manual install step). Both methods ensure that the same global policy can reach every ADOM in the organization.
+        </p>
+
+        <div class="concepts-wrap">
+          <div class="concepts-heading">Key Concepts</div>
+          <div class="concepts">
+            <span class="concept-pill">FortiManager</span>
+            <span class="concept-pill">ADOM</span>
+            <span class="concept-pill">Global ADOM</span>
+            <span class="concept-pill">Device Layer</span>
+            <span class="concept-pill">Policy Layer</span>
+            <span class="concept-pill">Normalized Interfaces</span>
+            <span class="concept-pill">Per-Device Mapping</span>
+            <span class="concept-pill">Metadata Variables</span>
+            <span class="concept-pill">Provisioning Templates</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <a class="back-to-top" href="#top">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+    Back to Top
+  </a>
+
+  <footer>
+    EF-NSE7<span>.</span> Chapter 02<span>.</span> Central Management
+  </footer>
+
+  <script>
+    // Page transitions
+    if (sessionStorage.getItem('pt')) {
+      document.body.style.opacity = '1';
+      sessionStorage.removeItem('pt');
+    }
+    document.querySelectorAll('.subtopic-card, .back-link').forEach(el => {
+      el.addEventListener('click', () => sessionStorage.setItem('pt', '1'));
+    });
+
+    // Wire hero image
+    (function () {
+      var img    = document.getElementById('heroImg');
+      var ph     = document.querySelector('.hero-placeholder');
+      var prompt = document.querySelector('.prompt-box');
+      if (!img) return;
+      function onLoad()  { if (ph) ph.style.display = 'none'; if (prompt) prompt.style.display = 'none'; }
+      function onError() { img.style.display = 'none'; if (ph) ph.style.display = 'flex'; }
+      img.addEventListener('load',  onLoad);
+      img.addEventListener('error', onError);
+      if (img.complete) { img.naturalWidth > 0 ? onLoad() : onError(); }
+    }());
+
+    // Wire inline images
+    document.querySelectorAll('.inline-img-wrap').forEach(function (wrap) {
+      var img    = wrap.querySelector('.inline-image');
+      var ph     = wrap.querySelector('.inline-placeholder');
+      var prompt = wrap.querySelector('.inline-prompt');
+      if (!img) return;
+      function onLoad() {
+        if (ph)     ph.style.display     = 'none';
+        if (prompt) prompt.style.display = 'none';
+      }
+      function onError() {
+        img.style.display = 'none';
+        if (ph) ph.style.display = 'flex';
+        if (prompt) {
+          prompt.style.display      = 'block';
+          prompt.style.borderRadius = '14px';
+          prompt.style.borderTop    = '1.5px solid var(--card-border)';
+          prompt.style.marginTop    = '8px';
+        }
+      }
+      img.addEventListener('load',  onLoad);
+      img.addEventListener('error', onError);
+      if (img.complete) { img.naturalWidth > 0 ? onLoad() : onError(); }
+    });
+  </script>
+
+</body>
+</html>

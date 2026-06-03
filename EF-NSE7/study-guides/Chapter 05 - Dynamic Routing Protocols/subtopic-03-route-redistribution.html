@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Route Redistribution &amp; BGP Convergence — EF-NSE7 Ch05 Sub03</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff5f5;--surface:#ffffff;--surface-2:#fef2f2;--border:#f0c8c8;--border-dim:#fde8e8;
+  --text:#1a0606;--text-soft:#4a1212;--text-muted:#8a3a3a;
+  --red:#c0392b;--red-vivid:#e03e2d;--red-glow:rgba(192,57,43,0.07);--red-dim:#f8b4b4;
+  --red-deep:#7f1d1d;--red-light:#fef2f2;--red-border:#f8b4b4;
+  --green:#1a7c4a;--green-light:#d4f0e0;--green-border:#a7e0c0;
+  --amber:#b45309;--amber-light:#fef9c3;--amber-border:#fde68a;
+}
+html{scroll-behavior:smooth;}
+html.pt-init body{opacity:0;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+header{padding:48px 60px 36px;background:#1a0606;display:flex;align-items:flex-end;gap:32px;}
+.header-left{flex:1;}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);letter-spacing:0.08em;margin-bottom:12px;flex-wrap:wrap;}
+.breadcrumb a{color:#e87070;text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.breadcrumb-sep{color:rgba(232,112,112,0.35);}
+.header-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(232,112,112,0.1);border:1px solid rgba(232,112,112,0.25);padding:5px 14px;border-radius:20px;font-size:11px;color:#e87070;letter-spacing:0.08em;margin-bottom:14px;}
+.dot-live{width:6px;height:6px;background:#e87070;border-radius:50%;display:inline-block;animation:blink 2.4s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+header h1{font-family:'Fraunces',serif;font-size:44px;font-weight:700;line-height:1.0;color:#fff;margin-bottom:10px;}
+header h1 em{font-style:italic;font-weight:400;color:#e87070;}
+header p{font-size:13px;color:rgba(255,255,255,0.42);margin-top:10px;line-height:1.7;}
+.motivation-banner{padding:20px 60px;min-height:84px;display:flex;flex-direction:column;justify-content:center;border-bottom:1px solid var(--border);background:var(--surface);}
+.motivation-text{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--text);}
+.motivation-text em{font-style:italic;color:var(--red);}
+.motivation-sub{font-size:12px;color:var(--text-muted);line-height:1.7;margin-top:4px;}
+.top-panels{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+.top-panels .qpanel{border-bottom:none;border-right:1px solid var(--border);}
+.top-panels .qpanel-header{padding-left:32px;padding-right:32px;}
+.top-panels .qpanel-body{padding-left:32px;padding-right:32px;}
+.qpanel{background:var(--surface);}
+.qpanel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 20px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.qpanel-header:hover,.qpanel-header.open{background:var(--surface-2);}
+.qpanel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.qpanel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.qpanel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.qpanel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.qpanel-body{display:none;padding:0 20px 22px;}
+.qpanel-body.open{display:block;}
+.notes-panel{background:var(--surface);}
+.notes-panel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 32px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.notes-panel-header:hover,.notes-panel-header.open{background:var(--surface-2);}
+.notes-panel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.notes-panel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.notes-panel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.notes-panel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.notes-panel-body{display:none;padding:0 32px 22px;}
+.notes-panel-body.open{display:block;}
+.q-group{margin-bottom:16px;}
+.q-group-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+.q-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-dim);}
+.q-item:last-child{border-bottom:none;}
+.q-num{font-size:10px;font-weight:700;color:var(--red);min-width:16px;margin-top:2px;}
+.q-text{font-size:12px;color:var(--text-soft);line-height:1.5;flex:1;}
+.q-del{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 4px;margin-top:1px;}
+.q-del:hover{color:var(--red);}
+.no-questions{font-size:12px;color:var(--text-muted);padding:8px 0;}
+.btn-add-q{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-q:hover{opacity:0.85;}
+.section-nav{position:sticky;top:0;z-index:90;display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);padding:0 32px;overflow-x:auto;}
+.nav-tab{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:12px 18px;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--red);border-bottom-color:var(--red);}
+main{display:grid;grid-template-columns:1fr 320px;gap:0;align-items:start;max-width:1200px;margin:0 auto;padding:0;}
+.main-content{padding:36px 40px 60px 60px;}
+.sidebar{padding:32px 24px 60px 20px;position:sticky;top:57px;max-height:calc(100vh - 57px);overflow-y:auto;}
+.section-block{margin-bottom:48px;}
+.section-label{font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.section-block h2{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1.15;margin-bottom:16px;padding-left:16px;border-left:3px solid var(--red);}
+.section-block h2 em{font-style:italic;font-weight:400;color:var(--red);}
+.section-block p{font-size:14px;line-height:1.8;color:var(--text-soft);margin-bottom:14px;}
+.section-block p strong{color:var(--text);font-weight:600;}
+.section-block p em{color:var(--red);font-style:italic;}
+.section-block ul,.section-block ol{padding-left:22px;margin-bottom:14px;}
+.section-block li{font-size:14px;line-height:1.75;color:var(--text-soft);margin-bottom:4px;}
+.section-block li strong{color:var(--text);font-weight:600;}
+.callout{border-left:3px solid var(--red-border);background:var(--red-light);border-radius:0 10px 10px 0;padding:12px 18px;margin:16px 0;font-size:13.5px;line-height:1.65;color:var(--text-soft);}
+.callout strong{color:var(--text);}
+.callout-green{border-left-color:var(--green-border);background:var(--green-light);}
+.callout-amber{border-left-color:var(--amber-border);background:var(--amber-light);}
+.section-img-wrap{margin:0 0 20px;display:flex;flex-direction:column;align-items:center;}
+.section-img{width:260px;max-width:100%;border-radius:12px;cursor:zoom-in;transition:width 0.3s ease;border:1px solid var(--border);display:block;}
+.section-img.si-expanded{width:100%;cursor:zoom-out;border-radius:16px;}
+.si-placeholder{display:none;width:260px;max-width:100%;border:2px dashed var(--border);border-radius:12px;background:var(--surface-2);padding:14px 16px;flex-direction:column;align-items:flex-start;gap:8px;}
+.si-placeholder.si-show{display:flex;}
+.si-filename{font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+.code-block{background:#1a0606;border-radius:12px;padding:20px 24px;margin:16px 0;overflow-x:auto;}
+.code-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#e87070;margin-bottom:10px;}
+.code-block pre{margin:0;}
+.code-block code{font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:rgba(255,255,255,0.82);}
+.socratic-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:16px;border-top:3px solid var(--red);}
+.socratic-header{display:flex;align-items:center;gap:8px;margin-bottom:0;cursor:pointer;user-select:none;}
+.socratic-header::after{content:'▸ Expand';margin-left:auto;font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'Inter',sans-serif;}
+.socratic-block.soc-open .socratic-header{margin-bottom:10px;}
+.socratic-block.soc-open .socratic-header::after{content:'▾ Collapse';}
+.socratic-block:not(.soc-open) .socratic-insight,
+.socratic-block:not(.soc-open) .socratic-questions,
+.socratic-block:not(.soc-open) .answer-area{display:none;}
+.socratic-icon{font-size:17px;flex-shrink:0;}
+.socratic-label{font-size:9px;font-weight:700;letter-spacing:0.18em;color:var(--text-muted);}
+.socratic-insight{font-size:13px;color:var(--text-soft);line-height:1.75;margin-bottom:12px;border-left:3px solid var(--border);padding-left:12px;font-style:italic;}
+.socratic-questions{list-style:none;padding:0;margin:0;}
+.socratic-questions li{font-size:12.5px;color:var(--text);padding:7px 0 7px 22px;position:relative;border-bottom:1px solid var(--border-dim);line-height:1.6;}
+.socratic-questions li:last-child{border-bottom:none;}
+.socratic-questions li::before{content:'?';position:absolute;left:0;font-weight:700;font-size:12px;top:8px;color:var(--red);}
+.answer-area{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.answer-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.answer-textarea:focus{border-color:var(--text);}
+.answer-textarea:disabled{opacity:0.7;background:var(--surface-2);cursor:default;}
+.answer-buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.btn-add-answer{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-answer:hover:not(:disabled){opacity:0.85;}
+.btn-add-answer:disabled{opacity:0.5;cursor:default;}
+.btn-see-answer{background:var(--surface);color:var(--text-muted);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-see-answer:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-see-answer:not(:disabled){color:var(--red);border-color:var(--red);}
+.btn-see-answer:hover:not(:disabled){background:var(--red-glow);}
+.model-answers{margin-top:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.model-answer-item{padding:10px 0;border-bottom:1px solid var(--border-dim);}
+.model-answer-item:first-child{padding-top:0;}
+.model-answer-item:last-child{border-bottom:none;padding-bottom:0;}
+.model-answer-q{font-size:9px;font-weight:700;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:4px;}
+.model-answer-text{font-size:13px;color:var(--text-soft);line-height:1.7;}
+.mental-note-block{border-radius:10px;padding:12px 16px;margin:16px 0;display:flex;gap:10px;align-items:flex-start;background:rgba(192,57,43,0.07);border:1px solid var(--border);}
+.mental-note-block-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.mental-note-block-inner{flex:1;}
+.mental-note-block-label{font-size:9px;font-weight:700;letter-spacing:0.16em;color:var(--red);margin-bottom:3px;}
+.mental-note-block-text{font-size:13px;font-weight:600;line-height:1.55;color:var(--text);}
+.analogy-box{background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #b45309;border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0;}
+.analogy-label{display:flex;align-items:center;gap:6px;user-select:none;cursor:pointer;font-size:9px;font-weight:700;letter-spacing:0.16em;color:#b45309;margin-bottom:4px;}
+.analogy-label::after{content:'▾  Reveal illustration';margin-left:auto;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:none;opacity:0.75;}
+.analogy-label:hover::after{opacity:1;}
+.analogy-box.expanded > .analogy-label::after{content:'▴  Hide illustration';}
+.analogy-text{font-size:13px;color:#78350f;line-height:1.65;font-style:italic;}
+.analogy-box > .analogy-img{display:none;}
+.analogy-box.expanded > .analogy-img{display:block;}
+.analogy-img img{max-width:360px;width:100%;cursor:zoom-in;transition:max-width 0.25s ease;border-radius:8px;margin-top:10px;}
+.analogy-img img.zoomed{max-width:100%;cursor:zoom-out;}
+.prompt-toggle{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:10px;font-weight:600;letter-spacing:0.08em;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;text-transform:uppercase;}
+.prompt-toggle:hover{color:var(--text);border-color:var(--text);}
+.prompt-content{margin-top:10px;padding:10px 14px;background:rgba(0,0,0,0.04);border-radius:8px;font-size:11.5px;color:var(--text-muted);font-style:italic;line-height:1.65;text-align:left;}
+.prompt-content[hidden]{display:none;}
+.lesson-tools{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:40px;}
+.lesson-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.tool-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.tool-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.tool-textarea:focus{border-color:var(--red);}
+.tool-row{margin-top:8px;display:flex;gap:8px;}
+.sidebar-section{margin-bottom:28px;}
+.sidebar-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;}
+.ssnav{display:flex;flex-direction:column;gap:2px;margin-top:4px;}
+.ssnav-item{font-size:12px;color:var(--text-soft);padding:6px 10px;border-radius:6px;text-decoration:none;line-height:1.4;display:block;transition:background 0.15s,color 0.15s;}
+.ssnav-item:hover,.ssnav-item.active{background:var(--red-glow);color:var(--red);}
+.hub-link{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);margin-bottom:16px;transition:color 0.15s,border-color 0.15s,background 0.15s;}
+.hub-link:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);}
+.check-item{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;}
+.check-input{accent-color:var(--red);width:14px;height:14px;flex-shrink:0;cursor:pointer;}
+.check-label{font-size:12px;color:var(--text-soft);line-height:1.4;}
+.check-item:has(.check-input:checked) .check-label{color:var(--text-muted);text-decoration:line-through;}
+.quick-ref{background:#1a0606;border-radius:10px;padding:12px 16px;margin-bottom:8px;}
+.quick-ref-term{font-size:10px;font-weight:700;letter-spacing:0.12em;color:#e87070;margin-bottom:3px;text-transform:uppercase;}
+.quick-ref-def{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;}
+.page-nav{display:flex;border-top:2px solid var(--border);background:var(--surface);}
+.page-nav-btn{flex:1;display:flex;flex-direction:column;gap:4px;padding:16px 28px;text-decoration:none;transition:background 0.15s;cursor:pointer;}
+.page-nav-btn:hover:not(.page-nav-disabled){background:var(--surface-2);}
+.page-nav-prev{border-right:1px solid var(--border);}
+.page-nav-next{text-align:right;}
+.page-nav-disabled{opacity:0.3;pointer-events:none;}
+.page-nav-label{font-size:10px;font-weight:600;letter-spacing:0.14em;color:var(--text-muted);display:block;}
+.page-nav-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;color:var(--red);display:block;}
+footer{font-size:11px;letter-spacing:0.12em;color:var(--text-muted);text-transform:uppercase;padding:20px 60px;border-top:1px solid var(--border);}
+footer span{color:var(--red);}
+.img-caption{font-size:11px;color:var(--text-muted);text-align:center;margin-top:6px;line-height:1.4;font-style:italic;}
+.analogy-summary{font-style:normal;font-weight:600;color:#92400e;margin-bottom:10px;}
+.analogy-text ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;}
+.analogy-text li{padding-left:18px;position:relative;}
+.analogy-text li::before{content:'•';position:absolute;left:0;font-weight:700;color:#b45309;}
+.data-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;}
+.data-table th{background:#1a0606;color:#e87070;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:10px 14px;text-align:left;}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-soft);line-height:1.55;vertical-align:top;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:nth-child(even) td{background:var(--surface-2);}
+.data-table td strong{color:var(--text);font-weight:600;}
+@media(max-width:1000px){main{grid-template-columns:1fr;}.sidebar{position:static;max-height:none;padding:0 40px 40px;}}
+@media(max-width:720px){header{padding:28px 24px 24px;}header h1{font-size:32px;}.motivation-banner{padding:16px 24px;}.main-content{padding:24px 24px 40px;}.section-nav{padding:0 16px;}.top-panels{grid-template-columns:1fr;}.top-panels .qpanel{border-right:none;border-bottom:1px solid var(--border);}.lesson-tools-grid{grid-template-columns:1fr;}footer{padding:16px 24px;}}
+</style>
+</head>
+<body>
+
+<div id="pt-overlay"></div>
+
+<header>
+  <div class="header-left">
+    <div class="breadcrumb">
+      <a href="../nse7-ef-study-guide-hub.html">EF-NSE7</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="index.html">Chapter 05 — Dynamic Routing Protocols</a>
+      <span class="breadcrumb-sep">›</span>
+      Subtopic 03
+    </div>
+    <div class="header-eyebrow"><span class="dot-live"></span> Study Guide · EF-NSE7</div>
+    <h1>Route Redistribution &amp; <em>BGP Convergence</em></h1>
+    <p>Master cross-protocol redistribution, BGP convergence optimization techniques (RIB sizing, route reflectors, BFD, graceful-restart), and the role each plays in maintaining a stable, fast-converging enterprise network.</p>
+  </div>
+</header>
+
+<div class="motivation-banner">
+  <div class="motivation-text">Redistribution is where routing protocols <em>talk to each other</em> — and where misconfigurations create the routing loops that bring down networks.</div>
+  <p class="motivation-sub">This subtopic ties together the redistribution mechanics of both OSPF and BGP, then covers the full BGP convergence optimization toolkit: RIB filtering, route reflectors, BFD, and graceful-restart for HA environments.</p>
+</div>
+
+<div class="top-panels">
+  <div class="qpanel" id="qpanel">
+    <button class="qpanel-header" onclick="toggleQPanel()" id="qpanel-header">
+      <span class="qpanel-title">MY QUESTIONS</span>
+      <span class="qpanel-count" id="qpanel-count">0</span>
+      <span class="qpanel-hint">— click to expand</span>
+      <span class="qpanel-chevron" id="qpanel-chevron">▾</span>
+    </button>
+    <div class="qpanel-body" id="qpanel-body"></div>
+  </div>
+  <div class="notes-panel" id="notes-panel">
+    <button class="notes-panel-header" onclick="toggleNotesPanel()" id="notes-panel-header">
+      <span class="notes-panel-title">MY NOTES</span>
+      <span class="notes-panel-count" id="notes-panel-count">0</span>
+      <span class="notes-panel-hint">— click to expand</span>
+      <span class="notes-panel-chevron" id="notes-panel-chevron">▾</span>
+    </button>
+    <div class="notes-panel-body" id="notes-panel-body"></div>
+  </div>
+</div>
+
+<nav class="section-nav" id="section-nav">
+  <a class="nav-tab active" href="#s1">Cross-Protocol Redistribution</a>
+  <a class="nav-tab" href="#s2">BGP Convergence</a>
+  <a class="nav-tab" href="#s3">Route Reflectors</a>
+  <a class="nav-tab" href="#s4">BFD for Fast Failure</a>
+  <a class="nav-tab" href="#s5">Graceful Restart</a>
+</nav>
+
+<main>
+  <div class="main-content">
+
+    <!-- ═══════════════ SECTION 1 ═══════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · CROSS-PROTOCOL REDISTRIBUTION</span>
+      </div>
+      <p class="socratic-insight">Route redistribution is how different routing protocols share information — but it comes with a fundamental risk: routing loops. When Router A redistributes OSPF into BGP, and Router B redistributes BGP back into OSPF, routes can loop infinitely. Both protocols disable redistribution by default — this is a safety mechanism, not an oversight.</p>
+      <ul class="socratic-questions">
+        <li>If you redistribute OSPF routes into BGP and then redistribute BGP routes back into OSPF on the same router, what happens — and how do you prevent the loop?</li>
+        <li>What is the difference between configuring a "network" statement in OSPF versus using "redistribute connected" — specifically, what LSA type does each produce and how does this affect path preference?</li>
+      </ul>
+      <div class="answer-area" data-section="redistribution">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">A mutual redistribution loop occurs: OSPF routes become BGP routes, which get redistributed back into OSPF as external routes — creating duplicate entries with different metrics. The prevention tool is a route map with a tag: when redistributing OSPF into BGP, tag the routes; when redistributing BGP back into OSPF, use a route map to deny routes with that tag. This prevents the loop without blocking legitimate routes from other sources.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">A "network" statement makes the prefix an intra-area OSPF route — it appears in the LSDB as a Type 1 or Type 2 LSA and is treated as internal OSPF topology. "Redistribute connected" imports the connected prefix as an external route — it appears as a Type 5 LSA (or Type 7 in NSSA), tagged as "E" in routing tables, and carries an external metric. OSPF prefers internal routes over external routes regardless of cost — so a network statement route will always beat a redistribute-connected route if both exist in the domain.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s1">
+      <div class="section-label">SECTION 01</div>
+      <h2>Cross-Protocol <em>Redistribution</em></h2>
+
+      <div class="section-img-wrap">
+        <img src="images/s1-redistribution.png" class="section-img" alt="Cross-protocol redistribution flow between OSPF and BGP"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s1-redistribution.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: Central router labeled "ASBR / Redistribution Point". Left cloud labeled "OSPF Domain" in blue. Right cloud labeled "BGP Domain" in green. Two arrows: one going right labeled "Redistribute OSPF → BGP" (green arrow) and one going left labeled "Redistribute BGP → OSPF" (blue arrow with a red X loop warning). Below: a "Route Map + Tag" badge as the loop-prevention tool. Bold outlines, pastel palette, educational style, no shadows.</div>
+        </div>
+        <p class="img-caption">Redistribution flows routes between protocols. Mutual redistribution without loop-prevention (route maps + tags) creates routing loops.</p>
+      </div>
+
+      <p><strong>Route redistribution</strong> allows a router to take routes learned in one protocol and inject them into another. Both OSPF and BGP disable all redistribution by default — every protocol source (bgp, connected, isis, rip, static) must be explicitly enabled. This conservative default prevents accidental route injection.</p>
+
+      <p>Key redistribution concepts for both OSPF and BGP:</p>
+      <ul>
+        <li><strong>OSPF redistribution</strong>: routes imported via redistribution appear as Type 5 LSAs (external); configured in <code>config router ospf → config redistribute</code></li>
+        <li><strong>BGP redistribution</strong>: connected, static, and IGP routes can be redistributed into BGP via <code>config router bgp → config redistribute</code></li>
+        <li><strong>Mutual redistribution</strong>: when routes are redistributed in both directions between two protocols, route maps with tags are required to prevent feedback loops</li>
+      </ul>
+
+      <table class="data-table">
+        <thead><tr><th>Protocol</th><th>Redistribution Config Location</th><th>Default Status</th><th>Route Type in Receiving Protocol</th></tr></thead>
+        <tbody>
+          <tr><td><strong>OSPF</strong> receiving from BGP</td><td><code>config router ospf → config redistribute bgp</code></td><td>disabled</td><td>External (Type 5 / Type 7 in NSSA)</td></tr>
+          <tr><td><strong>OSPF</strong> receiving connected</td><td><code>config router ospf → config redistribute connected</code></td><td>disabled</td><td>External (Type 5 LSA)</td></tr>
+          <tr><td><strong>BGP</strong> receiving from OSPF</td><td><code>config router bgp → config redistribute ospf</code></td><td>disabled</td><td>BGP route in RIB</td></tr>
+          <tr><td><strong>BGP</strong> receiving connected</td><td><code>config router bgp → config redistribute connected</code></td><td>disabled</td><td>BGP route in RIB</td></tr>
+        </tbody>
+      </table>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Enabling OSPF Redistribution</div>
+        <pre><code># Enable redistribution of connected and static into OSPF:
+config router ospf
+    config redistribute connected
+        set status enable
+    end
+    config redistribute static
+        set status enable
+    end
+end
+
+# Enable redistribution of connected and static into BGP:
+config router bgp
+    config redistribute connected
+        set status enable
+    end
+    config redistribute static
+        set status enable
+    end
+end</code></pre>
+      </div>
+
+      <div class="callout callout-amber"><strong>Loop prevention:</strong> When doing mutual redistribution (OSPF ↔ BGP), use a route map to tag routes at the redistribution boundary, then deny routes with that tag when redistributing in the reverse direction. Without this, routes circulate between protocols indefinitely.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Both OSPF and BGP default to redistributing NOTHING — all sources disabled. OSPF redistributed routes = Type 5 LSAs (external). BGP redistributed routes = entries in BGP RIB. Mutual redistribution needs route-map + tag to prevent loops. OSPF intra-area always preferred over external regardless of metric.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s1" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s1','Cross-Protocol Redistribution')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s1" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s1')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SECTION 2 ═══════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · BGP CONVERGENCE</span>
+      </div>
+      <p class="socratic-insight">BGP convergence has multiple independent contributors — RIB size, update processing speed, failure detection latency, and HA behavior. Each requires a different optimization tool. Port flapping is particularly damaging because it generates BGP update messages that consume CPU, destabilizing convergence across the network.</p>
+      <ul class="socratic-questions">
+        <li>The study guide states that port flapping "creates BGP update messages that require RIB processing and add to CPU load." Why does flapping on ONE interface generate update messages that affect ALL BGP peers?</li>
+        <li>Why is "optimize the RIB size" listed as a convergence optimization? Isn't a bigger RIB with more routes better for routing accuracy?</li>
+      </ul>
+      <div class="answer-area" data-section="bgp-convergence">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">BGP is a path-vector protocol that sends its routing table to all neighbors. When an interface flaps, the routes reachable through it change — BGP must generate UPDATE messages (both withdrawal and re-advertisement) and send them to every configured BGP peer. Each peer then processes the update, recalculates best paths, and may generate its own updates. A single flapping interface can cascade update messages across the entire AS and into eBGP peers, creating a CPU and bandwidth avalanche.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">A larger RIB means more entries to process during each update cycle. When a topology change occurs, BGP must re-evaluate best paths for every affected prefix — the larger the RIB, the longer this takes. By using inbound filters (distribute-list-in, prefix-list-in) to exclude routes that are not needed locally, you reduce the number of prefixes that must be re-processed on every update, directly improving convergence speed. Routing accuracy is maintained because the filtered routes are still reachable via default or aggregate routes.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s2">
+      <div class="section-label">SECTION 02</div>
+      <h2>BGP <em>Convergence</em> Optimization</h2>
+
+      <div class="section-img-wrap">
+        <img src="images/s2-bgp-convergence.png" class="section-img" alt="BGP convergence optimization techniques diagram"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s2-bgp-convergence.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: Central circle labeled "BGP Convergence" with four colored arrows pointing outward, each labeled: "Optimize RIB (in/out filters)" in blue, "Route Reflectors (reduce mesh)" in green, "BFD (fast failure &lt;1s)" in amber, "graceful-restart (HA failover)" in red. A cluster of router icons labeled "AS 6500" with BFD labeled node in the center. Bold outlines, pastel palette, educational infographic, no shadows.</div>
+        </div>
+        <p class="img-caption">Four levers for BGP convergence: RIB size reduction, route reflectors, BFD for failure detection, and graceful-restart for HA.</p>
+      </div>
+
+      <p><strong>BGP convergence</strong> is the process of updating routing and forwarding tables after a topology change. BGP sends its entire routing table to directly connected neighbors — the larger the RIB and the more neighbors there are, the longer convergence takes. Four main optimization areas exist:</p>
+
+      <ul>
+        <li><strong>Optimize RIB size</strong> — use inbound and outbound filters to exclude unnecessary prefixes. A smaller RIB means fewer paths to recompute on each update cycle.</li>
+        <li><strong>Route Reflectors</strong> — in iBGP, route reflectors eliminate the full-mesh requirement, reducing the number of BGP sessions and concentrating update processing.</li>
+        <li><strong>Fast failure detection</strong> — reduce BGP keepalive timers or enable BFD. BFD can detect failures in sub-second timeframes vs. BGP's default timer-based detection.</li>
+        <li><strong>HA failover stability</strong> — configure graceful-restart to prevent unnecessary BGP session resets and route withdrawals during planned HA failovers.</li>
+      </ul>
+
+      <div class="callout callout-amber"><strong>Root cause:</strong> Port flapping is the most common enemy of BGP convergence. Each flap generates withdrawal + re-advertisement messages to all peers, consuming CPU for RIB reprocessing. Stable physical links are a prerequisite for fast BGP convergence.</div>
+
+      <div class="analogy-box">
+        <div class="analogy-label">Analogy</div>
+        <div class="analogy-text">
+          <p class="analogy-summary">BGP convergence is like an airline updating its departure boards — a single gate change cascades through every connected display in the network.</p>
+          <ul>
+            <li><strong>BGP RIB</strong> — the master flight schedule board that every gate display reads from</li>
+            <li><strong>Port flapping</strong> — a gate being repeatedly opened and closed, triggering board updates for every connecting flight</li>
+            <li><strong>Inbound filter (RIB optimization)</strong> — only displaying the flights relevant to this terminal, not every flight in the world</li>
+            <li><strong>Route Reflector</strong> — a central "hub display" that other terminals read from, instead of every terminal talking to every other terminal</li>
+            <li><strong>BFD</strong> — a sensor at the gate that instantly detects when the jetway disconnects, vs. waiting for a scheduled check-in timer</li>
+          </ul>
+        </div>
+        <div class="analogy-img" style="margin-top:14px;background:rgba(255,255,255,0.5);border-radius:10px;padding:14px;text-align:center;">
+          <img src="images/a1-bgp-convergence-airport.png" alt="BGP convergence airport board analogy"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='block';" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 10px;">
+          <div class="img-missing-msg" style="display:none;font-size:12px;color:#92400e;padding:8px;background:rgba(146,64,14,0.1);border-radius:6px;">📷 <strong>images/a1-bgp-convergence-airport.png</strong> — add this image to the folder</div>
+          <button class="prompt-toggle" onclick="togglePrompt(this)" type="button">▾ Show analogy image prompt</button>
+          <div class="prompt-content" hidden>Cartoon flat illustration in pastel style: Four-panel airport scene. Top-left: large "Master Flight Board" labeled "BGP RIB" with multiple connecting displays. Top-right: A gate door rapidly opening and closing labeled "Port Flapping" with cascading update arrows to all boards. Bottom-left: A filtered board showing only relevant local flights labeled "Inbound Filter / RIB Optimization". Bottom-right: A central hub display (Route Reflector) feeding smaller terminal displays — fewer connections than a full mesh. Bold outlines, pastel colors, educational style, no shadows.</div>
+        </div>
+      </div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">4 BGP convergence levers: (1) smaller RIB via in/out filters, (2) route reflectors to reduce iBGP session count, (3) BFD for sub-second failure detection, (4) graceful-restart for HA failover. Port flapping = update storm = CPU overload = slow convergence. Fix the physical layer first.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s2" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s2','BGP Convergence')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s2" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s2')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SECTION 3 ═══════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · ROUTE REFLECTORS</span>
+      </div>
+      <p class="socratic-insight">iBGP's split-horizon rule requires all iBGP routers to be fully meshed — N routers need N×(N-1)/2 sessions. In large ASes this is operationally unmanageable. Route reflectors solve this by designating one or more routers as concentrators that re-advertise iBGP routes to clients — breaking the full-mesh requirement.</p>
+      <ul class="socratic-questions">
+        <li>A route reflector forwards routes learned from one peer to other peers — this appears to break the iBGP split-horizon rule. Why doesn't this create routing loops?</li>
+        <li>The study guide recommends configuring TWO route reflectors (RR1 and RR2). What would happen if only one route reflector existed and it failed?</li>
+      </ul>
+      <div class="answer-area" data-section="route-reflectors">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Route reflectors use the CLUSTER_LIST and ORIGINATOR_ID BGP attributes as loop-prevention mechanisms. When the RR reflects a route, it adds its cluster ID to the CLUSTER_LIST. If a reflected route returns to the RR, it will see its own cluster ID in the list and discard the route — preventing loops. The RR also adds the ORIGINATOR_ID of the originating router, which prevents a router from accepting routes it originally sent.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">With a single route reflector, all iBGP route distribution within the AS depends entirely on that one router. If it fails, no iBGP routes are distributed — effectively partitioning the AS. Routers can only reach directly connected neighbors. Two route reflectors provide redundancy: each reflects routes independently, and clients can maintain sessions to both, ensuring iBGP connectivity survives a single RR failure.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s3">
+      <div class="section-label">SECTION 03</div>
+      <h2>iBGP <em>Route Reflectors</em></h2>
+
+      <div class="section-img-wrap">
+        <img src="images/s3-route-reflectors.png" class="section-img" alt="Route reflector reducing iBGP full mesh requirement"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s3-route-reflectors.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: Two-panel comparison. Left panel: "Before Route Reflectors" — six routers in AS 65000 all connected to each other in a full mesh (many crossing lines). Right panel: "After Route Reflectors" — same six routers but two central ones labeled "RR 1" and "RR 2" in blue circles, other four routers only connect to the RRs (star topology). Red dashed lines show reduced peering requirements. Bold outlines, pastel palette, educational style, no shadows.</div>
+        </div>
+        <p class="img-caption">Route reflectors eliminate the iBGP full mesh — clients peer only with the RR, which reflects routes between all clients.</p>
+      </div>
+
+      <p>In a fully-meshed iBGP network, every router must peer with every other router — N routers need N×(N-1)/2 BGP sessions. This scales poorly. <strong>Route Reflectors (RRs)</strong> solve this by acting as iBGP concentrators: each iBGP client peers only with the RR, and the RR forwards (reflects) routes learned from one client to all other clients.</p>
+      <p>The RR is configured by designating which neighbors are <strong>route-reflector clients</strong>. The RR itself defines the topology — it decides which neighbors are clients. Non-client iBGP peers must still form a full mesh between themselves (and between RRs). Loop prevention is handled via <strong>CLUSTER_LIST</strong> and <strong>ORIGINATOR_ID</strong> attributes added automatically by the RR.</p>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Configure Route Reflector</div>
+        <pre><code>config router bgp
+    config neighbor
+        edit 100.64.1.254
+            set next-hop-self enable
+            set route-reflector-client enable
+        next
+    end
+end
+
+# Verify:
+get router info bgp neighbors</code></pre>
+      </div>
+
+      <p>Key deployment guidelines for route reflectors:</p>
+      <ul>
+        <li>Deploy <strong>at least two RRs</strong> per cluster for redundancy</li>
+        <li>Enable <code>next-hop-self</code> on the RR so clients use the RR as the next hop — prevents next-hop unreachability when the original next hop is an eBGP peer</li>
+        <li>RRs pass routing updates to other RRs and border routers within the AS, improving convergence</li>
+        <li>RRs eliminate the administrative burden of managing a full mesh — critical in large enterprise or SP networks with dozens or hundreds of iBGP speakers</li>
+      </ul>
+
+      <div class="callout"><strong>Configuration note:</strong> The RR does NOT announce itself as a route reflector — it simply marks certain neighbors as clients with "route-reflector-client enable". The clients don't know they're peering with an RR; they just see a regular iBGP neighbor that happens to send them all routes.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">iBGP full mesh = N×(N-1)/2 sessions. Route Reflector = concentrator; clients peer only with RR. Configure with "set route-reflector-client enable" on client neighbors. Loop prevention = CLUSTER_LIST + ORIGINATOR_ID. Always deploy 2 RRs for redundancy. Enable next-hop-self on RR.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s3" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s3','Route Reflectors')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s3" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s3')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SECTION 4 ═══════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · BFD FOR FAST FAILURE DETECTION</span>
+      </div>
+      <p class="socratic-insight">BGP relies on keepalive timers for failure detection — by default, a peer is considered dead only after the hold-down timer expires (typically 90 seconds). BFD runs independently of BGP and can detect failures in under one second. This is a massive convergence improvement, but BFD has configuration requirements — particularly for multihop sessions where the BFD probe must traverse multiple routers.</p>
+      <ul class="socratic-questions">
+        <li>BFD is described as "independent of the type of media" — what does this mean for its usefulness compared to link-layer failure detection like Ethernet carrier-detect?</li>
+        <li>For BFD on a multihop BGP session (like a loopback-sourced session), a "multihop-template" is required. Why can't the same single-hop BFD mechanism work for multihop paths?</li>
+      </ul>
+      <div class="answer-area" data-section="bfd">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Ethernet carrier-detect only works for direct physical link failures — it cannot detect failures through intermediate devices, tunnels, or logical failures (like a misconfigured router that forwards but drops certain packets). BFD sends bidirectional probe packets end-to-end between the two BFD peers, so it detects any failure along the entire path — a failed intermediate router, a black-hole condition, or a forwarding loop. This makes it useful for GRE tunnels, MPLS paths, and any topology where intermediate devices could silently fail.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Single-hop BFD assumes both endpoints are directly connected on the same subnet and uses a specific TTL/hop-limit to verify this. Multihop BFD sessions traverse intermediate routers, requiring different IP addresses (not link-local) and cannot rely on single-hop TTL assumptions. The multihop-template provides the source and destination IP ranges and authentication settings that allow BFD to correctly identify and authenticate the multihop session — distinguishing it from other BFD sessions that may share the same physical path.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s4">
+      <div class="section-label">SECTION 04</div>
+      <h2><em>BFD</em> — Bidirectional Forwarding Detection</h2>
+
+      <div class="section-img-wrap">
+        <img src="images/s4-bfd.png" class="section-img" alt="BFD single-hop and multihop configuration"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s4-bfd.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: Two-panel layout. Left panel "Single-hop BFD": two directly connected routers with a green probe beam labeled "BFD &lt;1 second" between them and a BGP session arc above. Right panel "Multihop BFD": three routers in a chain; BFD probe shown as a dashed green beam traversing all three, with a "multihop-template" badge. Bold outlines, pastel green/amber palette, educational style, no shadows.</div>
+        </div>
+        <p class="img-caption">BFD detects failures in under 1 second, independently of BGP timers. Multihop BFD requires a multihop-template for paths across intermediate routers.</p>
+      </div>
+
+      <p><strong>Bidirectional Forwarding Detection (BFD)</strong> is a protocol that acts as a lightweight "heartbeat" probe between two routers. It operates independently of BGP and can detect one-way device failures in <em>less than one second</em> — far faster than BGP's keepalive-based detection which typically takes 90 seconds. BFD is media-independent: it works the same over Ethernet, MPLS, GRE tunnels, or any IP path.</p>
+      <p>For standard BGP sessions (direct neighbors), BFD is enabled per-neighbor with a single command. The BFD session is established automatically when both routers have BFD enabled on the session.</p>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — BFD on a BGP Neighbor (Single-Hop)</div>
+        <pre><code>config router bgp
+    config neighbor
+        edit 100.64.1.254
+            set bfd enable
+            set ebgp-enforce-multihop enable
+        next
+    end
+end
+
+# Verify BFD status:
+get router info bfd neighbor</code></pre>
+      </div>
+
+      <p>For <strong>multihop BGP sessions</strong> (e.g., loopback-sourced eBGP), BFD requires a <strong>multihop-template</strong> that specifies the source and destination IP ranges and optional authentication:</p>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — BFD Multihop Template</div>
+        <pre><code>config router bfd
+    config multihop-template
+        edit 1
+            set src 100.64.2.0 255.255.255.0
+            set dst 100.64.1.0 255.255.255.0
+            set auth-mode md5
+            set md5-key password
+        next
+    end
+end</code></pre>
+      </div>
+
+      <p>BFD must be configured on <strong>both connected routers</strong> and their corresponding interfaces. For multihop paths, the template must be configured on both ends with matching source/destination ranges.</p>
+
+      <div class="callout callout-amber"><strong>Exam tip:</strong> BFD detects failures in &lt;1 second. BGP's default keepalive = 60 seconds; hold-down = 180 seconds. BFD is independent of media type. Multihop BFD requires a multihop-template specifying src/dst IP ranges. Verify with "get router info bfd neighbor".</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">BFD = sub-second failure detection, media-independent. Single-hop: set bfd enable per neighbor. Multihop (loopback BGP): requires "config router bfd → config multihop-template" with src/dst IP ranges + optional auth. Must enable on BOTH routers. Verify: "get router info bfd neighbor".</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s4" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s4','BFD Fast Failure Detection')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s4" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s4')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SECTION 5 ═══════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · GRACEFUL RESTART</span>
+      </div>
+      <p class="socratic-insight">BGP graceful-restart is designed specifically for HA failover scenarios. When an HA cluster fails over, the BGP daemon must restart on the new primary — and peers would normally interpret this as a session failure, withdrawing routes. Graceful-restart prevents this by pre-announcing the intent to restart, causing peers to keep routes stale (but usable) during the reconnection window.</p>
+      <ul class="socratic-questions">
+        <li>Graceful-restart must be configured on BOTH connected routers. What happens if only one router has graceful-restart enabled — does it still work?</li>
+        <li>Graceful-restart is described as preventing routes from being "treated as a route flap." What is the practical traffic impact of a route flap during an HA failover, and why does graceful-restart prevent it?</li>
+      </ul>
+      <div class="answer-area" data-section="graceful-restart">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Graceful-restart requires both sides to negotiate the capability. If only one router has it enabled, the router with graceful-restart will advertise the capability, but the peer will not acknowledge it. Without mutual negotiation, graceful-restart does not activate — both sides must understand and agree to the graceful-restart procedure for it to take effect during failover. This is why capability-graceful-restart must also be enabled on the neighbor configuration, so the capability is explicitly advertised to the peer.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Without graceful-restart, when the HA primary fails and the session drops, the BGP peer removes all routes learned from that session — traffic to those destinations is immediately dropped or rerouted via less-optimal paths. The new HA primary must re-establish the session and re-advertise all routes before traffic is restored. With graceful-restart, the peer keeps the routes marked as "stale but valid" during the restart window — traffic continues to forward normally while the new primary reconnects and refreshes the routes.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s5">
+      <div class="section-label">SECTION 05</div>
+      <h2>The <em>graceful-restart</em> Command — HA Failover Protection</h2>
+
+      <div class="section-img-wrap">
+        <img src="images/s5-graceful-restart.png" class="section-img" alt="BGP graceful-restart HA failover behavior"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s5-graceful-restart.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: Two-panel timeline. Left panel "Without graceful-restart": HA cluster fails over → BGP session drops → peer removes routes → traffic blackhole (red X). Right panel "With graceful-restart": HA cluster advertises "going offline" → peer marks routes "stale but valid" → new primary reconnects → routes refreshed (green checkmark, traffic continues). Time arrow shows shorter interruption with graceful-restart. Bold outlines, pastel red/green palette, educational style, no shadows.</div>
+        </div>
+        <p class="img-caption">Graceful-restart prevents BGP peers from withdrawing routes during HA failover — routes remain usable while the new primary reconnects.</p>
+      </div>
+
+      <p>In a FortiGate HA cluster, the <strong>BGP daemon runs only on the primary unit</strong>. When the primary fails and a secondary takes over, BGP peering must be re-established from scratch. Without graceful-restart, peers interpret the session drop as a failure and immediately withdraw all routes received from the cluster — creating a traffic blackhole until the new primary reconnects and re-advertises.</p>
+      <p>The <code>graceful-restart</code> command allows the FortiGate HA cluster to advertise its intent to restart before going offline. Peers honor this by keeping routes in their routing tables as <em>stale</em> (but still forwarding-capable) for the duration of the restart window. When the new primary comes online, it re-establishes the session and refreshes the routes — without causing a traffic disruption.</p>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Graceful Restart Configuration</div>
+        <pre><code>config router bgp
+    set as 65100
+    set graceful-restart enable
+    set router-id 172.16.1.254
+    config neighbor
+        edit 100.64.1.254
+            set capability-graceful-restart enable
+            set remote-as 200
+        next
+    end
+end</code></pre>
+      </div>
+
+      <p>Two parameters work together for graceful-restart:</p>
+      <ul>
+        <li><code>set graceful-restart enable</code> — enables the graceful-restart feature globally on the BGP router</li>
+        <li><code>set capability-graceful-restart enable</code> — per-neighbor setting that advertises the graceful-restart capability to the specific BGP peer so both sides negotiate the behavior</li>
+      </ul>
+
+      <div class="callout callout-amber"><strong>Critical requirement:</strong> Both "graceful-restart enable" AND "capability-graceful-restart enable" must be configured. The global command enables the feature; the per-neighbor command advertises the capability to the peer. Without both, graceful-restart doesn't activate. Must also be configured on the BGP peer.</div>
+
+      <div class="callout callout-green"><strong>Maintenance window benefit:</strong> Graceful-restart is particularly valuable during planned maintenance (firmware upgrades, HA testing) — the cluster advertises its restart intent, peers keep routes valid, and traffic interruption is minimized or eliminated entirely.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Graceful-restart: 2 commands required — "set graceful-restart enable" (global) + "set capability-graceful-restart enable" (per-neighbor). Must be on BOTH routers. Prevents routes from being withdrawn during HA failover. Routes stay "stale but valid" while new primary reconnects. Critical for planned maintenance windows.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s5" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s5','Graceful Restart')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s5" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s5')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">ON THIS PAGE</div>
+      <nav class="ssnav">
+        <a class="ssnav-item" href="#s1">Cross-Protocol Redistribution</a>
+        <a class="ssnav-item" href="#s2">BGP Convergence</a>
+        <a class="ssnav-item" href="#s3">Route Reflectors</a>
+        <a class="ssnav-item" href="#s4">BFD Fast Failure</a>
+        <a class="ssnav-item" href="#s5">Graceful Restart</a>
+      </nav>
+    </div>
+
+    <a class="hub-link" href="index.html">← Chapter 05 Hub</a>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">PROGRESS</div>
+      <div class="checklist" id="checklist">
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s1" onchange="toggleDone(this)">
+          <span class="check-label">Cross-Protocol Redistribution</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s2" onchange="toggleDone(this)">
+          <span class="check-label">BGP Convergence</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s3" onchange="toggleDone(this)">
+          <span class="check-label">Route Reflectors</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s4" onchange="toggleDone(this)">
+          <span class="check-label">BFD Fast Failure</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s5" onchange="toggleDone(this)">
+          <span class="check-label">Graceful Restart</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">QUICK REFERENCE</div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Redistribution Default</div>
+        <div class="quick-ref-def">Both OSPF and BGP disable all redistribution by default. Every source protocol must be explicitly enabled with "set status enable".</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Type 5 LSA</div>
+        <div class="quick-ref-def">External LSA — created when routes are redistributed into OSPF. Appears as "E" in routing tables. OSPF prefers internal routes over Type 5 regardless of metric.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Route Reflector</div>
+        <div class="quick-ref-def">iBGP concentrator that re-advertises routes from one client to others, eliminating the full-mesh requirement. Loop prevention via CLUSTER_LIST + ORIGINATOR_ID.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">BFD</div>
+        <div class="quick-ref-def">Bidirectional Forwarding Detection — detects failures in &lt;1 second, independent of media type. Replaces slow keepalive-based failure detection.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">BFD Multihop Template</div>
+        <div class="quick-ref-def">Required for BFD on loopback-sourced or multihop BGP sessions. Configured under "config router bfd → config multihop-template" with src/dst ranges.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">graceful-restart</div>
+        <div class="quick-ref-def">Prevents route withdrawal during HA failover. Requires both "graceful-restart enable" globally AND "capability-graceful-restart enable" per-neighbor on both routers.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Port Flapping</div>
+        <div class="quick-ref-def">The primary enemy of BGP convergence — each flap triggers withdrawal + re-advertisement messages to ALL peers, consuming CPU across the AS.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">CLUSTER_LIST</div>
+        <div class="quick-ref-def">BGP attribute added by route reflectors to prevent loops — a reflected route containing the RR's own cluster ID is discarded on return.</div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="page-nav">
+  <a class="page-nav-btn page-nav-prev" href="subtopic-02-configure-bgp.html">
+    <span class="page-nav-label">← PREVIOUS</span>
+    <span class="page-nav-title">Configure BGP</span>
+  </a>
+  <a class="page-nav-btn page-nav-next" href="index.html">
+    <span class="page-nav-label">BACK TO HUB →</span>
+    <span class="page-nav-title">Chapter 05 Hub</span>
+  </a>
+</div>
+
+<footer>
+  EF-NSE7<span>.</span> Chapter 05<span>.</span> Subtopic 03<span>.</span> Route Redistribution
+</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-ch05-sub03-route-redistribution';
+
+const SECTIONS = {
+  's1': 'Cross-Protocol Redistribution',
+  's2': 'BGP Convergence',
+  's3': 'Route Reflectors',
+  's4': 'BFD Fast Failure Detection',
+  's5': 'Graceful Restart',
+};
+
+document.querySelectorAll('.socratic-header').forEach(function(h) {
+  h.addEventListener('click', function() { h.closest('.socratic-block').classList.toggle('soc-open'); });
+});
+
+function getQArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-qs') || '[]'); }
+function saveQArr(qs) { localStorage.setItem(PAGE_KEY+'-qs', JSON.stringify(qs)); }
+function addQuestion(key, name) {
+  const ta = document.getElementById('q-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const qs = getQArr(); qs.push({id: Date.now(), section: key, sectionName: name, text});
+  saveQArr(qs); ta.value = ''; renderQPanel();
+  if (!document.getElementById('qpanel-body').classList.contains('open')) toggleQPanel();
+}
+function deleteQ(id) { saveQArr(getQArr().filter(q => q.id !== id)); renderQPanel(); }
+function toggleQPanel() {
+  const body = document.getElementById('qpanel-body');
+  const header = document.getElementById('qpanel-header');
+  const chevron = document.getElementById('qpanel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-qpanel-open', open);
+}
+function renderQPanel() {
+  const qs = getQArr();
+  const count = document.getElementById('qpanel-count');
+  if (count) { count.textContent = qs.length; count.style.display = qs.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.qpanel-hint');
+  if (hint) hint.textContent = qs.length ? `— ${qs.length} question${qs.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('qpanel-body'); if (!body) return;
+  if (!qs.length) { body.innerHTML = '<p class="no-questions">No questions yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  qs.forEach(q => { if (groups[q.section]) groups[q.section].push(q); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(q => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${q.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteQ(${q.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+function getNotesArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-notes') || '[]'); }
+function saveNotesArr(ns) { localStorage.setItem(PAGE_KEY+'-notes', JSON.stringify(ns)); }
+function addNote(key) {
+  const ta = document.getElementById('note-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const ns = getNotesArr(); ns.push({id: Date.now(), section: key, sectionName: SECTIONS[key]||key, text});
+  saveNotesArr(ns); ta.value = ''; renderNotesPanel();
+  if (!document.getElementById('notes-panel-body').classList.contains('open')) toggleNotesPanel();
+}
+function deleteNote(id) { saveNotesArr(getNotesArr().filter(n => n.id !== id)); renderNotesPanel(); }
+function toggleNotesPanel() {
+  const body = document.getElementById('notes-panel-body');
+  const header = document.getElementById('notes-panel-header');
+  const chevron = document.getElementById('notes-panel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-notes-panel-open', open);
+}
+function renderNotesPanel() {
+  const ns = getNotesArr();
+  const count = document.getElementById('notes-panel-count');
+  if (count) { count.textContent = ns.length; count.style.display = ns.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.notes-panel-hint');
+  if (hint) hint.textContent = ns.length ? `— ${ns.length} note${ns.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('notes-panel-body'); if (!body) return;
+  if (!ns.length) { body.innerHTML = '<p class="no-questions">No notes yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  ns.forEach(n => { if (groups[n.section]) groups[n.section].push(n); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(n => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteNote(${n.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+function toggleDone(input) {
+  localStorage.setItem(PAGE_KEY+'-check-'+input.dataset.key, input.checked);
+}
+function initChecks() {
+  document.querySelectorAll('.check-input').forEach(function(inp) {
+    inp.checked = localStorage.getItem(PAGE_KEY+'-check-'+inp.dataset.key) === 'true';
+  });
+}
+function saveSocAnswer(btn) {
+  const area = btn.closest('.answer-area');
+  const ta = area.querySelector('.answer-textarea');
+  if (!ta.value.trim()) { ta.focus(); return; }
+  const key = PAGE_KEY+'-socans-'+area.dataset.section;
+  try { localStorage.setItem(key, ta.value); } catch(e) {}
+  ta.disabled = true; btn.textContent = '✓ Answer saved'; btn.disabled = true;
+  const seeBtn = area.querySelector('.btn-see-answer');
+  seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+}
+function revealSocAnswer(btn) {
+  if (btn.disabled) return;
+  const answers = btn.closest('.answer-area').querySelector('.model-answers');
+  const isHidden = answers.style.display === 'none' || !answers.style.display;
+  answers.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '▲ Hide Model Answer' : '💡 See Model Answer';
+}
+function togglePrompt(btn) {
+  const c = btn.nextElementSibling;
+  const isHidden = c.hasAttribute('hidden');
+  if (isHidden) { c.removeAttribute('hidden'); btn.textContent = '▴ Hide image prompt'; }
+  else { c.setAttribute('hidden', ''); btn.textContent = '▾ Show image prompt'; }
+}
+if (sessionStorage.getItem('pt')) {
+  document.body.style.opacity = '1';
+  sessionStorage.removeItem('pt');
+}
+document.querySelectorAll('a[href]').forEach(function(a) {
+  a.addEventListener('click', function() { sessionStorage.setItem('pt', '1'); });
+});
+document.addEventListener('DOMContentLoaded', function() {
+  renderQPanel(); renderNotesPanel(); initChecks();
+  if (localStorage.getItem(PAGE_KEY+'-qpanel-open') === 'true') toggleQPanel();
+  if (localStorage.getItem(PAGE_KEY+'-notes-panel-open') === 'true') toggleNotesPanel();
+  document.querySelectorAll('.answer-area').forEach(function(area) {
+    const key = PAGE_KEY+'-socans-'+area.dataset.section;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const ta = area.querySelector('.answer-textarea'); ta.value = saved; ta.disabled = true;
+        const addBtn = area.querySelector('.btn-add-answer'); addBtn.textContent = '✓ Answer saved'; addBtn.disabled = true;
+        const seeBtn = area.querySelector('.btn-see-answer'); seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+      }
+    } catch(e) {}
+  });
+  document.querySelectorAll('.analogy-box').forEach(function(box) {
+    if (box.dataset.collapsibleInit) return;
+    box.dataset.collapsibleInit = '1';
+    box.classList.add('expanded');
+    const label = box.querySelector(':scope > .analogy-label');
+    if (label) label.addEventListener('click', () => box.classList.toggle('expanded'));
+  });
+  document.querySelectorAll('.analogy-img img').forEach(function(img) {
+    if (img.dataset.zoomInit) return;
+    img.dataset.zoomInit = '1';
+    img.addEventListener('click', () => img.classList.toggle('zoomed'));
+  });
+  document.querySelectorAll('.section-img').forEach(function(img) {
+    img.addEventListener('click', () => img.classList.toggle('si-expanded'));
+  });
+});
+(function() {
+  var items = document.querySelectorAll('.ssnav-item');
+  if (!items.length) return;
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      var lnk = document.querySelector('.ssnav-item[href="#'+e.target.id+'"]');
+      if (lnk) lnk.classList.toggle('active', e.isIntersecting);
+    });
+  }, { rootMargin: '-10% 0% -70% 0%' });
+  document.querySelectorAll('.section-block[id]').forEach(function(el) { obs.observe(el); });
+})();
+</script>
+</body>
+</html>

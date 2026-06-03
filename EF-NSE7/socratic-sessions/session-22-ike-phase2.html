@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){if(sessionStorage.getItem('pt'))document.documentElement.style.opacity='0';})()</script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Session 22 — IKE Phase 2 &amp; SA Negotiation · EF-NSE7</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:#0a0101;color:#e8ddd5;line-height:1.6;transition:opacity .25s ease;opacity:1}
+:root{
+  --session-color:#6a8ad0;
+  --bg:#0a0101;--surface:#140808;--border:#2a1515;
+  --text:#e8ddd5;--text-dim:#b09090;--muted:#7a6060
+}
+
+a{color:var(--session-color);text-decoration:none}
+a:hover{text-decoration:underline}
+p{margin-bottom:1rem}
+p:last-child{margin-bottom:0}
+
+header{background:#1a0606;border-bottom:1px solid #2a1515;padding-bottom:2rem}
+.header-inner{max-width:1100px;margin:0 auto;padding:1.5rem 2rem 0}
+.breadcrumb{font-size:.8rem;color:var(--muted);margin-bottom:1rem}
+.breadcrumb a{color:var(--muted);text-decoration:none;transition:color .15s}
+.breadcrumb a:hover{color:var(--session-color)}
+.breadcrumb span{margin:0 .4rem;opacity:.5}
+.eyebrow{display:inline-flex;align-items:center;gap:.5rem;font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--session-color);margin-bottom:.6rem}
+.session-chip{background:rgba(106,138,208,.15);border:1px solid rgba(106,138,208,.3);border-radius:20px;padding:.2rem .7rem;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--session-color)}
+header h1{font-family:'Fraunces',serif;font-size:2.6rem;font-weight:700;color:#fff;line-height:1.15;margin-bottom:.6rem}
+header h1 em{color:var(--session-color);font-style:italic}
+header .tagline{color:var(--text-dim);font-size:1.05rem;max-width:600px;line-height:1.5}
+
+.story-section{background:linear-gradient(135deg,#1a0a08,#120606);border-top:3px solid var(--session-color);border-bottom:1px solid #2a1515;padding:3rem 0}
+.story-inner{max-width:1100px;margin:0 auto;padding:0 2rem}
+.story-label{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--session-color);margin-bottom:.75rem;opacity:.9}
+.story-section h2{font-family:'Fraunces',serif;font-size:1.9rem;font-weight:700;color:#fff;line-height:1.2;margin-bottom:1.5rem}
+.story-section p{color:#c8bab0;font-size:.97rem;line-height:1.75;max-width:820px}
+.story-section p+p{margin-top:1rem}
+
+main{max-width:1100px;margin:0 auto;padding:2.5rem 2rem}
+.pr-grid{display:grid;grid-template-columns:1fr 300px;gap:2rem;align-items:start}
+@media(max-width:820px){.pr-grid{grid-template-columns:1fr}}
+
+.left-col{}
+.section-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.5rem;margin-bottom:1.5rem}
+.section-block h3{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:600;color:#fff;margin-bottom:.9rem;padding-bottom:.6rem;border-bottom:1px solid var(--border)}
+.section-block p{font-size:.93rem;color:var(--text-dim);line-height:1.7}
+.section-block p+p{margin-top:.75rem}
+
+.img-placeholder{background:#0e0404;border:2px dashed #2a1515;border-radius:10px;min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;padding:2rem;margin-bottom:1.5rem;text-align:center}
+.img-placeholder .img-icon{font-size:2rem;opacity:.4}
+.img-placeholder .img-label{font-size:.8rem;color:var(--muted);max-width:380px;line-height:1.5}
+.img-placeholder .img-prompt{font-size:.75rem;color:#5a4040;font-style:italic;max-width:420px;line-height:1.5;margin-top:.25rem}
+
+.questions-list{list-style:none;padding:0;margin:0}
+.questions-list li{display:flex;gap:.75rem;padding:.75rem 0;border-bottom:1px solid #1e0e0e;font-size:.92rem;color:var(--text-dim);line-height:1.6}
+.questions-list li:last-child{border-bottom:none}
+.q-num{flex-shrink:0;width:1.6rem;height:1.6rem;background:rgba(106,138,208,.12);border:1px solid rgba(106,138,208,.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:var(--session-color);margin-top:.1rem}
+
+.sidebar{}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin-bottom:1.25rem}
+.card h4{font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;padding-bottom:.6rem;border-bottom:1px solid var(--border)}
+.detail-row{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;padding:.35rem 0;border-bottom:1px solid #1a0a0a;font-size:.85rem}
+.detail-row:last-child{border-bottom:none}
+.detail-key{color:var(--muted);font-size:.8rem}
+.detail-val{color:var(--text);font-weight:500;text-align:right;font-size:.83rem}
+.detail-val a{color:var(--session-color);font-size:.8rem}
+
+.prereq-list{list-style:none;padding:0;margin:0}
+.prereq-list li{display:flex;align-items:flex-start;gap:.5rem;padding:.4rem 0;font-size:.85rem;color:var(--text-dim);border-bottom:1px solid #1a0a0a}
+.prereq-list li:last-child{border-bottom:none}
+.prereq-list li::before{content:'·';color:var(--session-color);font-weight:700;margin-top:.05rem;flex-shrink:0}
+
+.notes-label{font-size:.78rem;color:var(--muted);margin-bottom:.4rem;display:block;font-weight:600;letter-spacing:.05em}
+textarea.notes-area{width:100%;background:#0e0606;border:1px solid #2a1515;border-radius:6px;color:var(--text);font-family:'Inter',sans-serif;font-size:.83rem;line-height:1.55;padding:.65rem .75rem;resize:vertical;min-height:90px;outline:none;transition:border-color .15s}
+textarea.notes-area::placeholder{color:#4a3030}
+textarea.notes-area:focus{border-color:rgba(106,138,208,.4)}
+.notes-gap{height:.85rem}
+
+.page-nav{border-top:1px solid #2a1515;margin-top:2rem;padding:1.25rem 2rem;max-width:1100px;margin-left:auto;margin-right:auto;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
+.nav-link{display:flex;flex-direction:column;gap:.2rem;text-decoration:none;padding:.6rem .9rem;border:1px solid var(--border);border-radius:8px;background:var(--surface);transition:all .15s;max-width:200px}
+.nav-link:hover{border-color:var(--session-color);background:#1a0808}
+.nav-direction{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+.nav-title{font-size:.85rem;color:var(--text);font-weight:500}
+.nav-link.hub{align-items:center;text-align:center}
+.nav-link.hub .nav-title{color:var(--session-color)}
+
+footer{text-align:center;padding:2rem;font-size:.78rem;color:var(--muted);border-top:1px solid #1a0808;margin-top:1rem}
+</style>
+<style>
+/* ── Light theme override ── */
+body{background:#faf7f5;color:#1a0606}
+header{background:#fff;border-bottom-color:#e8d5cc}
+header h1,h1{color:#1a0606}
+header .tagline,header p.tagline{color:#7a5050}
+.breadcrumb a{color:#9a6060}
+.eyebrow-label{color:#9a6060}
+/* Cards and surfaces */
+.content-section,.sidebar-card,.copy-block,.session-card,
+details.how-to,.how-to,.img-placeholder{background:#fff;border-color:#e8d5cc}
+.copy-block-header{background:#fdf5f0;border-bottom-color:#e8d5cc}
+.copy-block pre{background:#fdf5f0;color:#4a2020}
+.how-to-body{background:#fff}
+.flow-box{background:#fdf5f0;border-color:#e8d5cc}
+.flow-chip{background:#f0e5e0;color:#7a5050}
+/* Sidebar */
+.sidebar-textarea{background:#fdf5f0;border-color:#e8d5cc;color:#3a2020}
+.sidebar-textarea::placeholder{color:#c09090}
+.sidebar-textarea:focus{border-color:var(--session-color)}
+.card-hint,.sidebar-hint{color:#9a6060}
+/* Typography — scoped away from story section */
+.chapter-name,.session-title,.content-section h2,.target-qs h2,
+.overview-block h2,.sidebar-card-title+h2{color:#1a0606}
+.sidebar-card-title,.copy-block-label,.prereqs-label,.img-label,
+.session-meta,.flow-box h4,.chapter-label,.progress-label,.detail-row .dl,
+.eyebrow-label{color:#9a6060}
+.chapter-name{color:#1a0606}
+.prereqs li,.prereq-list li,.detail-row .dv{color:#5a3030}
+.target-intro,.section-sub{color:#9a6060}
+.step-text strong{color:#1a0606}
+.step-text p,.how-to-body p{color:#5a3030}
+.overview-block p,.content-section p{color:#5a3030}
+/* Borders and dividers */
+.chapter-header{border-bottom-color:#e8d5cc}
+.detail-row{border-bottom-color:#f0e0d8}
+.detail-row .dl{color:#9a6060}
+.q-list li{color:#5a3030;border-bottom-color:#f0e0d8}
+.prereq-list li{border-bottom-color:#f0e0d8;color:#5a3030}
+.divider{border-top-color:#e8d5cc}
+/* Page nav */
+.page-nav{border-top-color:#e8d5cc}
+.nav-link{color:#9a6060;border-color:#e8d5cc}
+.nav-link:hover{color:var(--session-color);border-color:var(--session-color)}
+.nav-link.hub{color:#7a5050}
+.nav-disabled{color:#c0a8a0}
+footer{color:#9a7070;border-top-color:#e8d5cc}
+/* Progress and status */
+.days-badge{background:#fff;border-color:#e8d5cc}
+.progress-bar-bg{background:#f0ddd8}
+.status-none{background:#f5ecec;color:#9a7070}
+.status-started{background:#fdf5e0;color:#8a6a20}
+/* Buttons */
+.btn-prereading{background:#fdf5f0;border-color:#e8d5cc;color:#4a2020}
+.btn-prereading:hover{background:#f5e8e0;border-color:var(--session-color);color:#1a0606}
+.btn-sg{background:#faf5f5;border-color:#ede0d8;color:#7a5050}
+.btn-sg:hover{border-color:#c0a098}
+.btn-done-toggle{border-color:#e8d5cc;color:#9a7070}
+.btn-done-toggle:hover{border-color:var(--session-color);color:var(--session-color)}
+.btn-done-toggle.is-done{border-color:var(--green,#5ab288);color:var(--green,#5ab288);background:#f0f8f0}
+.session-card:hover{border-color:#c8a898}
+.session-card.done{opacity:.5}
+/* Image prompt */
+.img-prompt-text{background:#fdf5f0;border-color:#e8d5cc;color:#7a5050}
+.img-placeholder{border-color:#e8d5cc}
+.img-icon{opacity:.25}
+.sg-link{background:#fdf5f0;border-color:#e8d5cc}
+.sg-link:hover{background:#f5e8e0;border-color:var(--session-color)}
+/* Preserve story section darkness */
+.story-section{background:linear-gradient(135deg,#1a0a08,#120606)!important}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <nav class="breadcrumb">
+      <a href="../study-guides/nse7-ef-study-guide-hub.html">EF-NSE7 Hub</a>
+      <span>›</span>
+      <a href="index.html">Socratic Plan</a>
+      <span>›</span>
+      <span>Session 22</span>
+    </nav>
+    <div class="eyebrow">
+      <span class="session-chip">Session 22</span>
+      Chapter 07 — IPsec
+    </div>
+    <h1>IKE Phase 2 &amp; <em>SA Negotiation</em></h1>
+    <p class="tagline">Quick mode, proxy IDs, PFS, and IPsec SA lifetime — everything that happens after Phase 1 completes.</p>
+  </div>
+</header>
+
+<section class="story-section">
+  <div class="story-inner">
+    <div class="story-label">Before You Begin · Real-World Scenario</div>
+    <h2>The New Subnet That Disappeared Into the Void</h2>
+    <p>Northgate Manufacturing had operated a stable site-to-site VPN between their main production plant and corporate headquarters for just over two years. The tunnel was rock solid — daily production reports, ERP data synchronization, and IT management traffic all flowed reliably. In early spring, the plant's operations team deployed a new production automation system: a network of PLCs and SCADA servers on a dedicated subnet, 192.168.50.0/24, isolated from the existing plant network as a security measure. The IT team at the plant added the new subnet to the internal routing table, ensured the plant FortiGate could route to it, and assumed the VPN would handle the rest. The project went live on a Monday morning.</p>
+    <p>By Tuesday afternoon, the automation team was filing complaints. Their monitoring dashboard at headquarters could not reach any device on the new 192.168.50.0/24 network. The plant-side systems on the original 10.0.0.0/24 subnet worked perfectly. HQ-side engineers confirmed routing was correct. The plant FortiGate showed no firewall drops for traffic from 192.168.50.0/24. Packet captures at the plant firewall confirmed packets were leaving the correct interface. Nobody could explain where they were going. The HQ engineer spent several days checking access control lists, route filters, and NAT configurations. Everything looked correct. The automation team considered the VPN project a failure and began discussing a backup connectivity plan.</p>
+    <p>The resolution came when a network engineer with deep VPN experience reviewed the Phase 2 configuration. The IPsec Phase 2 SA had been built with explicit proxy IDs (traffic selectors) that specified the original subnets: local 10.0.0.0/24 matching remote 172.16.0.0/24. These traffic selectors define exactly which source and destination networks are encrypted and tunneled by that Phase 2 SA. Traffic from 192.168.50.0/24 did not match any proxy ID — the FortiGate correctly decided the traffic was not destined for the VPN tunnel and sent it out the default gateway instead, where it was dropped by the internet router. Adding 192.168.50.0/24 to the Phase 2 traffic selectors on both sides — a two-minute configuration change — immediately restored connectivity. The lesson was that Phase 2 proxy IDs are not automatically updated when new subnets are added to the network; they are an explicit statement of what traffic belongs inside the tunnel.</p>
+  </div>
+</section>
+
+<main>
+  <div class="pr-grid">
+
+    <!-- LEFT COLUMN -->
+    <div class="left-col">
+
+      <div class="section-block">
+        <h3>Overview</h3>
+        <p>After IKE Phase 1 completes and the IKE SA is established, Phase 2 (also called quick mode) negotiates the IPsec SAs that actually protect data traffic. Phase 2 is faster than Phase 1 — it uses only three messages, all protected by the IKE SA keys negotiated in Phase 1 — and its purpose is to agree on the specific parameters for encrypting the actual data: the encryption algorithm, authentication algorithm, SA lifetime, and (optionally) the traffic selectors that define which source and destination IP ranges will be encrypted under this SA.</p>
+        <p>Traffic selectors, also called proxy IDs, are a critical Phase 2 concept. They define the scope of the IPsec SA: which local subnet and which remote subnet are covered by this particular SA. In a route-based VPN, proxy IDs are typically set to 0.0.0.0/0 on both sides (any traffic routed to the tunnel interface is protected), and routing controls which traffic actually enters the tunnel. In a policy-based VPN, proxy IDs are set explicitly and must match between peers. A mismatch in proxy IDs is one of the most common causes of Phase 2 failure, and new subnets must be explicitly added. Perfect Forward Secrecy (PFS) is an optional Phase 2 feature that performs an additional Diffie-Hellman exchange specifically for deriving Phase 2 keys, ensuring that Phase 2 keying material is independent of Phase 1 keys. This means compromising one SA does not compromise others. PFS adds computational overhead but significantly strengthens the overall IPsec security posture.</p>
+        <p>The IPsec SA lifetime can be measured in seconds (time-based), kilobytes (volume-based), or both — whichever limit is reached first triggers a re-key. Understanding the SA lifetime interaction between Phase 1 and Phase 2 is important for troubleshooting: Phase 1 and Phase 2 SAs expire independently and can re-key independently. In production environments, Phase 2 SAs typically have shorter lifetimes than Phase 1 SAs, meaning Phase 2 re-keys happen more frequently while the underlying IKE SA remains active and protects the re-key exchange.</p>
+      </div>
+
+      <div class="img-placeholder">
+        <img src="images/session-22-ike-phase2.png" alt="Session 22 concept illustration" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 1rem;object-fit:cover;" onerror="this.style.display='none'">
+
+        <div class="img-icon">🖼</div>
+        <div class="img-label"><strong>Image Placeholder — Session 22</strong><br/>Flat illustration of IKE Phase 2 quick mode exchange</div>
+        <div class="img-prompt">Flat illustration of IKE Phase 2 quick mode: a 3-message exchange timeline between two VPN peers. Phase 2 elements labeled: PFS key icon (shown as optional branching path), proxy ID matching shown as two overlapping subnet ranges that must align, IPsec SA established shown as a bidirectional encrypted pipe at the end. AH vs ESP shown as two protocol options. Pastel indigo palette.</div>
+      </div>
+
+      <div class="section-block">
+        <h3>Target Questions</h3>
+        <p style="font-size:.83rem;color:var(--muted);margin-bottom:1rem;">These are the questions your Socratic session will explore. Read them before you start — they tell you what understanding to look for while reviewing the study guide.</p>
+        <ul class="questions-list">
+          <li><span class="q-num">1</span>What is the purpose of IKE Phase 2 — what is created at the end and what does it protect?</li>
+          <li><span class="q-num">2</span>What are proxy IDs (traffic selectors) and what happens when they don't match between peers?</li>
+          <li><span class="q-num">3</span>What is PFS (Perfect Forward Secrecy) and why would you enable it — what is the performance tradeoff?</li>
+          <li><span class="q-num">4</span>What is the IPsec SA lifetime — is it in seconds, kilobytes, or both?</li>
+          <li><span class="q-num">5</span>What is IKE quick mode — how many messages does Phase 2 involve?</li>
+          <li><span class="q-num">6</span>What is the difference between an AH SA and an ESP SA — which is used in practice and why?</li>
+          <li><span class="q-num">7</span>What happens to existing Phase 2 SAs when the Phase 1 IKE SA re-keys?</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- RIGHT SIDEBAR -->
+    <aside class="sidebar">
+
+      <div class="card">
+        <h4>Session Details</h4>
+        <div class="detail-row"><span class="detail-key">Session</span><span class="detail-val">22 of 23</span></div>
+        <div class="detail-row"><span class="detail-key">Chapter</span><span class="detail-val">07 — IPsec</span></div>
+        <div class="detail-row"><span class="detail-key">Format</span><span class="detail-val">Socratic (Claude-led)</span></div>
+        <div class="detail-row"><span class="detail-key">Est. time</span><span class="detail-val">25–35 min</span></div>
+        <div class="detail-row"><span class="detail-key">Study guide</span><span class="detail-val"><a href="../study-guides/Chapter 07 - IPsec/subtopic-02-ike-and-phase-negotiation.html">Open →</a></span></div>
+      </div>
+
+      <div class="card">
+        <h4>Prerequisites</h4>
+        <ul class="prereq-list">
+          <li>Session 21 — IKE Phase 1</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h4>My Questions</h4>
+        <label class="notes-label" for="myQs">Questions I want to ask Claude</label>
+        <textarea id="myQs" class="notes-area" placeholder="e.g. In route-based VPN with proxy IDs 0.0.0.0/0 — how does FortiGate know what traffic to encrypt?&#10;Does PFS always require a new DH exchange, or can it reuse Phase 1 keys?"></textarea>
+      </div>
+
+      <div class="card">
+        <h4>My Notes</h4>
+        <label class="notes-label" for="myNotes">Key points I want to remember</label>
+        <textarea id="myNotes" class="notes-area" placeholder="Jot down any pre-reading notes, gaps you noticed, or things to reinforce during the session..."></textarea>
+      </div>
+
+    </aside>
+  </div>
+</main>
+
+<nav class="page-nav">
+  <a href="session-21-ike-phase1.html" class="nav-link">
+    <span class="nav-direction">← Prev</span>
+    <span class="nav-title">Session 21</span>
+  </a>
+  <a href="index.html" class="nav-link hub">
+    <span class="nav-direction">Hub</span>
+    <span class="nav-title">Socratic Plan</span>
+  </a>
+  <a href="session-23-ipsec-troubleshooting.html" class="nav-link">
+    <span class="nav-direction">Next →</span>
+    <span class="nav-title">Session 23</span>
+  </a>
+</nav>
+
+<footer>EF-NSE7 · Socratic Plan · Session 22 — IKE Phase 2 &amp; SA Negotiation</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-pr-s22';
+['myQs','myNotes'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(!el)return;
+  const saved=localStorage.getItem(PAGE_KEY+'-'+id);
+  if(saved)el.value=saved;
+  el.addEventListener('input',()=>localStorage.setItem(PAGE_KEY+'-'+id,el.value));
+});
+window.addEventListener('load',()=>{
+  document.body.style.opacity='1';
+  if(sessionStorage.getItem('pt'))sessionStorage.removeItem('pt');
+});
+document.querySelectorAll('a[href]').forEach(a=>{
+  if(!a.getAttribute('href').startsWith('#'))
+    a.addEventListener('click',()=>sessionStorage.setItem('pt','1'));
+});
+</script>
+</body>
+</html>

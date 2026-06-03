@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){if(sessionStorage.getItem('pt'))document.documentElement.style.opacity='0';})()</script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Session 07 — Configure VDOMs · EF-NSE7 Socratic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:#0a0101;color:#e8ddd5;line-height:1.6;transition:opacity .25s ease;opacity:0}
+:root{
+  --session-color:#5aa2d2;
+  --bg:#0a0101;--surface:#140808;--border:#2a1515;--muted:#7a6060;
+  --text:#e8ddd5;--text-dim:#b09090;
+  --green:#5ab288;--coral:#e07050;--gold:#d2a541
+}
+
+/* Header */
+header{background:#1a0606;border-bottom:1px solid #2a1515;padding-bottom:2rem}
+.header-inner{max-width:960px;margin:0 auto;padding:1.5rem 2rem 0}
+.breadcrumb{font-size:.8rem;color:var(--muted);margin-bottom:1rem}
+.breadcrumb a{color:var(--muted);text-decoration:none;transition:color .15s}
+.breadcrumb a:hover{color:var(--session-color)}
+.breadcrumb span{margin:0 .4rem;opacity:.5}
+.eyebrow{display:inline-flex;align-items:center;gap:.5rem;font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--session-color);background:rgba(90,162,210,.1);border:1px solid rgba(90,162,210,.25);border-radius:20px;padding:.28rem .75rem;margin-bottom:.85rem}
+header h1{font-family:'Fraunces',serif;font-size:2.5rem;font-weight:700;color:#fff;line-height:1.15;margin-bottom:.6rem}
+header h1 em{color:var(--session-color);font-style:italic}
+header .tagline{color:var(--text-dim);font-size:1rem;max-width:600px;line-height:1.6}
+
+/* Story section */
+.story-section{background:linear-gradient(135deg,#1a0a08,#120606);border-top:3px solid var(--session-color);border-bottom:1px solid #2a1515;padding:3rem 0}
+.story-inner{max-width:960px;margin:0 auto;padding:0 2rem}
+.story-label{font-size:.7rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--session-color);margin-bottom:.6rem}
+.story-section h2{font-family:'Fraunces',serif;font-size:1.65rem;font-weight:700;color:#fff;margin-bottom:1.4rem;line-height:1.25}
+.story-section p{color:#c8b8b0;line-height:1.8;margin-bottom:1.1rem;max-width:780px;font-size:.97rem}
+.story-section p:last-child{margin-bottom:0}
+
+/* Main grid */
+main{max-width:960px;margin:0 auto;padding:2.5rem 2rem}
+.pr-grid{display:grid;grid-template-columns:1fr 300px;gap:2rem;align-items:start}
+@media(max-width:720px){.pr-grid{grid-template-columns:1fr}}
+
+/* Left column */
+.overview-section{margin-bottom:2rem}
+.section-label{font-size:.7rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.75rem}
+.overview-section h3{font-family:'Fraunces',serif;font-size:1.25rem;font-weight:600;color:#fff;margin-bottom:.85rem}
+.overview-section p{color:var(--text-dim);font-size:.95rem;line-height:1.8;margin-bottom:.9rem}
+.overview-section p:last-child{margin-bottom:0}
+
+/* Image placeholder */
+.img-placeholder{background:#140808;border:1px solid #2a1515;border-radius:10px;overflow:hidden;margin-bottom:2rem}
+.img-placeholder-top{background:#1c0c0c;border-bottom:1px solid #2a1515;padding:.6rem 1rem;display:flex;justify-content:space-between;align-items:center}
+.img-placeholder-top span{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.img-box{aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;padding:2rem;background:linear-gradient(135deg,#120808,#0e0606)}
+.img-icon{font-size:2.5rem;opacity:.3}
+.img-prompt-label{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;text-align:center}
+.img-prompt-text{font-size:.8rem;color:#6a5050;line-height:1.6;text-align:center;max-width:420px;font-style:italic}
+
+/* Target questions */
+.questions-section h3{font-family:'Fraunces',serif;font-size:1.25rem;font-weight:600;color:#fff;margin-bottom:1rem}
+.question-list{list-style:none;padding:0}
+.question-list li{background:#140808;border:1px solid #2a1515;border-radius:8px;padding:.85rem 1.1rem;margin-bottom:.6rem;display:flex;gap:.75rem;align-items:flex-start;transition:border-color .15s}
+.question-list li:hover{border-color:rgba(90,162,210,.35)}
+.q-num{min-width:22px;height:22px;background:rgba(90,162,210,.15);border:1px solid rgba(90,162,210,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:var(--session-color);margin-top:.1rem;flex-shrink:0}
+.q-text{font-size:.9rem;color:var(--text-dim);line-height:1.6}
+
+/* Sidebar */
+.sidebar{display:flex;flex-direction:column;gap:1.25rem}
+.sidebar-card{background:#140808;border:1px solid #2a1515;border-radius:10px;overflow:hidden}
+.card-header{background:#1c0c0c;border-bottom:1px solid #2a1515;padding:.65rem 1.1rem;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.card-body{padding:1.1rem}
+.detail-row{display:flex;flex-direction:column;gap:.15rem;margin-bottom:.9rem}
+.detail-row:last-child{margin-bottom:0}
+.detail-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.detail-value{font-size:.88rem;color:var(--text);font-weight:500}
+.detail-value a{color:var(--session-color);text-decoration:none}
+.detail-value a:hover{text-decoration:underline}
+.prereq-list{list-style:none;padding:0}
+.prereq-list li{font-size:.85rem;color:var(--text-dim);padding:.3rem 0;border-bottom:1px solid #1e0e0e;display:flex;gap:.5rem;align-items:flex-start}
+.prereq-list li:last-child{border-bottom:none}
+.prereq-list li::before{content:'→';color:var(--muted);flex-shrink:0;margin-top:.05rem}
+.notes-card textarea{width:100%;background:#0e0606;border:1px solid #2a1515;border-radius:6px;color:var(--text);font-family:'Inter',sans-serif;font-size:.83rem;line-height:1.6;padding:.75rem;resize:vertical;min-height:90px;outline:none;transition:border-color .15s}
+.notes-card textarea:focus{border-color:rgba(90,162,210,.4)}
+.notes-card textarea::placeholder{color:#4a3535}
+.notes-card label{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.4rem}
+.notes-card .field-wrap{margin-bottom:.75rem}
+.notes-card .field-wrap:last-child{margin-bottom:0}
+
+/* Page nav */
+.page-nav{max-width:960px;margin:0 auto;padding:1.5rem 2rem 2.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;border-top:1px solid #2a1515}
+.page-nav a{color:var(--text-dim);text-decoration:none;font-size:.85rem;display:flex;align-items:center;gap:.4rem;padding:.4rem .75rem;border:1px solid #2a1515;border-radius:6px;transition:all .15s}
+.page-nav a:hover{border-color:var(--session-color);color:var(--session-color)}
+.page-nav .hub-link{color:var(--muted);border-color:transparent}
+.page-nav .hub-link:hover{border-color:#2a1515;color:var(--text-dim)}
+
+/* Footer */
+footer{text-align:center;padding:1.5rem 2rem;font-size:.78rem;color:var(--muted);border-top:1px solid #2a1515}
+</style>
+<style>
+/* ── Light theme override ── */
+body{background:#faf7f5;color:#1a0606}
+header{background:#fff;border-bottom-color:#e8d5cc}
+header h1,h1{color:#1a0606}
+header .tagline,header p.tagline{color:#7a5050}
+.breadcrumb a{color:#9a6060}
+.eyebrow-label{color:#9a6060}
+/* Cards and surfaces */
+.content-section,.sidebar-card,.copy-block,.session-card,
+details.how-to,.how-to,.img-placeholder{background:#fff;border-color:#e8d5cc}
+.copy-block-header{background:#fdf5f0;border-bottom-color:#e8d5cc}
+.copy-block pre{background:#fdf5f0;color:#4a2020}
+.how-to-body{background:#fff}
+.flow-box{background:#fdf5f0;border-color:#e8d5cc}
+.flow-chip{background:#f0e5e0;color:#7a5050}
+/* Sidebar */
+.sidebar-textarea{background:#fdf5f0;border-color:#e8d5cc;color:#3a2020}
+.sidebar-textarea::placeholder{color:#c09090}
+.sidebar-textarea:focus{border-color:var(--session-color)}
+.card-hint,.sidebar-hint{color:#9a6060}
+/* Typography — scoped away from story section */
+.chapter-name,.session-title,.content-section h2,.target-qs h2,
+.overview-block h2,.sidebar-card-title+h2{color:#1a0606}
+.sidebar-card-title,.copy-block-label,.prereqs-label,.img-label,
+.session-meta,.flow-box h4,.chapter-label,.progress-label,.detail-row .dl,
+.eyebrow-label{color:#9a6060}
+.chapter-name{color:#1a0606}
+.prereqs li,.prereq-list li,.detail-row .dv{color:#5a3030}
+.target-intro,.section-sub{color:#9a6060}
+.step-text strong{color:#1a0606}
+.step-text p,.how-to-body p{color:#5a3030}
+.overview-block p,.content-section p{color:#5a3030}
+/* Borders and dividers */
+.chapter-header{border-bottom-color:#e8d5cc}
+.detail-row{border-bottom-color:#f0e0d8}
+.detail-row .dl{color:#9a6060}
+.q-list li{color:#5a3030;border-bottom-color:#f0e0d8}
+.prereq-list li{border-bottom-color:#f0e0d8;color:#5a3030}
+.divider{border-top-color:#e8d5cc}
+/* Page nav */
+.page-nav{border-top-color:#e8d5cc}
+.nav-link{color:#9a6060;border-color:#e8d5cc}
+.nav-link:hover{color:var(--session-color);border-color:var(--session-color)}
+.nav-link.hub{color:#7a5050}
+.nav-disabled{color:#c0a8a0}
+footer{color:#9a7070;border-top-color:#e8d5cc}
+/* Progress and status */
+.days-badge{background:#fff;border-color:#e8d5cc}
+.progress-bar-bg{background:#f0ddd8}
+.status-none{background:#f5ecec;color:#9a7070}
+.status-started{background:#fdf5e0;color:#8a6a20}
+/* Buttons */
+.btn-prereading{background:#fdf5f0;border-color:#e8d5cc;color:#4a2020}
+.btn-prereading:hover{background:#f5e8e0;border-color:var(--session-color);color:#1a0606}
+.btn-sg{background:#faf5f5;border-color:#ede0d8;color:#7a5050}
+.btn-sg:hover{border-color:#c0a098}
+.btn-done-toggle{border-color:#e8d5cc;color:#9a7070}
+.btn-done-toggle:hover{border-color:var(--session-color);color:var(--session-color)}
+.btn-done-toggle.is-done{border-color:var(--green,#5ab288);color:var(--green,#5ab288);background:#f0f8f0}
+.session-card:hover{border-color:#c8a898}
+.session-card.done{opacity:.5}
+/* Image prompt */
+.img-prompt-text{background:#fdf5f0;border-color:#e8d5cc;color:#7a5050}
+.img-placeholder{border-color:#e8d5cc}
+.img-icon{opacity:.25}
+.sg-link{background:#fdf5f0;border-color:#e8d5cc}
+.sg-link:hover{background:#f5e8e0;border-color:var(--session-color)}
+/* Preserve story section darkness */
+.story-section{background:linear-gradient(135deg,#1a0a08,#120606)!important}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <nav class="breadcrumb">
+      <a href="../study-guides/nse7-ef-study-guide-hub.html">EF-NSE7 Hub</a>
+      <span>›</span>
+      <a href="index.html">Socratic Plan</a>
+      <span>›</span>
+      Session 07
+    </nav>
+    <div class="eyebrow">Session 07 &nbsp;·&nbsp; Chapter 03 — VLANs and VDOMs</div>
+    <h1>Configure <em>VDOMs</em></h1>
+    <p class="tagline">Virtual domains — isolating customers, departments, or functions on a single FortiGate appliance.</p>
+  </div>
+</header>
+
+<section class="story-section">
+  <div class="story-inner">
+    <div class="story-label">Pre-Reading Story</div>
+    <h2>"When Two Customers Shared a Firewall — and Shared Everything Else"</h2>
+    <p>A managed security service provider operated a high-end FortiGate appliance serving five enterprise customers out of their data center. To reduce hardware costs, all five customers were onboarded onto a single physical device — same routing table, same policy space, same ARP table. On any given weekday the device hummed along without incident: each customer's traffic flowed through its assigned interfaces, policies were namespaced by source zone, and no one complained. The architecture looked fine in Visio diagrams and passed every quarterly review. No one had formally documented that all five customers shared a single global routing table and a single forwarding plane.</p>
+    <p>Then Customer C's network administrator pushed a change to their internal BGP configuration — a new summary route that inadvertently overlapped with a subnet block assigned exclusively to Customer D. The FortiGate absorbed the new route into its unified routing table and began forwarding packets destined for Customer D's address space toward Customer C's infrastructure instead. Customer D's internal file server started logging connection attempts from IP addresses it had never seen before — all belonging to Customer C's workstation fleet. Security analysts at Customer D noticed the anomalous authentication failures within twenty minutes and escalated. By the time the MSSP's NOC identified the root cause, Customer D's legal team had already drafted a breach notification letter. Traffic from one paying customer had literally reached the infrastructure of another.</p>
+    <p>The post-incident review was blunt: the FortiGate had supported Virtual Domain (VDOM) isolation since the day it was racked. VDOMs would have given each customer a completely separate routing table, policy database, ARP cache, and administrative boundary — hardware isolation on a single physical device. A routing mistake inside Customer C's VDOM would have been contained to Customer C. The lesson was expensive but clear: on a FortiGate, multi-tenancy without VDOMs is not multi-tenancy at all. It is a single shared environment wearing a multi-tenant costume.</p>
+  </div>
+</section>
+
+<main>
+  <div class="pr-grid">
+
+    <!-- LEFT COLUMN -->
+    <div class="left-col">
+
+      <div class="overview-section">
+        <div class="section-label">Overview</div>
+        <h3>What Are VDOMs and Why Do They Exist?</h3>
+        <p>A Virtual Domain (VDOM) is a logical partition within a single FortiGate that operates as an independent firewall instance. Each VDOM maintains its own routing table, firewall policy database, security profile set, administrative access controls, and network interface assignments. From a management perspective, an administrator scoped to one VDOM cannot see or affect the routing tables, policies, or sessions belonging to another VDOM on the same physical device. This hardware-assisted isolation is what makes VDOMs useful for multi-tenant deployments, internal segmentation between departments with conflicting security requirements, or separating management traffic from production traffic.</p>
+        <p>FortiGate supports two primary VDOM operation modes. In standard multi-VDOM mode, all VDOMs share the same hardware resources and the administrator can create and delete VDOMs freely. The "root" VDOM is the default VDOM created at factory reset — it typically serves as the management plane and often connects to the internet or upstream infrastructure. In split-task VDOM mode, the device dedicates one VDOM exclusively to management functions and another to all data-plane traffic, providing cleaner separation between the control plane and data plane at the cost of flexibility. Understanding which VDOM owns which interface, and which VDOM an administrator is scoped to, is critical for troubleshooting access issues in a VDOM-enabled deployment.</p>
+        <p>Resource allocation per VDOM is configurable for many system parameters — session table limits, concurrent connections, and bandwidth can all be bounded per VDOM to prevent one tenant from starving others. Administrators can be granted global privileges (access to all VDOMs and global settings) or scoped to a specific set of VDOMs, making it possible to delegate management of a customer's environment to that customer's own team without exposing any other tenant's configuration. Before your Socratic session, think about what "hardware isolation" means in practical terms versus what "logical separation using a shared OS" means — VDOMs land closer to the latter, but the question of how complete that isolation is under load is worth exploring.</p>
+      </div>
+
+      <div class="img-placeholder">
+        <img src="images/session-07-configure-vdoms.png" alt="Session 07 concept illustration" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 1rem;object-fit:cover;" onerror="this.style.display='none'">
+
+        <div class="img-placeholder-top">
+          <span>Session 07 Illustration</span>
+          <span>Image Prompt Below</span>
+        </div>
+        <div class="img-box">
+          <div class="img-icon">🖼</div>
+          <div class="img-prompt-label">Generate with your preferred image tool</div>
+          <div class="img-prompt-text">Flat illustration of FortiGate VDOMs: a FortiGate box divided into three clearly labeled VDOM panels (VDOM-Customer-A left blue, VDOM-Customer-B center violet, VDOM-Customer-C right green). Each panel contains mini routing table icon, policy table icon, and dedicated interface icon. Management VDOM shown at top in gray with admin icon. Pastel sky blue palette, bold section dividers, no shadows.</div>
+        </div>
+      </div>
+
+      <div class="questions-section">
+        <div class="section-label">Target Questions</div>
+        <h3>Come ready to answer these in the Socratic session</h3>
+        <ul class="question-list">
+          <li>
+            <div class="q-num">1</div>
+            <div class="q-text">What is a VDOM and what resources does it isolate from other VDOMs on the same FortiGate?</div>
+          </li>
+          <li>
+            <div class="q-num">2</div>
+            <div class="q-text">What are the two VDOM operation modes (Multi-VDOM vs Split-Task VDOM) and what is different about each?</div>
+          </li>
+          <li>
+            <div class="q-num">3</div>
+            <div class="q-text">What is the management VDOM and what is special about it vs regular VDOMs?</div>
+          </li>
+          <li>
+            <div class="q-num">4</div>
+            <div class="q-text">How are FortiGate administrators scoped to VDOMs — can you limit an admin to only one VDOM?</div>
+          </li>
+          <li>
+            <div class="q-num">5</div>
+            <div class="q-text">What system resources can be allocated per VDOM — give at least 3 examples.</div>
+          </li>
+          <li>
+            <div class="q-num">6</div>
+            <div class="q-text">What is the difference between a "root" VDOM and a non-root VDOM?</div>
+          </li>
+          <li>
+            <div class="q-num">7</div>
+            <div class="q-text">Can you have policies between two VDOMs directly, or do you need an additional construct?</div>
+          </li>
+        </ul>
+      </div>
+
+    </div><!-- /left-col -->
+
+    <!-- RIGHT SIDEBAR -->
+    <aside class="sidebar">
+
+      <div class="sidebar-card">
+        <div class="card-header">Session Details</div>
+        <div class="card-body">
+          <div class="detail-row">
+            <span class="detail-label">Session</span>
+            <span class="detail-value">07 of 33</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Chapter</span>
+            <span class="detail-value">03 — VLANs and VDOMs</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Subtopic</span>
+            <span class="detail-value">Configure VDOMs</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Study Guide</span>
+            <span class="detail-value"><a href="../study-guides/Chapter 03 - VLANs and VDOMs/subtopic-02-implement-enterprise-vdoms.html">Open Study Guide →</a></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="card-header">Prerequisites</div>
+        <div class="card-body">
+          <ul class="prereq-list">
+            <li>Session 06 — Configure VLANs</li>
+            <li>Understanding of virtual routing and traffic separation concepts</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="sidebar-card notes-card">
+        <div class="card-header">My Questions &amp; Notes</div>
+        <div class="card-body">
+          <div class="field-wrap">
+            <label for="myQs">My Questions (before the session)</label>
+            <textarea id="myQs" placeholder="What am I still unclear about? What do I want to make sure Claude asks me?"></textarea>
+          </div>
+          <div class="field-wrap">
+            <label for="myNotes">My Notes (after the session)</label>
+            <textarea id="myNotes" placeholder="Key takeaways, things that surprised me, gaps to revisit..."></textarea>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+  </div>
+</main>
+
+<nav class="page-nav">
+  <a href="session-06-configure-vlans.html">← Session 06</a>
+  <a href="index.html" class="hub-link">Socratic Plan</a>
+  <a href="session-08-inter-vdom-routing.html">Session 08 →</a>
+</nav>
+
+<footer>
+  EF-NSE7 Socratic Study Plan &nbsp;·&nbsp; Session 07 — Configure VDOMs &nbsp;·&nbsp; Chapter 03
+</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-pr-s07';
+['myQs','myNotes'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(!el)return;
+  const saved=localStorage.getItem(PAGE_KEY+'-'+id);
+  if(saved)el.value=saved;
+  el.addEventListener('input',()=>localStorage.setItem(PAGE_KEY+'-'+id,el.value));
+});
+window.addEventListener('load',()=>{document.body.style.opacity='1';if(sessionStorage.getItem('pt'))sessionStorage.removeItem('pt');});
+document.querySelectorAll('a[href]').forEach(a=>{
+  if(!a.getAttribute('href').startsWith('#'))a.addEventListener('click',()=>sessionStorage.setItem('pt','1'));
+});
+</script>
+</body>
+</html>

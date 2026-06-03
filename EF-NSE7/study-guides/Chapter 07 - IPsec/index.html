@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 07 — IPsec</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Epilogue:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--cream:#fff5f5;--cream-dark:#fde8e8;--ink:#1a0606;--ink-soft:#4a1212;--ink-muted:#8a3a3a;--red:#c0392b;--red-vivid:#e03e2d;--red-light:#fef2f2;--red-border:#f8b4b4;--border:#f0c8c8;--card-bg:#1a0606;--card-border:#2e0c0c;}
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}html.pt-init body{opacity:0;}
+  body{font-family:'Epilogue',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:72px 40px 96px;}
+  .back-link{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-muted);text-decoration:none;margin-bottom:48px;align-self:flex-start;padding:8px 16px;border-radius:20px;border:1px solid var(--border);background:rgba(255,255,255,0.6);transition:color 0.2s,border-color 0.2s,background 0.2s;}
+  .back-link:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);}
+  .content{width:100%;max-width:860px;display:flex;flex-direction:column;}
+  .chapter-label{display:inline-flex;align-items:center;gap:6px;background:var(--ink);color:var(--cream);padding:6px 16px;border-radius:20px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;align-self:flex-start;margin-bottom:20px;}
+  .label-dot{width:5px;height:5px;background:var(--red-vivid);border-radius:50%;}
+  .chapter-title{font-family:'Fraunces',serif;font-size:48px;font-weight:700;line-height:1.05;color:var(--ink);letter-spacing:-0.02em;margin-bottom:8px;}
+  .chapter-title em{font-style:italic;font-weight:400;color:var(--red);}
+  .chapter-subtitle{font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:18px;color:var(--ink-muted);margin-bottom:36px;}
+  .quick-nav{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:40px;}
+  .nav-pill{display:inline-flex;align-items:center;gap:7px;padding:8px 18px;border-radius:100px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-muted);text-decoration:none;border:1px solid var(--border);background:rgba(255,255,255,0.6);transition:color 0.2s,border-color 0.2s,background 0.2s,box-shadow 0.2s;}
+  .nav-pill svg{flex-shrink:0;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+  .nav-pill:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);box-shadow:0 2px 10px rgba(192,57,43,0.12);}
+  .nav-pill:hover svg{transform:translateY(3px);}
+  .nav-dropdown-wrap{position:relative;}
+  .nav-dropdown{position:absolute;top:calc(100% + 8px);left:0;background:#fff;border:1px solid var(--border);border-radius:14px;padding:6px;min-width:270px;box-shadow:0 8px 28px rgba(26,6,6,0.10),0 2px 8px rgba(26,6,6,0.06);opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity 0.18s ease,transform 0.22s cubic-bezier(0.34,1.56,0.64,1);z-index:100;}
+  .nav-dropdown::before{content:'';position:absolute;top:-10px;left:0;right:0;height:10px;}
+  .nav-dropdown-wrap:hover .nav-dropdown{opacity:1;pointer-events:auto;transform:translateY(0);}
+  .nav-dropdown a{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:9px;font-size:12px;font-weight:500;color:var(--ink-soft);text-decoration:none;line-height:1.3;transition:background 0.15s,color 0.15s;}
+  .nav-dropdown a:hover{background:var(--red-light);color:var(--red);}
+  .nav-dropdown a .dd-num{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-muted);flex-shrink:0;opacity:0.6;transition:color 0.15s,opacity 0.15s;}
+  .nav-dropdown a:hover .dd-num{color:var(--red);opacity:1;}
+  .nav-dropdown-divider{height:1px;background:var(--border);margin:4px 6px;}
+  .hero-image-wrap{width:100%;border-radius:24px;overflow:hidden;border:2px solid var(--card-border);background:var(--card-bg);margin-bottom:16px;}
+  .hero-image-wrap img{width:100%;display:block;min-height:340px;object-fit:cover;}
+  .hero-placeholder{width:100%;min-height:340px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:48px 40px;border:2px dashed rgba(192,57,43,0.32);border-radius:22px;background:repeating-linear-gradient(-45deg,transparent,transparent 10px,rgba(192,57,43,0.025) 10px,rgba(192,57,43,0.025) 20px);}
+  .ph-icon{width:52px;height:52px;border-radius:14px;background:rgba(192,57,43,0.13);border:1.5px solid rgba(192,57,43,0.28);display:flex;align-items:center;justify-content:center;color:#e87070;}
+  .ph-label{font-family:'Fraunces',serif;font-style:italic;font-size:18px;color:rgba(255,255,255,0.45);text-align:center;}
+  .ph-filename{font-size:11px;font-weight:600;letter-spacing:0.1em;color:rgba(192,57,43,0.55);font-family:monospace;}
+  .prompt-box{background:var(--card-bg);border:1.5px solid var(--card-border);border-radius:14px;padding:18px 22px;margin-bottom:56px;}
+  .prompt-header{display:flex;align-items:center;gap:8px;font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:rgba(192,57,43,0.65);margin-bottom:10px;}
+  .prompt-dot{width:5px;height:5px;border-radius:50%;background:var(--red-vivid);}
+  .prompt-text{font-size:12.5px;line-height:1.7;color:rgba(255,255,255,0.5);font-style:italic;}
+  .prompt-text strong{color:rgba(255,255,255,0.78);font-style:normal;font-weight:600;}
+  .prompt-filename{color:#e87070;font-family:monospace;font-style:normal;font-size:11px;}
+  .section-label{font-size:10px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:28px;display:flex;align-items:center;gap:10px;}
+  .section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+  .overview{display:flex;flex-direction:column;gap:0;margin-bottom:56px;}
+  .topic-block{padding-bottom:48px;}
+  .topic-block:last-child{padding-bottom:0;}
+  .topic-heading{font-family:'Fraunces',serif;font-size:26px;font-weight:700;line-height:1.15;color:var(--ink);letter-spacing:-0.01em;margin-bottom:14px;padding-left:18px;border-left:3px solid var(--red);}
+  .topic-heading em{font-style:italic;font-weight:400;color:var(--red);}
+  .topic-body{font-size:15.5px;line-height:1.8;color:var(--ink-soft);margin-bottom:28px;}
+  .topic-body strong{color:var(--ink);font-weight:600;}
+  .topic-body em{color:var(--red);font-style:italic;}
+  .callout{border-left:3px solid var(--red-border);background:var(--red-light);border-radius:0 12px 12px 0;padding:14px 20px;margin:20px 0 28px;font-size:14px;line-height:1.65;color:var(--ink-soft);}
+  .callout strong{color:var(--ink);}
+  .topic-divider{height:1px;background:var(--border);margin:0 0 48px;}
+  .inline-img-wrap{margin-bottom:12px;}
+  .inline-image{width:100%;display:block;border-radius:18px;border:2px solid var(--card-border);background:var(--card-bg);object-fit:cover;}
+  .inline-placeholder{width:100%;border-radius:18px;border:2px dashed var(--red-border);background:var(--red-light);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:36px 32px;text-align:center;position:relative;overflow:hidden;}
+  .inline-placeholder::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(-45deg,transparent,transparent 12px,rgba(192,57,43,0.04) 12px,rgba(192,57,43,0.04) 24px);pointer-events:none;}
+  .inline-ph-icon{width:44px;height:44px;border-radius:12px;background:rgba(192,57,43,0.12);border:1.5px solid rgba(192,57,43,0.26);display:flex;align-items:center;justify-content:center;color:var(--red);position:relative;z-index:1;}
+  .inline-ph-label{font-family:'Fraunces',serif;font-style:italic;font-size:16px;color:var(--ink-muted);position:relative;z-index:1;}
+  .inline-ph-file{font-size:10.5px;font-weight:600;letter-spacing:0.1em;color:var(--red);font-family:monospace;position:relative;z-index:1;}
+  .inline-prompt{background:var(--card-bg);border:1.5px solid var(--card-border);border-radius:0 0 14px 14px;border-top:none;padding:16px 22px;margin-bottom:28px;}
+  .inline-prompt .prompt-header{margin-bottom:8px;}
+  .inline-prompt .prompt-text{font-size:12px;}
+  .concepts-wrap{margin-top:8px;}
+  .concepts-heading{font-size:10px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:12px;}
+  .concepts{display:flex;flex-wrap:wrap;gap:8px;}
+  .concept-pill{font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;padding:6px 14px;border-radius:20px;background:var(--red-light);border:1px solid var(--red-border);color:var(--red);transition:background 0.2s,border-color 0.2s;}
+  .concept-pill:hover{background:#fde0e0;border-color:#f0a0a0;}
+  .subtopic-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:80px;}
+  .subtopic-card{position:relative;background:var(--card-bg);border:2px solid var(--card-border);border-radius:18px;padding:26px 28px 22px;text-decoration:none;color:inherit;display:flex;flex-direction:column;overflow:hidden;will-change:transform;transition:transform 0.42s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.35s ease,border-color 0.28s ease,background 0.3s ease;}
+  .subtopic-card::before{content:'';position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(to right,transparent,rgba(255,255,255,0.05) 50%,transparent);transform:skewX(-15deg);pointer-events:none;z-index:1;}
+  @keyframes card-shine{to{left:160%;}}
+  .subtopic-card:hover::before{animation:card-shine 0.5s ease forwards;}
+  .subtopic-card:hover{transform:translateY(-10px) scale(1.016);background:#260808;border-color:var(--red);box-shadow:0 24px 50px rgba(192,57,43,0.34),0 0 0 2px rgba(192,57,43,0.12);}
+  .sub-icon{width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(192,57,43,0.13);border:1.5px solid rgba(192,57,43,0.26);color:#e87070;margin-bottom:16px;transition:background 0.3s,border-color 0.3s,color 0.3s,box-shadow 0.32s,transform 0.5s cubic-bezier(0.34,1.56,0.64,1);}
+  .subtopic-card:hover .sub-icon{background:var(--red);border-color:var(--red-vivid);color:#fff;box-shadow:0 5px 18px rgba(192,57,43,0.48);transform:scale(1.12) rotate(360deg);}
+  .sub-num{font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.24);margin-bottom:5px;transition:color 0.3s;}
+  .subtopic-card:hover .sub-num{color:rgba(192,57,43,0.6);}
+  .sub-title{font-family:'Fraunces',serif;font-size:20px;font-weight:700;line-height:1.15;color:#fff;margin-bottom:10px;transition:color 0.3s;}
+  .subtopic-card:hover .sub-title{color:#ffe0e0;}
+  .sub-desc{font-size:12.5px;line-height:1.5;color:rgba(255,255,255,0.4);flex:1;margin-bottom:20px;transition:color 0.3s;}
+  .subtopic-card:hover .sub-desc{color:rgba(255,255,255,0.62);}
+  .sub-cta{display:inline-flex;align-items:center;gap:5px;align-self:flex-start;padding:6px 14px;border-radius:100px;font-size:10.5px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;background:rgba(192,57,43,0.16);border:1.5px solid rgba(192,57,43,0.32);color:#e87070;transition:background 0.3s,border-color 0.3s,color 0.3s,box-shadow 0.3s;}
+  .sub-arrow{display:inline-block;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+  .subtopic-card:hover .sub-cta{background:var(--red);border-color:var(--red-vivid);color:#fff;box-shadow:0 4px 14px rgba(192,57,43,0.46);}
+  .subtopic-card:hover .sub-arrow{transform:translateX(4px);}
+  @keyframes pageEnter{from{opacity:0;transform:scale(1.03) translateY(-16px);}to{opacity:1;transform:scale(1) translateY(0);}}
+  body{animation:pageEnter 0.5s cubic-bezier(0.15,0.85,0.2,1.08) both;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+  .hero-image-wrap{animation:fadeUp 0.48s 0.06s both;}.prompt-box{animation:fadeUp 0.48s 0.10s both;}.overview{animation:fadeUp 0.48s 0.14s both;}
+  .subtopic-card:nth-child(1){animation:fadeUp 0.44s 0.20s both;}.subtopic-card:nth-child(2){animation:fadeUp 0.44s 0.26s both;}.subtopic-card:nth-child(3){animation:fadeUp 0.44s 0.30s both;}
+  .back-to-top{display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border-radius:100px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-muted);text-decoration:none;border:1px solid var(--border);background:rgba(255,255,255,0.6);transition:color 0.2s,border-color 0.2s,background 0.2s,box-shadow 0.2s,transform 0.25s cubic-bezier(0.34,1.56,0.64,1);margin-top:56px;margin-bottom:32px;}
+  .back-to-top svg{transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+  .back-to-top:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);box-shadow:0 4px 14px rgba(192,57,43,0.14);transform:translateY(-2px);}
+  .back-to-top:hover svg{transform:translateY(-3px);}
+  footer{font-size:11px;letter-spacing:0.12em;color:var(--ink-muted);text-transform:uppercase;margin-bottom:60px;}
+  footer span{color:var(--red);}
+  @media(max-width:720px){body{padding:56px 20px 72px;}.chapter-title{font-size:34px;}.subtopic-grid{grid-template-columns:1fr;}.topic-heading{font-size:22px;}}
+</style>
+</head>
+<body>
+
+  <a class="back-link" href="../nse7-ef-study-guide-hub.html" id="top">← NSE7 Study Hub</a>
+
+  <div class="content">
+    <div class="chapter-label"><span class="label-dot"></span>EF-NSE7 &nbsp;·&nbsp; Chapter 07</div>
+    <h1 class="chapter-title">IPsec <em>VPN</em></h1>
+    <p class="chapter-subtitle">Designing site-to-site tunnels, mastering IKEv1/v2 phase negotiation, and troubleshooting IPsec on FortiGate</p>
+
+    <nav class="quick-nav">
+      <a class="nav-pill" href="#subtopics">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        Subtopics
+      </a>
+      <div class="nav-dropdown-wrap">
+        <a class="nav-pill" href="#overview">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          Chapter Overview
+        </a>
+        <div class="nav-dropdown">
+          <a href="#topic-1"><span class="dd-num">01</span>IPsec Topology Design</a>
+          <div class="nav-dropdown-divider"></div>
+          <a href="#topic-2"><span class="dd-num">02</span>IKE Phase Configuration</a>
+          <div class="nav-dropdown-divider"></div>
+          <a href="#topic-3"><span class="dd-num">03</span>Fragmentation &amp; MTU</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="hero-image-wrap">
+      <img id="heroImg" src="images/chapter-07-hero.png" alt="IPsec VPN — overview illustration"/>
+      <div class="hero-placeholder" style="display:none;">
+        <div class="ph-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+        <div class="ph-label">Hero image not generated yet</div>
+        <div class="ph-filename">images/chapter-07-hero.png</div>
+      </div>
+    </div>
+
+    <div class="prompt-box">
+      <div class="prompt-header"><span class="prompt-dot"></span>Image Generation Prompt &nbsp;→&nbsp; <span class="prompt-filename">images/chapter-07-hero.png</span></div>
+      <p class="prompt-text">
+        Detailed cartoon flat illustration of <strong>IPsec VPN hub-and-spoke topology</strong>. Light cream background. In the center, a large cartoon <strong>Hub FortiGate</strong> (red boxy appliance, labeled 'Hub') sits at the intersection of multiple glowing tunnels. Three spoke sites branch out from it in different directions — each spoke site is a small cartoon office scene: left spoke has a cute office building (baby blue), top spoke has a cartoon factory (mint green), right spoke has a home-office setup (peach). Each connecting tunnel is illustrated as a transparent glowing tube with a padlock icon floating in the middle and a shield badge labeled 'IPsec'. Inside the tunnel, tiny encrypted packets float as locked cubes. Above the hub, a keystone icon labeled <strong>'IKEv2'</strong> glows softly with sparkle lines indicating the negotiation completed. A small legend at the bottom shows: Phase 1 (key exchange, blue) and Phase 2 (data tunnel, green). The internet cloud in the background is pale and sketchy, contrasting with the solid tunnel tubes. <strong>Fully detailed cartoon style, soft flat fills, pastel palette (baby blue, mint, peach, red, cream), bold outlines, white background.</strong>
+      </p>
+    </div>
+
+    <div class="section-label" id="subtopics">Subtopics</div>
+    <div class="subtopic-grid">
+
+      <a class="subtopic-card" href="subtopic-01-configure-ipsec-tunnels.html">
+        <div class="sub-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+          </svg>
+        </div>
+        <div class="sub-num">Subtopic 01</div>
+        <div class="sub-title">Configure IPsec Tunnels</div>
+        <div class="sub-desc">Site-to-site, hub-and-spoke, and full mesh topologies, tunnel aggregation modes, route-overlap settings, and SCEP certificate enrollment.</div>
+        <div class="sub-cta">Study <span class="sub-arrow">→</span></div>
+      </a>
+
+      <a class="subtopic-card" href="subtopic-02-ike-and-phase-negotiation.html">
+        <div class="sub-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+          </svg>
+        </div>
+        <div class="sub-num">Subtopic 02</div>
+        <div class="sub-title">IKE and Phase Negotiation</div>
+        <div class="sub-desc">IKEv1 vs IKEv2 message exchange, DH groups (MODP/ECP), PFS, DPD modes, phase selectors, and cipher suite selection.</div>
+        <div class="sub-cta">Study <span class="sub-arrow">→</span></div>
+      </a>
+
+      <a class="subtopic-card" href="subtopic-03-ipsec-troubleshooting.html">
+        <div class="sub-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </div>
+        <div class="sub-num">Subtopic 03</div>
+        <div class="sub-title">IPsec Troubleshooting</div>
+        <div class="sub-desc">MTU, PMTUD, TCP MSS clamping, IP fragmentation, DF/MF bits, FEC for lossy links, and IPsec diagnostic commands on FortiGate.</div>
+        <div class="sub-cta">Study <span class="sub-arrow">→</span></div>
+      </a>
+
+    </div>
+
+    <div class="section-label" id="overview">Chapter Overview</div>
+    <div class="overview">
+
+      <div class="topic-block">
+        <h2 class="topic-heading" id="topic-1">IPsec <em>Topology</em> Design</h2>
+        <p class="topic-body">
+          IPsec VPN topologies on FortiGate fall into three primary patterns. <strong>Site-to-site</strong> connects two fixed locations with a single bidirectional tunnel — the simplest design, suitable when only two sites need to communicate securely. <strong>Hub-and-spoke</strong> places a central FortiGate (hub) that all remote sites (spokes) connect to — spokes communicate with each other by routing traffic through the hub, reducing the number of tunnels needed from O(n²) to O(n). <strong>Full mesh</strong> connects every site to every other site directly — maximum performance and lowest latency between spokes, but tunnel count grows quadratically.
+        </p>
+        <p class="topic-body">
+          <strong>Tunnel aggregation</strong> on FortiGate combines multiple parallel tunnels into a single logical interface with load-balancing modes: <em>round-robin</em> (distribute packets), <em>L3/L4 hashing</em> (per-flow), <em>redundant</em> (active/standby), and <em>weighted round-robin</em> (bandwidth-proportional). <strong>Route-overlap</strong> controls how FortiGate handles multiple tunnels advertising the same destination: <em>use-new</em> (new tunnel wins), <em>use-old</em> (keep existing), or <em>allow</em> (install both and ECMP). <strong>SCEP</strong> (Simple Certificate Enrollment Protocol) automates certificate lifecycle management for large-scale IPsec deployments.
+        </p>
+
+        <div class="inline-img-wrap">
+          <img class="inline-image" src="images/chapter-07-ike-phases.png" alt="IKE Phase 1 and Phase 2 negotiation illustration"/>
+          <div class="inline-placeholder" style="display:none;">
+            <div class="inline-ph-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+            <div class="inline-ph-label">Image not generated yet</div>
+            <div class="inline-ph-file">images/chapter-07-ike-phases.png</div>
+          </div>
+          <div class="inline-prompt">
+            <div class="prompt-header"><span class="prompt-dot"></span>Image Generation Prompt &nbsp;→&nbsp; <span class="prompt-filename">images/chapter-07-ike-phases.png</span></div>
+            <p class="prompt-text">
+              Detailed cartoon flat illustration of <strong>IKEv2 vs IKEv1 phase negotiation comparison</strong>. Light cream background. Split into two columns. <strong>Left column — IKEv2</strong>: Two cartoon FortiGate routers facing each other. Between them, four numbered cartoon message arrows flow back and forth (labeled '1 IKE_SA_INIT →', '2 ← IKE_SA_INIT', '3 IKE_AUTH →', '4 ← IKE_AUTH'). A green badge says <em>'4 messages'</em>. A result cloud above shows: 'IKE SA + Child SA established'. <strong>Right column — IKEv1 Main Mode</strong>: Two routers, nine arrows flowing (labeled 1–9, representing 6 main mode + 3 quick mode). An amber badge says <em>'9 messages'</em>. A comparison bubble in the center says <em>'IKEv2: faster, more secure, EAP support'</em>. DH group badges float above: 'MODP-2048', 'ECP-256', 'ECP-384'. <strong>Fully detailed cartoon style, soft flat fills, pastel palette (teal, amber, cream), bold outlines, white background.</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="topic-divider"></div>
+
+      <div class="topic-block">
+        <h2 class="topic-heading" id="topic-2">IKE Phase <em>Configuration</em></h2>
+        <p class="topic-body">
+          IKE (Internet Key Exchange) negotiates the cryptographic parameters for IPsec tunnels in two phases. <strong>Phase 1 (IKE SA)</strong> establishes a secure, authenticated channel between peers — both sides agree on encryption algorithm, hash, DH group, and authentication method (pre-shared key or certificate). <strong>Phase 2 (Child SA / IPsec SA)</strong> negotiates the actual data-protection parameters and derives session keys using the Phase 1 channel.
+        </p>
+        <p class="topic-body">
+          <strong>IKEv2</strong> requires only 4 messages to complete both phases (vs IKEv1's 6–9), supports <strong>EAP</strong> for flexible user authentication, and uses stronger ciphers by default: <em>AES-GCM</em>, <em>ChaCha20-Poly1305</em>, <em>AES-XCBC</em>. <strong>DH groups</strong> (Diffie-Hellman) determine key strength: MODP-2048 (Group 14) is minimum recommended; ECP-256 (Group 19) and ECP-384 (Group 20) offer elliptic curve efficiency. <strong>PFS (Perfect Forward Secrecy)</strong> renegotiates a new DH exchange for every Phase 2 SA — compromising one session key cannot decrypt past or future sessions. <strong>DPD (Dead Peer Detection)</strong> monitors tunnel liveness: <em>on-demand</em> (check only when traffic fails), <em>on-idle</em> (periodic keepalive), or <em>disable</em>.
+        </p>
+
+        <div class="callout">
+          <strong>IKEv1 vs IKEv2:</strong> On FortiGate, IKEv2 is strongly preferred for new deployments. IKEv1 is retained for compatibility with legacy devices. IKEv2's MOBIKE extension also enables tunnel continuity when the client IP changes — critical for mobile users.
+        </div>
+
+        <div class="inline-img-wrap">
+          <img class="inline-image" src="images/chapter-07-topologies.png" alt="IPsec tunnel topology comparison illustration"/>
+          <div class="inline-placeholder" style="display:none;">
+            <div class="inline-ph-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+            <div class="inline-ph-label">Image not generated yet</div>
+            <div class="inline-ph-file">images/chapter-07-topologies.png</div>
+          </div>
+          <div class="inline-prompt">
+            <div class="prompt-header"><span class="prompt-dot"></span>Image Generation Prompt &nbsp;→&nbsp; <span class="prompt-filename">images/chapter-07-topologies.png</span></div>
+            <p class="prompt-text">
+              Detailed cartoon flat illustration of <strong>three IPsec VPN topologies side by side</strong>. Light cream background. Three labeled panels. <strong>Panel 1 — Site-to-Site</strong>: Two cartoon FortiGate boxes connected by a single padlocked tunnel tube. Simple and clean. <strong>Panel 2 — Hub-and-Spoke</strong>: One large cartoon FortiGate labeled 'Hub' in the center, three smaller FortiGate boxes labeled 'Spoke A', 'Spoke B', 'Spoke C' arranged around it, each connected to the hub by a tunnel. A dotted arc shows spoke-to-spoke traffic going via hub. Spoke count badge: '3 tunnels'. <strong>Panel 3 — Full Mesh</strong>: Four cartoon FortiGate boxes at the corners of a square, every pair connected by a tunnel. Many tunnel lines crossing the center. Badge: '6 tunnels'. Below each panel, a small pros/cons chip: 'Simple' (green), 'Scalable' (teal), 'Low Latency' (blue). <strong>Fully detailed cartoon style, pastel palette, bold outlines, cream background.</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="topic-divider"></div>
+
+      <div class="topic-block">
+        <h2 class="topic-heading" id="topic-3">Fragmentation &amp; <em>MTU</em></h2>
+        <p class="topic-body">
+          IPsec encapsulation adds overhead — typically 50–100 bytes per packet for ESP headers, IV, padding, and authentication. This means a standard 1500-byte Ethernet MTU becomes too large for the encapsulated packet to traverse the internet without fragmentation. <strong>PMTUD (Path MTU Discovery)</strong> is the mechanism by which hosts discover the smallest MTU along a path by sending packets with the <strong>DF (Don't Fragment)</strong> bit set and waiting for ICMP "fragmentation needed" messages back. <strong>TCP MSS clamping</strong> on FortiGate adjusts the TCP Maximum Segment Size in SYN packets to prevent oversized TCP segments, solving the problem proactively without relying on ICMP.
+        </p>
+        <p class="topic-body">
+          When PMTUD is blocked (common on misconfigured networks that drop ICMP), packets silently fail. FortiGate's <strong>IP fragmentation</strong> settings control whether the FortiGate itself fragments oversized packets before encapsulation. The <strong>MF (More Fragments)</strong> bit indicates there are more fragments following. <strong>FEC (Forward Error Correction)</strong> adds redundant data to UDP streams across lossy links, allowing the receiver to reconstruct lost packets without retransmission — useful for ADVPN and SD-WAN overlays across unreliable WAN connections.
+        </p>
+
+        <div class="concepts-wrap">
+          <div class="concepts-heading">Key Concepts</div>
+          <div class="concepts">
+            <span class="concept-pill">IKEv2</span>
+            <span class="concept-pill">IKEv1</span>
+            <span class="concept-pill">Phase 1 &amp; 2</span>
+            <span class="concept-pill">DH Groups</span>
+            <span class="concept-pill">PFS</span>
+            <span class="concept-pill">DPD</span>
+            <span class="concept-pill">Hub-and-Spoke</span>
+            <span class="concept-pill">Tunnel Aggregation</span>
+            <span class="concept-pill">Route-Overlap</span>
+            <span class="concept-pill">SCEP</span>
+            <span class="concept-pill">MTU &amp; PMTUD</span>
+            <span class="concept-pill">TCP MSS Clamping</span>
+            <span class="concept-pill">FEC</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <a class="back-to-top" href="#top">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+    Back to Top
+  </a>
+  <footer>EF-NSE7<span>.</span> Chapter 07<span>.</span> IPsec</footer>
+
+  <script>
+    if(sessionStorage.getItem('pt')){document.body.style.opacity='1';sessionStorage.removeItem('pt');}
+    document.querySelectorAll('.subtopic-card,.back-link').forEach(el=>{el.addEventListener('click',()=>sessionStorage.setItem('pt','1'));});
+    (function(){var img=document.getElementById('heroImg'),ph=document.querySelector('.hero-placeholder'),prompt=document.querySelector('.prompt-box');if(!img)return;function onLoad(){if(ph)ph.style.display='none';if(prompt)prompt.style.display='none';}function onError(){img.style.display='none';if(ph)ph.style.display='flex';}img.addEventListener('load',onLoad);img.addEventListener('error',onError);if(img.complete){img.naturalWidth>0?onLoad():onError();}})();
+    document.querySelectorAll('.inline-img-wrap').forEach(function(wrap){var img=wrap.querySelector('.inline-image'),ph=wrap.querySelector('.inline-placeholder'),prompt=wrap.querySelector('.inline-prompt');if(!img)return;function onLoad(){if(ph)ph.style.display='none';if(prompt)prompt.style.display='none';}function onError(){img.style.display='none';if(ph)ph.style.display='flex';if(prompt){prompt.style.display='block';prompt.style.borderRadius='14px';prompt.style.borderTop='1.5px solid var(--card-border)';prompt.style.marginTop='8px';}}img.addEventListener('load',onLoad);img.addEventListener('error',onError);if(img.complete){img.naturalWidth>0?onLoad():onError();}});
+  </script>
+</body>
+</html>

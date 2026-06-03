@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Implement Enterprise Networks Using VDOMs — EF-NSE7 Ch03 Sub02</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ── */
+:root {
+  --bg:#fff5f5;--surface:#ffffff;--surface-2:#fef2f2;--border:#f0c8c8;--border-dim:#fde8e8;
+  --text:#1a0606;--text-soft:#4a1212;--text-muted:#8a3a3a;
+  --red:#c0392b;--red-vivid:#e03e2d;--red-glow:rgba(192,57,43,0.07);--red-dim:#f8b4b4;
+  --red-deep:#7f1d1d;--red-light:#fef2f2;--red-border:#f8b4b4;
+  --green:#1a7c4a;--green-light:#d4f0e0;--green-border:#a7e0c0;
+  --amber:#b45309;--amber-light:#fef9c3;--amber-border:#fde68a;
+}
+html{scroll-behavior:smooth;}
+html.pt-init body{opacity:0;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+header{padding:48px 60px 36px;background:#1a0606;display:flex;align-items:flex-end;gap:32px;}
+.header-left{flex:1;}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);letter-spacing:0.08em;margin-bottom:12px;flex-wrap:wrap;}
+.breadcrumb a{color:#e87070;text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.breadcrumb-sep{color:rgba(232,112,112,0.35);}
+.header-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(232,112,112,0.1);border:1px solid rgba(232,112,112,0.25);padding:5px 14px;border-radius:20px;font-size:11px;color:#e87070;letter-spacing:0.08em;margin-bottom:14px;}
+.dot-live{width:6px;height:6px;background:#e87070;border-radius:50%;display:inline-block;animation:blink 2.4s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+header h1{font-family:'Fraunces',serif;font-size:44px;font-weight:700;line-height:1.0;color:#fff;margin-bottom:10px;}
+header h1 em{font-style:italic;font-weight:400;color:#e87070;}
+header p{font-size:13px;color:rgba(255,255,255,0.42);margin-top:10px;line-height:1.7;}
+.motivation-banner{padding:20px 60px;min-height:84px;display:flex;flex-direction:column;justify-content:center;border-bottom:1px solid var(--border);background:var(--surface);}
+.motivation-text{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--text);}
+.motivation-text em{font-style:italic;color:var(--red);}
+.motivation-sub{font-size:12px;color:var(--text-muted);line-height:1.7;margin-top:4px;}
+.top-panels{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+.top-panels .qpanel{border-bottom:none;border-right:1px solid var(--border);}
+.top-panels .qpanel-header{padding-left:32px;padding-right:32px;}
+.top-panels .qpanel-body{padding-left:32px;padding-right:32px;}
+.qpanel{background:var(--surface);}
+.qpanel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 20px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.qpanel-header:hover,.qpanel-header.open{background:var(--surface-2);}
+.qpanel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.qpanel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.qpanel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.qpanel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.qpanel-body{display:none;padding:0 20px 22px;}
+.qpanel-body.open{display:block;}
+.notes-panel{background:var(--surface);}
+.notes-panel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 32px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.notes-panel-header:hover,.notes-panel-header.open{background:var(--surface-2);}
+.notes-panel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.notes-panel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.notes-panel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.notes-panel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.notes-panel-body{display:none;padding:0 32px 22px;}
+.notes-panel-body.open{display:block;}
+.q-group{margin-bottom:16px;}
+.q-group-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+.q-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-dim);}
+.q-item:last-child{border-bottom:none;}
+.q-num{font-size:10px;font-weight:700;color:var(--red);min-width:16px;margin-top:2px;}
+.q-text{font-size:12px;color:var(--text-soft);line-height:1.5;flex:1;}
+.q-del{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 4px;margin-top:1px;}
+.q-del:hover{color:var(--red);}
+.no-questions{font-size:12px;color:var(--text-muted);padding:8px 0;}
+.btn-add-q{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-q:hover{opacity:0.85;}
+.section-nav{position:sticky;top:0;z-index:90;display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);padding:0 32px;overflow-x:auto;}
+.nav-tab{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:12px 18px;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--red);border-bottom-color:var(--red);}
+main{display:grid;grid-template-columns:1fr 320px;gap:0;align-items:start;max-width:1200px;margin:0 auto;padding:0;}
+.main-content{padding:36px 40px 60px 60px;}
+.sidebar{padding:32px 24px 60px 20px;position:sticky;top:57px;max-height:calc(100vh - 57px);overflow-y:auto;}
+.section-block{margin-bottom:48px;}
+.section-label{font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.section-block h2{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1.15;margin-bottom:16px;padding-left:16px;border-left:3px solid var(--red);}
+.section-block h2 em{font-style:italic;font-weight:400;color:var(--red);}
+.section-block p{font-size:14px;line-height:1.8;color:var(--text-soft);margin-bottom:14px;}
+.section-block p strong{color:var(--text);font-weight:600;}
+.section-block p em{color:var(--red);font-style:italic;}
+.section-block ul,.section-block ol{padding-left:22px;margin-bottom:14px;}
+.section-block li{font-size:14px;line-height:1.75;color:var(--text-soft);margin-bottom:4px;}
+.section-block li strong{color:var(--text);font-weight:600;}
+.callout{border-left:3px solid var(--red-border);background:var(--red-light);border-radius:0 10px 10px 0;padding:12px 18px;margin:16px 0;font-size:13.5px;line-height:1.65;color:var(--text-soft);}
+.callout strong{color:var(--text);}
+.callout-green{border-left-color:var(--green-border);background:var(--green-light);}
+.callout-amber{border-left-color:var(--amber-border);background:var(--amber-light);}
+.section-img-wrap{margin:0 0 20px;display:flex;flex-direction:column;align-items:center;}
+.section-img{width:260px;max-width:100%;border-radius:12px;cursor:zoom-in;transition:width 0.3s ease;border:1px solid var(--border);display:block;}
+.section-img.si-expanded{width:100%;cursor:zoom-out;border-radius:16px;}
+.si-placeholder{display:none;width:260px;max-width:100%;border:2px dashed var(--border);border-radius:12px;background:var(--surface-2);padding:14px 16px;flex-direction:column;align-items:flex-start;gap:8px;}
+.si-placeholder.si-show{display:flex;}
+.si-filename{font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+.code-block{background:#1a0606;border-radius:12px;padding:20px 24px;margin:16px 0;overflow-x:auto;}
+.code-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#e87070;margin-bottom:10px;}
+.code-block pre{margin:0;}
+.code-block code{font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:rgba(255,255,255,0.82);}
+.socratic-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:16px;border-top:3px solid var(--red);}
+.socratic-header{display:flex;align-items:center;gap:8px;margin-bottom:0;cursor:pointer;user-select:none;}
+.socratic-header::after{content:'▸ Expand';margin-left:auto;font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'Inter',sans-serif;}
+.socratic-block.soc-open .socratic-header{margin-bottom:10px;}
+.socratic-block.soc-open .socratic-header::after{content:'▾ Collapse';}
+.socratic-block:not(.soc-open) .socratic-insight,
+.socratic-block:not(.soc-open) .socratic-questions,
+.socratic-block:not(.soc-open) .answer-area{display:none;}
+.socratic-icon{font-size:17px;flex-shrink:0;}
+.socratic-label{font-size:9px;font-weight:700;letter-spacing:0.18em;color:var(--text-muted);}
+.socratic-insight{font-size:13px;color:var(--text-soft);line-height:1.75;margin-bottom:12px;border-left:3px solid var(--border);padding-left:12px;font-style:italic;}
+.socratic-questions{list-style:none;padding:0;margin:0;}
+.socratic-questions li{font-size:12.5px;color:var(--text);padding:7px 0 7px 22px;position:relative;border-bottom:1px solid var(--border-dim);line-height:1.6;}
+.socratic-questions li:last-child{border-bottom:none;}
+.socratic-questions li::before{content:'?';position:absolute;left:0;font-weight:700;font-size:12px;top:8px;color:var(--red);}
+.answer-area{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.answer-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.answer-textarea:focus{border-color:var(--text);}
+.answer-textarea:disabled{opacity:0.7;background:var(--surface-2);cursor:default;}
+.answer-buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.btn-add-answer{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-answer:hover:not(:disabled){opacity:0.85;}
+.btn-add-answer:disabled{opacity:0.5;cursor:default;}
+.btn-see-answer{background:var(--surface);color:var(--text-muted);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-see-answer:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-see-answer:not(:disabled){color:var(--red);border-color:var(--red);}
+.btn-see-answer:hover:not(:disabled){background:var(--red-glow);}
+.model-answers{margin-top:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.model-answer-item{padding:10px 0;border-bottom:1px solid var(--border-dim);}
+.model-answer-item:first-child{padding-top:0;}
+.model-answer-item:last-child{border-bottom:none;padding-bottom:0;}
+.model-answer-q{font-size:9px;font-weight:700;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:4px;}
+.model-answer-text{font-size:13px;color:var(--text-soft);line-height:1.7;}
+.mental-note-block{border-radius:10px;padding:12px 16px;margin:16px 0;display:flex;gap:10px;align-items:flex-start;background:rgba(192,57,43,0.07);border:1px solid var(--border);}
+.mental-note-block-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.mental-note-block-inner{flex:1;}
+.mental-note-block-label{font-size:9px;font-weight:700;letter-spacing:0.16em;color:var(--red);margin-bottom:3px;}
+.mental-note-block-text{font-size:13px;font-weight:600;line-height:1.55;color:var(--text);}
+.analogy-box{background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #b45309;border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0;}
+.analogy-label{display:flex;align-items:center;gap:6px;user-select:none;cursor:pointer;font-size:9px;font-weight:700;letter-spacing:0.16em;color:#b45309;margin-bottom:4px;}
+.analogy-label::after{content:'▾  Reveal illustration';margin-left:auto;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:none;opacity:0.75;}
+.analogy-label:hover::after{opacity:1;}
+.analogy-box.expanded > .analogy-label::after{content:'▴  Hide illustration';}
+.analogy-text{font-size:13px;color:#78350f;line-height:1.65;font-style:italic;}
+.analogy-box > .analogy-img{display:none;}
+.analogy-box.expanded > .analogy-img{display:block;}
+.analogy-img img{max-width:360px;width:100%;cursor:zoom-in;transition:max-width 0.25s ease;border-radius:8px;margin-top:10px;}
+.analogy-img img.zoomed{max-width:100%;cursor:zoom-out;}
+.prompt-toggle{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:10px;font-weight:600;letter-spacing:0.08em;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;text-transform:uppercase;}
+.prompt-toggle:hover{color:var(--text);border-color:var(--text);}
+.prompt-content{margin-top:10px;padding:10px 14px;background:rgba(0,0,0,0.04);border-radius:8px;font-size:11.5px;color:var(--text-muted);font-style:italic;line-height:1.65;text-align:left;}
+.prompt-content[hidden]{display:none;}
+.lesson-tools{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:40px;}
+.lesson-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.tool-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.tool-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.tool-textarea:focus{border-color:var(--red);}
+.tool-row{margin-top:8px;display:flex;gap:8px;}
+.sidebar-section{margin-bottom:28px;}
+.sidebar-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;}
+.ssnav{display:flex;flex-direction:column;gap:2px;margin-top:4px;}
+.ssnav-item{font-size:12px;color:var(--text-soft);padding:6px 10px;border-radius:6px;text-decoration:none;line-height:1.4;display:block;transition:background 0.15s,color 0.15s;}
+.ssnav-item:hover,.ssnav-item.active{background:var(--red-glow);color:var(--red);}
+.hub-link{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);margin-bottom:16px;transition:color 0.15s,border-color 0.15s,background 0.15s;}
+.hub-link:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);}
+.check-item{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;}
+.check-input{accent-color:var(--red);width:14px;height:14px;flex-shrink:0;cursor:pointer;}
+.check-label{font-size:12px;color:var(--text-soft);line-height:1.4;}
+.check-item:has(.check-input:checked) .check-label{color:var(--text-muted);text-decoration:line-through;}
+.quick-ref{background:#1a0606;border-radius:10px;padding:12px 16px;margin-bottom:8px;}
+.quick-ref-term{font-size:10px;font-weight:700;letter-spacing:0.12em;color:#e87070;margin-bottom:3px;text-transform:uppercase;}
+.quick-ref-def{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;}
+.page-nav{display:flex;border-top:2px solid var(--border);background:var(--surface);}
+.page-nav-btn{flex:1;display:flex;flex-direction:column;gap:4px;padding:16px 28px;text-decoration:none;transition:background 0.15s;cursor:pointer;}
+.page-nav-btn:hover:not(.page-nav-disabled){background:var(--surface-2);}
+.page-nav-prev{border-right:1px solid var(--border);}
+.page-nav-next{text-align:right;}
+.page-nav-disabled{opacity:0.3;pointer-events:none;}
+.page-nav-label{font-size:10px;font-weight:600;letter-spacing:0.14em;color:var(--text-muted);display:block;}
+.page-nav-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;color:var(--red);display:block;}
+footer{font-size:11px;letter-spacing:0.12em;color:var(--text-muted);text-transform:uppercase;padding:20px 60px;border-top:1px solid var(--border);}
+footer span{color:var(--red);}
+.img-caption{font-size:11px;color:var(--text-muted);text-align:center;margin-top:6px;line-height:1.4;font-style:italic;}
+.analogy-summary{font-style:normal;font-weight:600;color:#92400e;margin-bottom:10px;}
+.analogy-text ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;}
+.analogy-text li{padding-left:18px;position:relative;}
+.analogy-text li::before{content:'•';position:absolute;left:0;font-weight:700;color:#b45309;}
+.data-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;}
+.data-table th{background:#1a0606;color:#e87070;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:10px 14px;text-align:left;}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-soft);line-height:1.55;vertical-align:top;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:nth-child(even) td{background:var(--surface-2);}
+.data-table td strong{color:var(--text);font-weight:600;}
+@media(max-width:1000px){main{grid-template-columns:1fr;}.sidebar{position:static;max-height:none;padding:0 40px 40px;}}
+@media(max-width:720px){header{padding:28px 24px 24px;}header h1{font-size:32px;}.motivation-banner{padding:16px 24px;}.main-content{padding:24px 24px 40px;}.section-nav{padding:0 16px;}.top-panels{grid-template-columns:1fr;}.top-panels .qpanel{border-right:none;border-bottom:1px solid var(--border);}.lesson-tools-grid{grid-template-columns:1fr;}footer{padding:16px 24px;}}
+</style>
+</head>
+<body>
+<div id="page-transition" style="position:fixed;inset:0;background:#1a0606;z-index:9999;pointer-events:none;opacity:0;transition:opacity 0.25s;"></div>
+
+<header>
+  <div class="header-left">
+    <div class="breadcrumb">
+      <a href="../nse7-ef-study-guide-hub.html">EF-NSE7</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="index.html">Chapter 03 — VLANs and VDOMs</a>
+      <span class="breadcrumb-sep">›</span>
+      Subtopic 02
+    </div>
+    <div class="header-eyebrow"><span class="dot-live"></span> Study Guide · EF-NSE7</div>
+    <h1>Implement Enterprise Networks Using <em>VDOMs</em></h1>
+    <p>Understand VDOM types, the Global VDOM hierarchy, global objects, resource limits, and the five VDOM use cases — the most heavily-tested multi-tenant topic in EF-NSE7.</p>
+  </div>
+</header>
+
+<div class="motivation-banner">
+  <div class="motivation-text">One FortiGate, <em>many independent firewalls</em> — VDOMs are how enterprises scale security without multiplying hardware.</div>
+  <p class="motivation-sub">This subtopic covers enabling VDOMs, the Admin/Traffic/LAN Extension types, Global VDOM settings, global objects, and the five deployment use cases.</p>
+</div>
+
+<div class="top-panels">
+  <div class="qpanel" id="qpanel">
+    <button class="qpanel-header" onclick="toggleQPanel()" id="qpanel-header">
+      <span class="qpanel-title">MY QUESTIONS</span>
+      <span class="qpanel-count" id="qpanel-count">0</span>
+      <span class="qpanel-hint">— click to expand</span>
+      <span class="qpanel-chevron" id="qpanel-chevron">▾</span>
+    </button>
+    <div class="qpanel-body" id="qpanel-body"></div>
+  </div>
+  <div class="notes-panel" id="notes-panel">
+    <button class="notes-panel-header" onclick="toggleNotesPanel()" id="notes-panel-header">
+      <span class="notes-panel-title">MY NOTES</span>
+      <span class="notes-panel-count" id="notes-panel-count">0</span>
+      <span class="notes-panel-hint">— click to expand</span>
+      <span class="notes-panel-chevron" id="notes-panel-chevron">▾</span>
+    </button>
+    <div class="notes-panel-body" id="notes-panel-body"></div>
+  </div>
+</div>
+
+<nav class="section-nav" id="section-nav">
+  <a class="nav-tab active" href="#s1">VDOM Overview</a>
+  <a class="nav-tab" href="#s2">VDOM Global</a>
+  <a class="nav-tab" href="#s3">Global Objects</a>
+  <a class="nav-tab" href="#s4">VDOM Types</a>
+  <a class="nav-tab" href="#s5">Use Cases</a>
+</nav>
+
+<main>
+  <div class="main-content">
+
+    <!-- ═══ SECTION 1 ═══ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · VDOM OVERVIEW</span>
+      </div>
+      <p class="socratic-insight">VDOMs partition a single FortiGate into multiple independent virtual firewalls, each with its own security policies, interfaces, and routing tables. Enabling multi-VDOM mode creates two special VDOMs that can never be deleted.</p>
+      <ul class="socratic-questions">
+        <li>When you enable multi-VDOM mode on FortiGate, what two VDOMs are automatically created — and why can neither be deleted?</li>
+        <li>Most FortiGate models support up to 10 VDOMs by default. What CLI command tells you the exact maximum your device supports, and how do you increase that limit?</li>
+      </ul>
+      <div class="answer-area" data-section="vdom-overview">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Enabling multi-VDOM creates the Global VDOM and the root VDOM. Neither can be deleted because they are foundational: Global VDOM manages device-wide settings (firmware, DNS, interfaces, logging) and only Super Admin users can access it; root VDOM is the default traffic VDOM and must exist as a baseline. Deleting either would break the VDOM architecture entirely.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Use <code>get system status</code> and look for "Max number of virtual domains," or run the filtered command <code>get sys status | grep "Max number of virtual domains"</code>. To increase the limit beyond 10, you must purchase and apply an additional VDOM license from Fortinet.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s1">
+      <div class="section-label">SECTION 01</div>
+      <h2>VDOMs Overview — <em>Virtualized Security</em></h2>
+      <div class="section-img-wrap">
+        <img src="images/s1-vdom-overview.png" class="section-img" alt="FortiGate partitioned into Global VDOM, root VDOM, VDOM1, and VDOM2"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s1-vdom-overview.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: a FortiGate device (red box at top) partitioned into four stacked horizontal layers — "VDOM Global" (dark, top), "vdom: root" (blue), "vdom: VDOM1" (green), "vdom: VDOM2" (purple). Each layer has a small server/rack icon. Arrows labeled "management only" point to Global. A lock icon on Global reads "Super Admin only". Pastel palette, bold outlines, no shadows.</div>
+        </div>
+        <p class="img-caption">A single FortiGate partitioned into multiple VDOMs — each an independent virtual firewall with its own policies and routing.</p>
+      </div>
+      <p>A <strong>VDOM (Virtual Domain)</strong> partitions a single FortiGate device into multiple independent virtual firewalls, each with its own <strong>security configuration, interfaces, routing table, firewall policies, and VPN settings</strong>. VDOMs enable multi-tenancy, network segmentation, and administrative separation on a single physical device.</p>
+      <p>To enable VDOMs, use the CLI command <code>config system global / set vdom-mode multi-vdom / end</code>. This creates the <strong>Global VDOM</strong> and the <strong>root VDOM</strong> — two VDOMs that cannot be deleted. Only <em>Super Admin</em> users have access to the Global VDOM.</p>
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Enable Multi-VDOM</div>
+        <pre><code>config system global
+    set vdom-mode multi-vdom
+end
+
+# Check the VDOM limit on your device:
+get system status
+get sys status | grep "Max number of virtual domains"</code></pre>
+      </div>
+      <p>Most FortiGate models support <strong>up to 10 VDOMs by default</strong>. Additional VDOMs require a license. To delete a VDOM, you must first remove all references: delete policies, remove firewall objects, and reassign all interfaces that belong to that VDOM back to root.</p>
+      <div class="callout callout-amber"><strong>Exam tip:</strong> To delete a VDOM you must first remove all policies, firewall objects, and interfaces assigned to it. You cannot delete the Global or root VDOMs. Switching between VDOMs in the GUI uses the VDOM selector at the top right — only Super Admin sees the Global VDOM.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Enable VDOMs: set vdom-mode multi-vdom. Creates Global + root (undeletable). Default max = 10 VDOMs; check with get sys status | grep "Max number". Super Admin only accesses Global VDOM. Delete VDOM = remove policies, objects, interfaces first.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s1" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s1','VDOM Overview')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s1" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s1')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SECTION 2 ═══ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · VDOM GLOBAL</span>
+      </div>
+      <p class="socratic-insight">VDOM Global controls device-wide settings. Because changes here affect every VDOM on the device, three modules that are specific to traffic processing are explicitly excluded from Global — you can't configure them there at all.</p>
+      <ul class="socratic-questions">
+        <li>Which three FortiGate modules are NOT available in VDOM Global, and why does it make sense to exclude them from a device-wide management context?</li>
+        <li>What is the difference between "global resources" and "VDOM resources" in the Global VDOM resource allocation screen?</li>
+      </ul>
+      <div class="answer-area" data-section="vdom-global">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Policy &amp; Objects, VPN, and User &amp; Authentication are unavailable in VDOM Global. These modules handle user traffic and are inherently per-VDOM — you define policies and VPNs separately inside each traffic VDOM. Placing them in Global would break the isolation model where each VDOM has independent security policies.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Global resources affect the entire FortiGate device (e.g., total active sessions, total firewall policies) and are edited under VDOM Global &gt; System &gt; Global Resources. VDOM resources are allocated to a specific VDOM (e.g., maximum firewall policies for VDOM1) and are edited under VDOM Global &gt; System &gt; VDOM &gt; Edit VDOM. The override maximum must always be greater than or equal to current usage.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s2">
+      <div class="section-label">SECTION 02</div>
+      <h2>VDOM Global — <em>Device-Wide Settings</em></h2>
+      <div class="section-img-wrap">
+        <img src="images/s2-vdom-global.png" class="section-img" alt="VDOM Global dashboard showing missing modules and Global Resources screen"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s2-vdom-global.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: two-panel diagram. Left panel: VDOM Global sidebar menu (dark background) showing Dashboard, Network, Security Profiles, System, Security Fabric, Log &amp; Report — with a red "X" callout box listing "No Policy &amp; Objects, No VPN, No User &amp; Authentication". Right panel: Resource allocation table with two rows — "Global Resources" (affects whole device, blue) and "VDOM Resources" (per-VDOM, green). Bold outlines, pastel colors, no shadows.</div>
+        </div>
+        <p class="img-caption">VDOM Global lacks three traffic modules — Policy &amp; Objects, VPN, and User &amp; Authentication are per-VDOM only.</p>
+      </div>
+      <p>Changes made in <strong>VDOM Global</strong> affect the entire FortiGate device. This includes interface configurations, firmware management, DNS settings, some logging, and sandboxing. Only <em>Super Admin</em> administrators can access and modify VDOM Global settings.</p>
+      <p>The following modules are <strong>unavailable in VDOM Global</strong> because they are inherently per-VDOM:</p>
+      <ul>
+        <li><strong>Policy &amp; Objects</strong> — firewall policies are defined per-VDOM</li>
+        <li><strong>VPN</strong> — VPN tunnels belong to individual VDOMs</li>
+        <li><strong>User &amp; Authentication</strong> — user accounts and authentication are per-VDOM</li>
+      </ul>
+      <p>Resource allocation is split into two levels:</p>
+      <ul>
+        <li><strong>Global resources</strong> — affect the entire device; edit at <em>VDOM Global &gt; System &gt; Global Resources</em></li>
+        <li><strong>VDOM resources</strong> — allocated to each specific VDOM; edit at <em>VDOM Global &gt; System &gt; VDOM &gt; Edit VDOM</em></li>
+      </ul>
+      <div class="callout callout-amber"><strong>Exam gotcha:</strong> When setting the "Override Maximum" for a VDOM resource, it must always be greater than or equal to the current usage. Setting it below current usage will fail. This applies to resources like firewall policies and firewall addresses per VDOM.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">VDOM Global missing modules: Policy &amp; Objects, VPN, User &amp; Authentication (all per-VDOM). Global resources = entire device. VDOM resources = per-VDOM allocation. Override maximum must be ≥ current usage.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s2" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s2','VDOM Global')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s2" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s2')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SECTION 3 ═══ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · GLOBAL OBJECTS</span>
+      </div>
+      <p class="socratic-insight">Global objects provide consistent security profiles (UTM) across all VDOMs simultaneously. They use a reserved naming prefix to ensure they never collide with per-VDOM objects — but this prefix creates a conflict when using FortiManager.</p>
+      <ul class="socratic-questions">
+        <li>What naming prefix identifies a global object, and why must you avoid using this prefix for objects in individual VDOMs?</li>
+        <li>When should you switch from FortiGate global objects to FortiManager global objects — and what does this enable?</li>
+      </ul>
+      <div class="answer-area" data-section="global-objects">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Global objects use the prefix <strong>g-</strong> (e.g., g-default, g-wifi-default). These values are reserved — if you name a per-VDOM object with the g- prefix, it will conflict with the global object namespace and cause naming collisions. Fortinet explicitly warns against using this nomenclature in individual VDOMs or FortiManager ADOMs.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">When you import FortiGate configurations into FortiManager, you should switch from FortiGate global objects to FortiManager global objects. This enables improved synchronization between FortiManager and FortiGate — FortiManager's global objects take precedence and are distributed centrally, ensuring consistent profiles across managed devices without duplication.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s3">
+      <div class="section-label">SECTION 03</div>
+      <h2>Global Objects — <em>Consistent UTM</em> Across VDOMs</h2>
+      <div class="section-img-wrap">
+        <img src="images/s3-global-objects.png" class="section-img" alt="VDOM Global Security Profiles showing g-default and g-wifi-default global objects"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s3-global-objects.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: three stacked profile cards — Antivirus, Web Filter, Application Control — each showing two rows: "g-default" and "g-wifi-default" with a "Global" scope badge (earth/globe icon). An arrow from the Global VDOM points to all three cards simultaneously, labeled "one change = updates all VDOMs". A warning badge reads "Reserved prefix: g-". Pastel palette, bold outlines, no shadows.</div>
+        </div>
+        <p class="img-caption">Global objects prefixed with "g-" propagate automatically to every VDOM on the device.</p>
+      </div>
+      <p><strong>Global objects</strong> ensure consistent <strong>UTM (Unified Threat Management)</strong> security profiles across all VDOMs simultaneously. When you modify a global object, it automatically updates the same profile in every VDOM — eliminating the need to manually update each VDOM individually.</p>
+      <p>The following UTM profile types can be created as global objects:</p>
+      <ul>
+        <li>Antivirus</li>
+        <li>Web Filters</li>
+        <li>Application Control</li>
+        <li>Intrusion Prevention</li>
+        <li>File Filter</li>
+        <li>Data Loss Prevention</li>
+        <li>Virtual Patching</li>
+      </ul>
+      <p>Global objects are identified by the reserved prefix <strong>g-</strong>. For example, <code>g-default</code> (Antivirus), <code>g-wifi-default</code> (Application Control). <em>Never use the g- prefix for per-VDOM or FortiManager ADOM objects</em> — it is reserved and will cause conflicts.</p>
+      <div class="callout"><strong>FortiManager integration tip:</strong> When you import FortiGate configurations into FortiManager, switch from FortiGate global objects to FortiManager global objects. This enables proper synchronization and centralized distribution of security profiles across all managed devices.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Global objects prefix = g- (reserved). 7 types: AV, Web Filter, App Control, IPS, File Filter, DLP, Virtual Patching. Modify one = updates all VDOMs. Switch to FortiManager global objects when managing via FortiManager — do not mix the two.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s3" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s3','Global Objects')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s3" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s3')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SECTION 4 ═══ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · VDOM TYPES</span>
+      </div>
+      <p class="socratic-insight">FortiGate supports three VDOM types, and the distinction matters for what modules are available and how traffic flows. Traffic VDOMs have two operational modes — NAT and transparent — that serve fundamentally different use cases even though both handle traffic.</p>
+      <ul class="socratic-questions">
+        <li>A transparent mode VDOM has no IP addresses on its interfaces — how does an administrator manage it remotely, and what CLI attribute is mandatory for this to work?</li>
+        <li>What is the only VDOM type that cannot pass user traffic, and what is its primary purpose?</li>
+      </ul>
+      <div class="answer-area" data-section="vdom-types">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Transparent mode VDOMs require a management IP address (manageip) configured separately — because interfaces have no IP, you need a dedicated management IP for HTTPS/SSH access. The CLI attribute is <code>set manageip</code> under <code>config system settings</code>. Without it, FortiGate returns an error about a failed node check for 'manageip'.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">The Admin VDOM cannot pass user traffic — it is dedicated to FortiGate management and FortiGuard updates only. Its available modules are Dashboard, Network, System, Security Fabric, and Log &amp; Report. Changing a traffic VDOM to admin type will prompt a warning that policies, security profiles, WiFi/Switch, User &amp; Authentication, and dashboards will be deleted.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s4">
+      <div class="section-label">SECTION 04</div>
+      <h2>Types of VDOMs — <em>Admin, Traffic, LAN Extension</em></h2>
+      <div class="section-img-wrap">
+        <img src="images/s4-vdom-types.png" class="section-img" alt="Three VDOM type cards — Admin, Traffic NAT, Traffic Transparent, and LAN Extension"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s4-vdom-types.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: four side-by-side cards on a light background. Card 1 "Admin VDOM" (grey, lock icon) — "No user traffic, Management only, FortiGuard updates". Card 2 "Traffic NAT" (blue, shield icon) — "IP routing, Layer 3 firewall, NAT". Card 3 "Traffic Transparent" (green, ghost icon) — "Layer 2, No IP on interfaces, manageip required". Card 4 "LAN Extension" (purple, cable icon) — "IPsec + VXLAN, Network and VPN modules only". Bold outlines, pastel colors, no shadows.</div>
+        </div>
+        <p class="img-caption">Four VDOM types serving distinct roles — Admin for management, Traffic (NAT/Transparent) for user traffic, and LAN Extension for network expansion.</p>
+      </div>
+      <p>FortiGate supports three primary VDOM types, with Traffic VDOMs offering two operating modes:</p>
+      <table class="data-table">
+        <thead><tr><th>VDOM Type</th><th>Handles Traffic?</th><th>Operation Mode</th><th>Key Use</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Admin</strong></td><td>No</td><td>N/A</td><td>Management, FortiGuard updates</td></tr>
+          <tr><td><strong>Traffic — NAT</strong></td><td>Yes</td><td>Layer 3 (NAT/routing)</td><td>Standard firewall — ISFW, NGFW, DCFW, DEFW</td></tr>
+          <tr><td><strong>Traffic — Transparent</strong></td><td>Yes</td><td>Layer 2 (inline, no IP)</td><td>UTM without routing — any layer 2 network</td></tr>
+          <tr><td><strong>LAN Extension</strong></td><td>Yes</td><td>IPsec + VXLAN</td><td>Remote LAN expansion via FortiExtender</td></tr>
+        </tbody>
+      </table>
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Create VDOM Types</div>
+        <pre><code># Admin VDOM
+config vdom
+    edit "admin-vdom"
+config system settings
+    set vdom-type admin
+end
+
+# Traffic VDOM — NAT mode
+config vdom
+    edit "traffic-vdom"
+config system settings
+    set vdom-type traffic
+    set opmode nat
+end
+
+# Traffic VDOM — Transparent mode
+config vdom
+    edit "transparent-vdom"
+config system settings
+    set vdom-type traffic
+    set opmode transparent
+    set manageip 172.16.16.1/255.255.255.0
+end
+
+# LAN Extension VDOM
+config vdom
+    edit "lan-ext-vdom"
+config system settings
+    set vdom-type lan-extension
+end</code></pre>
+      </div>
+      <p><strong>Transparent mode VDOMs</strong> operate invisibly at the IP layer. All interfaces share the same broadcast domain, and interfaces have no IP addresses — only a <em>management IP</em> for administrative access. Use the <code>forward-domain</code> command if you need to subdivide the VDOM into multiple broadcast domains by VLAN ID.</p>
+      <p>The <strong>LAN Extension VDOM</strong> is established between a FortiGate connector (or FortiExtender) and a FortiGate access controller using IPsec and VXLAN. It has only Network and VPN modules available.</p>
+      <div class="callout callout-amber"><strong>Exam tip:</strong> Transparent mode VDOM must have a manageip configured — without it, you'll see an error: "failed node check object for 'manageip'". Admin VDOMs support only 1 per FortiGate; Traffic and LAN Extension support up to 10 by default (more with licensing).</div>
+      <div class="analogy-box">
+        <div class="analogy-label">Analogy</div>
+        <div class="analogy-text">
+          <p class="analogy-summary">VDOM types are like different roles in a company building — each occupies the same physical space but serves a completely different function.</p>
+          <ul>
+            <li><strong>Admin VDOM</strong> — the building management office: handles maintenance and utilities, never serves customers directly</li>
+            <li><strong>Traffic NAT VDOM</strong> — the main storefront: customers enter, transactions are processed, addresses are translated at the door (NAT)</li>
+            <li><strong>Traffic Transparent VDOM</strong> — a one-way mirror installed mid-corridor: inspects everything passing through but is invisible to anyone walking by — no address, no presence at Layer 3</li>
+            <li><strong>LAN Extension VDOM</strong> — an underground tunnel connecting a satellite office: carries LAN traffic securely over distance using a specialized encrypted pathway</li>
+          </ul>
+        </div>
+        <div class="analogy-img" style="margin-top:14px;background:rgba(255,255,255,0.5);border-radius:10px;padding:14px;text-align:center;">
+          <img src="images/a1-vdom-building-roles.png" alt="Building analogy for VDOM types"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='block';" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 10px;">
+          <div class="img-missing-msg" style="display:none;font-size:12px;color:#92400e;padding:8px;background:rgba(146,64,14,0.1);border-radius:6px;">📷 <strong>images/a1-vdom-building-roles.png</strong> — add this image to the folder</div>
+          <button class="prompt-toggle" onclick="togglePrompt(this)" type="button">▾ Show analogy image prompt</button>
+          <div class="prompt-content" hidden>Cartoon illustration in pastel style: a cross-section of a building with four labeled sections. Top-left: "Management Office" (grey, labeled "Admin VDOM") — a person at a desk with no customers. Top-right: "Storefront" (blue, labeled "Traffic NAT") — customers passing through, a door labeled "NAT". Bottom-left: "One-Way Mirror corridor" (green, labeled "Transparent VDOM") — people walking through unaware, inspector watching behind glass. Bottom-right: "Underground tunnel" (purple, labeled "LAN Extension") — cable car connecting to a satellite office labeled "Remote LAN". Bold outlines, no shadows, short text labels, educational infographic feel.</div>
+        </div>
+      </div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Admin VDOM: 1 max, no user traffic, set vdom-type admin. Traffic NAT: Layer 3, standard firewall. Traffic Transparent: Layer 2, no IPs on interfaces, must set manageip. LAN Extension: IPsec+VXLAN, Network+VPN modules only. Traffic + LAN Extension = 10 default, expandable with license.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s4" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s4','VDOM Types')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s4" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s4')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SECTION 5 ═══ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · VDOM USE CASES</span>
+      </div>
+      <p class="socratic-insight">The five VDOM use cases map VDOM types to real-world deployment scenarios. A critical detail: the management VDOM determines which VDOM handles FortiGuard updates and license validation — if that VDOM loses internet access, all VDOMs may experience issues.</p>
+      <ul class="socratic-questions">
+        <li>By default, the root VDOM is the management VDOM. What happens if the management VDOM cannot reach a FortiGuard Distribution Server (FDS)?</li>
+        <li>In Use Case 3 (Internet Access via Inter-VDOM Routing), why would VDOM1 need an inter-VDOM link rather than a direct internet connection?</li>
+      </ul>
+      <div class="answer-area" data-section="vdom-use-cases">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">If the management VDOM cannot reach the FortiGuard Distribution Server (FDS) in a closed network, the firewall and all VDOMs may experience issues with FortiGuard databases — signature updates, license validation, and web filtering category lookups will fail. This can lead to firewall malfunctions. You can change the management VDOM using "Switch Management" in the Global VDOM &gt; System &gt; VDOM screen.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">VDOM1 uses an inter-VDOM link because it has no direct internet-facing interface — only the root VDOM has an internet connection. The inter-VDOM link creates a virtual connection between root and VDOM1, allowing VDOM1 to route internet-bound traffic through root's internet interface. This is more secure than giving VDOM1 a direct ISP connection, since all internet traffic is controlled through one VDOM.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s5">
+      <div class="section-label">SECTION 05</div>
+      <h2>VDOM <em>Use Cases</em> — Five Deployment Scenarios</h2>
+      <div class="section-img-wrap">
+        <img src="images/s5-vdom-use-cases.png" class="section-img" alt="Comparison table of five VDOM use cases and their types"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s5-vdom-use-cases.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: five horizontal scenario cards stacked vertically. Each card has a scenario number, name, VDOM type badge, and a small network topology icon. UC1: Admin VDOM (grey, management-only). UC2: Traffic NAT (blue, LAN+Internet). UC3: Inter-VDOM routing (two VDOMs connected by a virtual link arrow). UC4: Traffic Transparent (green, inline between two network segments). UC5: LAN Extension (purple, FortiExtender cable). Pastel palette, bold outlines, no shadows.</div>
+        </div>
+        <p class="img-caption">Five use cases map VDOM types to real-world enterprise deployment patterns.</p>
+      </div>
+      <p>The five VDOM use cases show how each VDOM type is applied in real enterprise deployments:</p>
+      <table class="data-table">
+        <thead><tr><th>#</th><th>Use Case</th><th>VDOM Type</th><th>Key Characteristic</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><strong>Admin VDOM</strong></td><td>Admin</td><td>Management only; FortiGuard downloads; no user traffic; 5 modules only</td></tr>
+          <tr><td>2</td><td><strong>Traffic VDOM, NAT Mode</strong></td><td>Traffic NAT</td><td>Acts as regular firewall; management VDOM for FortiGuard; can be changed</td></tr>
+          <tr><td>3</td><td><strong>Internet via Inter-VDOM Routing</strong></td><td>Traffic NAT</td><td>VDOM1 has no internet; accesses it through root VDOM via inter-VDOM link</td></tr>
+          <tr><td>4</td><td><strong>Traffic VDOM, Transparent Mode</strong></td><td>Traffic Transparent</td><td>Invisible at IP layer; UTM scanning without routing; L2 only; manageip required</td></tr>
+          <tr><td>5</td><td><strong>LAN Extension VDOM</strong></td><td>LAN Extension</td><td>FortiExtender connector + FortiGate controller; IPsec+VXLAN; Network+VPN only</td></tr>
+        </tbody>
+      </table>
+      <p><strong>Management VDOM</strong> is a critical concept: the management VDOM handles FortiGuard updates and license validation. By default, the root VDOM is the management VDOM. You can change it by clicking <strong>Switch Management</strong> in Global VDOM &gt; System &gt; VDOM. A red dot in the VDOM list indicates the current management VDOM.</p>
+      <div class="callout callout-amber"><strong>Exam tip:</strong> The management VDOM must have internet connectivity. If it's in a closed network without FDS access, all VDOMs may fail to update signatures or validate licenses — causing potential firewall malfunctions. Always ensure the management VDOM has a reliable internet path or internal FDS.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">5 VDOM use cases: Admin (management only), Traffic NAT (standard firewall), Inter-VDOM routing (shared internet via root), Traffic Transparent (L2 inline UTM), LAN Extension (FortiExtender via IPsec+VXLAN). Management VDOM = FortiGuard updates; default = root; red dot = current management VDOM.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s5" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s5','VDOM Use Cases')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s5" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s5')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">ON THIS PAGE</div>
+      <nav class="ssnav">
+        <a class="ssnav-item" href="#s1">VDOM Overview</a>
+        <a class="ssnav-item" href="#s2">VDOM Global</a>
+        <a class="ssnav-item" href="#s3">Global Objects</a>
+        <a class="ssnav-item" href="#s4">VDOM Types</a>
+        <a class="ssnav-item" href="#s5">Use Cases</a>
+      </nav>
+    </div>
+
+    <a class="hub-link" href="index.html">← Chapter 03 Hub</a>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">PROGRESS</div>
+      <div class="checklist" id="checklist">
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s1" onchange="toggleDone(this)">
+          <span class="check-label">VDOMs Overview</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s2" onchange="toggleDone(this)">
+          <span class="check-label">VDOM Global Settings</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s3" onchange="toggleDone(this)">
+          <span class="check-label">Global Objects</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s4" onchange="toggleDone(this)">
+          <span class="check-label">VDOM Types</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s5" onchange="toggleDone(this)">
+          <span class="check-label">VDOM Use Cases</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">QUICK REFERENCE</div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">VDOM</div>
+        <div class="quick-ref-def">Virtual Domain — partitions FortiGate into independent virtual firewalls; default max = 10 per device</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Multi-VDOM Enable</div>
+        <div class="quick-ref-def">config system global / set vdom-mode multi-vdom — creates Global VDOM + root VDOM (both undeletable)</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Admin VDOM</div>
+        <div class="quick-ref-def">Management only; no user traffic; modules: Dashboard, Network, System, Security Fabric, Log &amp; Report; limited to 1 per device</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Traffic NAT VDOM</div>
+        <div class="quick-ref-def">Layer 3 firewall mode; standard routing and NAT; set opmode nat; used for ISFW, NGFW, DCFW, DEFW</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Traffic Transparent VDOM</div>
+        <div class="quick-ref-def">Layer 2 inline; no IP on interfaces; must set manageip; use forward-domain for multiple broadcast domains</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Global Objects</div>
+        <div class="quick-ref-def">Prefix g- (reserved); consistent UTM across all VDOMs; 7 types including AV, Web Filter, App Control, IPS</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Management VDOM</div>
+        <div class="quick-ref-def">Handles FortiGuard updates + license validation; default = root; change via "Switch Management"; red dot = current</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">LAN Extension VDOM</div>
+        <div class="quick-ref-def">IPsec + VXLAN to FortiExtender; Network and VPN modules only; connector + access controller pair</div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="page-nav">
+  <a class="page-nav-btn page-nav-prev" href="subtopic-01-configure-vlans.html">
+    <span class="page-nav-label">← PREVIOUS</span>
+    <span class="page-nav-title">Configure VLANs on FortiGate</span>
+  </a>
+  <a class="page-nav-btn page-nav-next" href="subtopic-03-inter-vdom-routing.html">
+    <span class="page-nav-label">NEXT →</span>
+    <span class="page-nav-title">Inter-VDOM Routing</span>
+  </a>
+</div>
+
+<footer>
+  EF-NSE7<span>.</span> Chapter 03<span>.</span> Subtopic 02<span>.</span> Implement Enterprise Networks Using VDOMs
+</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-ch03-sub02-configure-vdoms';
+
+const SECTIONS = {
+  's1': 'VDOM Overview',
+  's2': 'VDOM Global',
+  's3': 'Global Objects',
+  's4': 'VDOM Types',
+  's5': 'VDOM Use Cases',
+};
+
+document.querySelectorAll('.socratic-header').forEach(function(h) {
+  h.addEventListener('click', function() { h.closest('.socratic-block').classList.toggle('soc-open'); });
+});
+
+function getQArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-qs') || '[]'); }
+function saveQArr(qs) { localStorage.setItem(PAGE_KEY+'-qs', JSON.stringify(qs)); }
+function addQuestion(key, name) {
+  const ta = document.getElementById('q-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const qs = getQArr(); qs.push({id: Date.now(), section: key, sectionName: name, text});
+  saveQArr(qs); ta.value = ''; renderQPanel();
+  if (!document.getElementById('qpanel-body').classList.contains('open')) toggleQPanel();
+}
+function deleteQ(id) { saveQArr(getQArr().filter(q => q.id !== id)); renderQPanel(); }
+function toggleQPanel() {
+  const body = document.getElementById('qpanel-body');
+  const header = document.getElementById('qpanel-header');
+  const chevron = document.getElementById('qpanel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-qpanel-open', open);
+}
+function renderQPanel() {
+  const qs = getQArr();
+  const count = document.getElementById('qpanel-count');
+  if (count) { count.textContent = qs.length; count.style.display = qs.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.qpanel-hint');
+  if (hint) hint.textContent = qs.length ? `— ${qs.length} question${qs.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('qpanel-body'); if (!body) return;
+  if (!qs.length) { body.innerHTML = '<p class="no-questions">No questions yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  qs.forEach(q => { if (groups[q.section]) groups[q.section].push(q); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(q => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${q.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteQ(${q.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function getNotesArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-notes') || '[]'); }
+function saveNotesArr(ns) { localStorage.setItem(PAGE_KEY+'-notes', JSON.stringify(ns)); }
+function addNote(key) {
+  const ta = document.getElementById('note-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const ns = getNotesArr(); ns.push({id: Date.now(), section: key, sectionName: SECTIONS[key]||key, text});
+  saveNotesArr(ns); ta.value = ''; renderNotesPanel();
+  if (!document.getElementById('notes-panel-body').classList.contains('open')) toggleNotesPanel();
+}
+function deleteNote(id) { saveNotesArr(getNotesArr().filter(n => n.id !== id)); renderNotesPanel(); }
+function toggleNotesPanel() {
+  const body = document.getElementById('notes-panel-body');
+  const header = document.getElementById('notes-panel-header');
+  const chevron = document.getElementById('notes-panel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-notes-panel-open', open);
+}
+function renderNotesPanel() {
+  const ns = getNotesArr();
+  const count = document.getElementById('notes-panel-count');
+  if (count) { count.textContent = ns.length; count.style.display = ns.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.notes-panel-hint');
+  if (hint) hint.textContent = ns.length ? `— ${ns.length} note${ns.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('notes-panel-body'); if (!body) return;
+  if (!ns.length) { body.innerHTML = '<p class="no-questions">No notes yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  ns.forEach(n => { if (groups[n.section]) groups[n.section].push(n); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(n => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteNote(${n.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function toggleDone(input) { localStorage.setItem(PAGE_KEY+'-check-'+input.dataset.key, input.checked); }
+function initChecks() {
+  document.querySelectorAll('.check-input').forEach(function(inp) {
+    inp.checked = localStorage.getItem(PAGE_KEY+'-check-'+inp.dataset.key) === 'true';
+  });
+}
+
+function saveSocAnswer(btn) {
+  const area = btn.closest('.answer-area');
+  const ta = area.querySelector('.answer-textarea');
+  if (!ta.value.trim()) { ta.focus(); return; }
+  const key = PAGE_KEY+'-socans-'+area.dataset.section;
+  try { localStorage.setItem(key, ta.value); } catch(e) {}
+  ta.disabled = true; btn.textContent = '✓ Answer saved'; btn.disabled = true;
+  const seeBtn = area.querySelector('.btn-see-answer');
+  seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+}
+function revealSocAnswer(btn) {
+  if (btn.disabled) return;
+  const answers = btn.closest('.answer-area').querySelector('.model-answers');
+  const isHidden = answers.style.display === 'none' || !answers.style.display;
+  answers.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '▲ Hide Model Answer' : '💡 See Model Answer';
+}
+
+function togglePrompt(btn) {
+  const c = btn.nextElementSibling;
+  const isHidden = c.hasAttribute('hidden');
+  if (isHidden) { c.removeAttribute('hidden'); btn.textContent = '▴ Hide image prompt'; }
+  else { c.setAttribute('hidden', ''); btn.textContent = '▾ Show image prompt'; }
+}
+
+if (sessionStorage.getItem('pt')) { document.body.style.opacity = '1'; sessionStorage.removeItem('pt'); }
+document.querySelectorAll('a[href]').forEach(function(a) { a.addEventListener('click', function() { sessionStorage.setItem('pt', '1'); }); });
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderQPanel(); renderNotesPanel(); initChecks();
+  if (localStorage.getItem(PAGE_KEY+'-qpanel-open') === 'true') toggleQPanel();
+  if (localStorage.getItem(PAGE_KEY+'-notes-panel-open') === 'true') toggleNotesPanel();
+  document.querySelectorAll('.answer-area').forEach(function(area) {
+    const key = PAGE_KEY+'-socans-'+area.dataset.section;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const ta = area.querySelector('.answer-textarea'); ta.value = saved; ta.disabled = true;
+        const addBtn = area.querySelector('.btn-add-answer'); addBtn.textContent = '✓ Answer saved'; addBtn.disabled = true;
+        const seeBtn = area.querySelector('.btn-see-answer'); seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+      }
+    } catch(e) {}
+  });
+  document.querySelectorAll('.section-img').forEach(function(img) {
+    img.addEventListener('click', () => img.classList.toggle('si-expanded'));
+  });
+  document.querySelectorAll('.analogy-box').forEach(function(box) {
+    if (box.dataset.collapsibleInit) return;
+    box.dataset.collapsibleInit = '1';
+    box.classList.add('expanded');
+    const label = box.querySelector(':scope > .analogy-label');
+    if (label) label.addEventListener('click', () => box.classList.toggle('expanded'));
+  });
+  document.querySelectorAll('.analogy-img img').forEach(function(img) {
+    if (img.dataset.zoomInit) return;
+    img.dataset.zoomInit = '1';
+    img.addEventListener('click', () => img.classList.toggle('zoomed'));
+  });
+});
+
+(function() {
+  var items = document.querySelectorAll('.ssnav-item');
+  if (!items.length) return;
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      var lnk = document.querySelector('.ssnav-item[href="#'+e.target.id+'"]');
+      if (lnk) lnk.classList.toggle('active', e.isIntersecting);
+    });
+  }, { rootMargin: '-10% 0% -70% 0%' });
+  document.querySelectorAll('.section-block[id]').forEach(function(el) { obs.observe(el); });
+})();
+</script>
+</body>
+</html>

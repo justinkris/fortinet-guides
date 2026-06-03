@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VRRP — EF-NSE7 Ch04 Sub03</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff5f5;--surface:#ffffff;--surface-2:#fef2f2;--border:#f0c8c8;--border-dim:#fde8e8;--text:#1a0606;--text-soft:#4a1212;--text-muted:#8a3a3a;--red:#c0392b;--red-vivid:#e03e2d;--red-glow:rgba(192,57,43,0.07);--red-dim:#f8b4b4;--red-deep:#7f1d1d;--red-light:#fef2f2;--red-border:#f8b4b4;--green:#1a7c4a;--green-light:#d4f0e0;--green-border:#a7e0c0;--amber:#b45309;--amber-light:#fef9c3;--amber-border:#fde68a;}
+html{scroll-behavior:smooth;}
+html.pt-init body{opacity:0;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+header{padding:48px 60px 36px;background:#1a0606;display:flex;align-items:flex-end;gap:32px;}
+.header-left{flex:1;}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);letter-spacing:0.08em;margin-bottom:12px;flex-wrap:wrap;}
+.breadcrumb a{color:#e87070;text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.breadcrumb-sep{color:rgba(232,112,112,0.35);}
+.header-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(232,112,112,0.1);border:1px solid rgba(232,112,112,0.25);padding:5px 14px;border-radius:20px;font-size:11px;color:#e87070;letter-spacing:0.08em;margin-bottom:14px;}
+.dot-live{width:6px;height:6px;background:#e87070;border-radius:50%;display:inline-block;animation:blink 2.4s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+header h1{font-family:'Fraunces',serif;font-size:44px;font-weight:700;line-height:1.0;color:#fff;margin-bottom:10px;}
+header h1 em{font-style:italic;font-weight:400;color:#e87070;}
+header p{font-size:13px;color:rgba(255,255,255,0.42);margin-top:10px;line-height:1.7;}
+.motivation-banner{padding:20px 60px;min-height:84px;display:flex;flex-direction:column;justify-content:center;border-bottom:1px solid var(--border);background:var(--surface);}
+.motivation-text{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--text);}
+.motivation-text em{font-style:italic;color:var(--red);}
+.motivation-sub{font-size:12px;color:var(--text-muted);line-height:1.7;margin-top:4px;}
+.top-panels{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+.top-panels .qpanel{border-bottom:none;border-right:1px solid var(--border);}
+.top-panels .qpanel-header{padding-left:32px;padding-right:32px;}
+.top-panels .qpanel-body{padding-left:32px;padding-right:32px;}
+.qpanel{background:var(--surface);}
+.qpanel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 20px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.qpanel-header:hover,.qpanel-header.open{background:var(--surface-2);}
+.qpanel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.qpanel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.qpanel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.qpanel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.qpanel-body{display:none;padding:0 20px 22px;}
+.qpanel-body.open{display:block;}
+.notes-panel{background:var(--surface);}
+.notes-panel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 32px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.notes-panel-header:hover,.notes-panel-header.open{background:var(--surface-2);}
+.notes-panel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.notes-panel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.notes-panel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.notes-panel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.notes-panel-body{display:none;padding:0 32px 22px;}
+.notes-panel-body.open{display:block;}
+.q-group{margin-bottom:16px;}
+.q-group-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+.q-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-dim);}
+.q-item:last-child{border-bottom:none;}
+.q-num{font-size:10px;font-weight:700;color:var(--red);min-width:16px;margin-top:2px;}
+.q-text{font-size:12px;color:var(--text-soft);line-height:1.5;flex:1;}
+.q-del{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 4px;margin-top:1px;}
+.q-del:hover{color:var(--red);}
+.no-questions{font-size:12px;color:var(--text-muted);padding:8px 0;}
+.btn-add-q{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-q:hover{opacity:0.85;}
+.section-nav{position:sticky;top:0;z-index:90;display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);padding:0 32px;overflow-x:auto;}
+.nav-tab{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:12px 18px;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--red);border-bottom-color:var(--red);}
+main{display:grid;grid-template-columns:1fr 320px;gap:0;align-items:start;max-width:1200px;margin:0 auto;padding:0;}
+.main-content{padding:36px 40px 60px 60px;}
+.sidebar{padding:32px 24px 60px 20px;position:sticky;top:57px;max-height:calc(100vh - 57px);overflow-y:auto;}
+.section-block{margin-bottom:48px;}
+.section-label{font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.section-block h2{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1.15;margin-bottom:16px;padding-left:16px;border-left:3px solid var(--red);}
+.section-block h2 em{font-style:italic;font-weight:400;color:var(--red);}
+.section-block p{font-size:14px;line-height:1.8;color:var(--text-soft);margin-bottom:14px;}
+.section-block p strong{color:var(--text);font-weight:600;}
+.section-block p em{color:var(--red);font-style:italic;}
+.section-block ul,.section-block ol{padding-left:22px;margin-bottom:14px;}
+.section-block li{font-size:14px;line-height:1.75;color:var(--text-soft);margin-bottom:4px;}
+.section-block li strong{color:var(--text);font-weight:600;}
+.callout{border-left:3px solid var(--red-border);background:var(--red-light);border-radius:0 10px 10px 0;padding:12px 18px;margin:16px 0;font-size:13.5px;line-height:1.65;color:var(--text-soft);}
+.callout strong{color:var(--text);}
+.callout-green{border-left-color:var(--green-border);background:var(--green-light);}
+.callout-amber{border-left-color:var(--amber-border);background:var(--amber-light);}
+.section-img-wrap{margin:0 0 20px;display:flex;flex-direction:column;align-items:center;}
+.section-img{width:260px;max-width:100%;border-radius:12px;cursor:zoom-in;transition:width 0.3s ease;border:1px solid var(--border);display:block;}
+.section-img.si-expanded{width:100%;cursor:zoom-out;border-radius:16px;}
+.si-placeholder{display:none;width:260px;max-width:100%;border:2px dashed var(--border);border-radius:12px;background:var(--surface-2);padding:14px 16px;flex-direction:column;align-items:flex-start;gap:8px;}
+.si-placeholder.si-show{display:flex;}
+.si-filename{font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+.code-block{background:#1a0606;border-radius:12px;padding:20px 24px;margin:16px 0;overflow-x:auto;}
+.code-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#e87070;margin-bottom:10px;}
+.code-block pre{margin:0;}
+.code-block code{font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:rgba(255,255,255,0.82);}
+.socratic-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:16px;border-top:3px solid var(--red);}
+.socratic-header{display:flex;align-items:center;gap:8px;margin-bottom:0;cursor:pointer;user-select:none;}
+.socratic-header::after{content:'▸ Expand';margin-left:auto;font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'Inter',sans-serif;}
+.socratic-block.soc-open .socratic-header{margin-bottom:10px;}
+.socratic-block.soc-open .socratic-header::after{content:'▾ Collapse';}
+.socratic-block:not(.soc-open) .socratic-insight,.socratic-block:not(.soc-open) .socratic-questions,.socratic-block:not(.soc-open) .answer-area{display:none;}
+.socratic-icon{font-size:17px;flex-shrink:0;}
+.socratic-label{font-size:9px;font-weight:700;letter-spacing:0.18em;color:var(--text-muted);}
+.socratic-insight{font-size:13px;color:var(--text-soft);line-height:1.75;margin-bottom:12px;border-left:3px solid var(--border);padding-left:12px;font-style:italic;}
+.socratic-questions{list-style:none;padding:0;margin:0;}
+.socratic-questions li{font-size:12.5px;color:var(--text);padding:7px 0 7px 22px;position:relative;border-bottom:1px solid var(--border-dim);line-height:1.6;}
+.socratic-questions li:last-child{border-bottom:none;}
+.socratic-questions li::before{content:'?';position:absolute;left:0;font-weight:700;font-size:12px;top:8px;color:var(--red);}
+.answer-area{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.answer-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.answer-textarea:focus{border-color:var(--text);}
+.answer-textarea:disabled{opacity:0.7;background:var(--surface-2);cursor:default;}
+.answer-buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.btn-add-answer{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-answer:hover:not(:disabled){opacity:0.85;}
+.btn-add-answer:disabled{opacity:0.5;cursor:default;}
+.btn-see-answer{background:var(--surface);color:var(--text-muted);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-see-answer:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-see-answer:not(:disabled){color:var(--red);border-color:var(--red);}
+.btn-see-answer:hover:not(:disabled){background:var(--red-glow);}
+.model-answers{margin-top:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.model-answer-item{padding:10px 0;border-bottom:1px solid var(--border-dim);}
+.model-answer-item:first-child{padding-top:0;}
+.model-answer-item:last-child{border-bottom:none;padding-bottom:0;}
+.model-answer-q{font-size:9px;font-weight:700;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:4px;}
+.model-answer-text{font-size:13px;color:var(--text-soft);line-height:1.7;}
+.mental-note-block{border-radius:10px;padding:12px 16px;margin:16px 0;display:flex;gap:10px;align-items:flex-start;background:rgba(192,57,43,0.07);border:1px solid var(--border);}
+.mental-note-block-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.mental-note-block-inner{flex:1;}
+.mental-note-block-label{font-size:9px;font-weight:700;letter-spacing:0.16em;color:var(--red);margin-bottom:3px;}
+.mental-note-block-text{font-size:13px;font-weight:600;line-height:1.55;color:var(--text);}
+.analogy-box{background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #b45309;border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0;}
+.analogy-label{display:flex;align-items:center;gap:6px;user-select:none;cursor:pointer;font-size:9px;font-weight:700;letter-spacing:0.16em;color:#b45309;margin-bottom:4px;}
+.analogy-label::after{content:'▾  Reveal illustration';margin-left:auto;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:none;opacity:0.75;}
+.analogy-label:hover::after{opacity:1;}
+.analogy-box.expanded>.analogy-label::after{content:'▴  Hide illustration';}
+.analogy-text{font-size:13px;color:#78350f;line-height:1.65;font-style:italic;}
+.analogy-box>.analogy-img{display:none;}
+.analogy-box.expanded>.analogy-img{display:block;}
+.analogy-img img{max-width:360px;width:100%;cursor:zoom-in;transition:max-width 0.25s ease;border-radius:8px;margin-top:10px;}
+.analogy-img img.zoomed{max-width:100%;cursor:zoom-out;}
+.prompt-toggle{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:10px;font-weight:600;letter-spacing:0.08em;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;text-transform:uppercase;}
+.prompt-toggle:hover{color:var(--text);border-color:var(--text);}
+.prompt-content{margin-top:10px;padding:10px 14px;background:rgba(0,0,0,0.04);border-radius:8px;font-size:11.5px;color:var(--text-muted);font-style:italic;line-height:1.65;text-align:left;}
+.prompt-content[hidden]{display:none;}
+.lesson-tools{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:40px;}
+.lesson-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.tool-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.tool-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.tool-textarea:focus{border-color:var(--red);}
+.tool-row{margin-top:8px;display:flex;gap:8px;}
+.sidebar-section{margin-bottom:28px;}
+.sidebar-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;}
+.ssnav{display:flex;flex-direction:column;gap:2px;margin-top:4px;}
+.ssnav-item{font-size:12px;color:var(--text-soft);padding:6px 10px;border-radius:6px;text-decoration:none;line-height:1.4;display:block;transition:background 0.15s,color 0.15s;}
+.ssnav-item:hover,.ssnav-item.active{background:var(--red-glow);color:var(--red);}
+.hub-link{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);margin-bottom:16px;transition:color 0.15s,border-color 0.15s,background 0.15s;}
+.hub-link:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);}
+.check-item{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;}
+.check-input{accent-color:var(--red);width:14px;height:14px;flex-shrink:0;cursor:pointer;}
+.check-label{font-size:12px;color:var(--text-soft);line-height:1.4;}
+.check-item:has(.check-input:checked) .check-label{color:var(--text-muted);text-decoration:line-through;}
+.quick-ref{background:#1a0606;border-radius:10px;padding:12px 16px;margin-bottom:8px;}
+.quick-ref-term{font-size:10px;font-weight:700;letter-spacing:0.12em;color:#e87070;margin-bottom:3px;text-transform:uppercase;}
+.quick-ref-def{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;}
+.page-nav{display:flex;border-top:2px solid var(--border);background:var(--surface);}
+.page-nav-btn{flex:1;display:flex;flex-direction:column;gap:4px;padding:16px 28px;text-decoration:none;transition:background 0.15s;cursor:pointer;}
+.page-nav-btn:hover:not(.page-nav-disabled){background:var(--surface-2);}
+.page-nav-prev{border-right:1px solid var(--border);}
+.page-nav-next{text-align:right;}
+.page-nav-disabled{opacity:0.3;pointer-events:none;}
+.page-nav-label{font-size:10px;font-weight:600;letter-spacing:0.14em;color:var(--text-muted);display:block;}
+.page-nav-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;color:var(--red);display:block;}
+footer{font-size:11px;letter-spacing:0.12em;color:var(--text-muted);text-transform:uppercase;padding:20px 60px;border-top:1px solid var(--border);}
+footer span{color:var(--red);}
+.img-caption{font-size:11px;color:var(--text-muted);text-align:center;margin-top:6px;line-height:1.4;font-style:italic;}
+.analogy-summary{font-style:normal;font-weight:600;color:#92400e;margin-bottom:10px;}
+.analogy-text ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;}
+.analogy-text li{padding-left:18px;position:relative;}
+.analogy-text li::before{content:'•';position:absolute;left:0;font-weight:700;color:#b45309;}
+.data-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;}
+.data-table th{background:#1a0606;color:#e87070;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:10px 14px;text-align:left;}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-soft);line-height:1.55;vertical-align:top;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:nth-child(even) td{background:var(--surface-2);}
+.data-table td strong{color:var(--text);font-weight:600;}
+.img-missing-msg{display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;}
+@media(max-width:1000px){main{grid-template-columns:1fr;}.sidebar{position:static;max-height:none;padding:0 40px 40px;}}
+@media(max-width:720px){header{padding:28px 24px 24px;}header h1{font-size:32px;}.motivation-banner{padding:16px 24px;}.main-content{padding:24px 24px 40px;}.section-nav{padding:0 16px;}.top-panels{grid-template-columns:1fr;}.top-panels .qpanel{border-right:none;border-bottom:1px solid var(--border);}.lesson-tools-grid{grid-template-columns:1fr;}footer{padding:16px 24px;}}
+</style>
+</head>
+<body>
+<div id="pt-overlay"></div>
+
+<header>
+  <div class="header-left">
+    <div class="breadcrumb">
+      <a href="../nse7-ef-study-guide-hub.html">EF-NSE7</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="index.html">Chapter 04 — High Availability</a>
+      <span class="breadcrumb-sep">›</span>
+      Subtopic 03
+    </div>
+    <div class="header-eyebrow"><span class="dot-live"></span> Study Guide · EF-NSE7</div>
+    <h1>Virtual Router Redundancy <em>Protocol</em></h1>
+    <p>VRRP topology, advertisement-based failover, VRRP destination monitoring, advertisement intervals, IPv4/IPv6 support, and when VRRP is the right tool vs FGCP or FGSP.</p>
+  </div>
+</header>
+
+<div class="motivation-banner">
+  <div class="motivation-text">VRRP is the <em>open standard</em> that lets FortiGate integrate into any vendor's redundancy scheme.</div>
+  <p class="motivation-sub">Chapter 04 · Subtopic 03 covers how VRRP operates on FortiGate, the advertisement-based election mechanism, and where VRRP fits relative to the Fortinet-proprietary HA protocols.</p>
+</div>
+
+<div class="top-panels">
+  <div class="qpanel" id="qpanel">
+    <button class="qpanel-header" onclick="toggleQPanel()" id="qpanel-header">
+      <span class="qpanel-title">MY QUESTIONS</span>
+      <span class="qpanel-count" id="qpanel-count">0</span>
+      <span class="qpanel-hint">— click to expand</span>
+      <span class="qpanel-chevron" id="qpanel-chevron">▾</span>
+    </button>
+    <div class="qpanel-body" id="qpanel-body"></div>
+  </div>
+  <div class="notes-panel" id="notes-panel">
+    <button class="notes-panel-header" onclick="toggleNotesPanel()" id="notes-panel-header">
+      <span class="notes-panel-title">MY NOTES</span>
+      <span class="notes-panel-count" id="notes-panel-count">0</span>
+      <span class="notes-panel-hint">— click to expand</span>
+      <span class="notes-panel-chevron" id="notes-panel-chevron">▾</span>
+    </button>
+    <div class="notes-panel-body" id="notes-panel-body"></div>
+  </div>
+</div>
+
+<nav class="section-nav" id="section-nav">
+  <a class="nav-tab active" href="#s1">VRRP Overview</a>
+  <a class="nav-tab" href="#s2">VRRP Election &amp; Failover</a>
+  <a class="nav-tab" href="#s3">VRRP Configuration</a>
+  <a class="nav-tab" href="#s4">HA Protocol Comparison</a>
+</nav>
+
+<main>
+  <div class="main-content">
+
+    <!-- SECTION 1 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · VRRP OVERVIEW</span>
+      </div>
+      <p class="socratic-insight">VRRP is an open IETF standard (RFC 3768/5798) designed to provide gateway redundancy without requiring any special client configuration. Unlike FGCP and FGSP, VRRP is vendor-agnostic — FortiGate can participate in a VRRP domain alongside Cisco, Juniper, or any other VRRP-compatible device.</p>
+      <ul class="socratic-questions">
+        <li>VRRP provides no session synchronization and no load balancing. What does it actually protect against — and in what scenarios is that sufficient?</li>
+        <li>Why might an enterprise already running VRRP on routers prefer to add FortiGate to the existing VRRP domain rather than deploy FGCP?</li>
+      </ul>
+      <div class="answer-area" data-section="vrrp-overview">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">VRRP protects against gateway failure — it ensures that a backup router takes over the virtual IP used as the default gateway. New connections will succeed after failover. Existing sessions are dropped (no sync), but this is acceptable in stateless or short-lived connection environments, or where the application retries automatically after a brief disruption.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">FGCP requires identical FortiGate hardware and creates a proprietary cluster. Adding FortiGate to an existing VRRP domain is non-disruptive — it slots into the existing redundancy architecture using the open standard, works alongside other vendor devices, and doesn't require replacing or reconfiguring the existing redundancy infrastructure.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s1">
+      <div class="section-label">SECTION 01</div>
+      <h2>VRRP <em>Overview</em></h2>
+
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s1-vrrp-overview.png" alt="Basic VRRP topology" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg">📷 <strong>images/s1-vrrp-overview.png</strong></div>
+        <p class="img-caption">Basic VRRP topology: Primary and Backup FortiGate sharing a virtual IP for gateway redundancy.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration: internal network on left connected via switch to two FortiGate devices labeled "Primary VRRP Router" and "Backup VRRP Router". Both connect to a shared Virtual IP address badge floating above them. A VRRP-compatible router is also shown in the group. Right side connects to Internet. Pastel palette, bold outlines, minimal text, no shadows.</div>
+      </div>
+
+      <p><strong>VRRP (Virtual Router Redundancy Protocol)</strong> is an open IETF standard that provides gateway redundancy by allowing multiple routers to share a single <em>virtual IP (vrip)</em> address. Endpoints use the virtual IP as their default gateway — when the primary router fails, the backup with the highest priority takes over the virtual IP seamlessly.</p>
+
+      <p>FortiOS supports <strong>VRRP versions 2 and 3</strong>, enabling both <em>IPv4 and IPv6</em> VRRP configurations. You can create VRRP domains that include multiple FortiGate devices as well as other VRRP-compatible routers from any vendor. Different FortiGate models can participate in the same VRRP domain, making it ideal for integrating into existing heterogeneous network environments.</p>
+
+      <p>VRRP is configured at the <strong>interface level</strong> — specifically under each physical or VLAN interface. A FortiGate device can belong to multiple VRRP domains simultaneously, each with its own virtual IP and priority settings.</p>
+
+      <div class="callout callout-green"><strong>Key advantage:</strong> VRRP is vendor-agnostic — FortiGate can participate alongside Cisco, Juniper, or any RFC-compliant VRRP device. No proprietary requirements.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">VRRP = open standard, gateway redundancy only. FortiOS supports VRRP v2 and v3 (IPv4 and IPv6). Configured per interface. Unlimited devices in a VRRP domain. No session sync, no load balancing — only gateway failover. Compatible with non-FortiGate VRRP routers.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s1" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s1','VRRP Overview')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s1" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s1')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · VRRP ELECTION &amp; FAILOVER</span>
+      </div>
+      <p class="socratic-insight">VRRP election is continuous — the primary router periodically sends advertisement messages, and the backup with the highest priority becomes primary if those advertisements stop. FortiGate extends this with destination address monitoring for connectivity-based failover, not just device-based failover.</p>
+      <ul class="socratic-questions">
+        <li>How does VRRP destination monitoring (vrdst) improve on basic VRRP advertisement-based failover — and what should the destination addresses be?</li>
+        <li>When the failed primary VRRP router is restored, what happens — and how does this compare to FGCP override-enabled behavior?</li>
+      </ul>
+      <div class="answer-area" data-section="vrrp-election">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Basic VRRP only fails over when the primary device goes down or its VRRP process stops. Destination monitoring adds link-quality failover — if the primary can't reach a specified remote IP (e.g., 8.8.8.8), it stops sending VRRP advertisements even though it's still up. This triggers failover based on connectivity loss, not just device failure. Destination addresses should be remote/upstream IPs — not local — to test actual internet or WAN reachability.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">When the failed primary recovers, it resumes sending VRRP advertisements with its higher priority, and the backup defers to it — the primary reclaims the virtual IP. This is analogous to FGCP override-enabled behavior where priority always determines the primary. The difference is that VRRP preemption is configurable, while FGCP override always re-elects based on priority.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s2">
+      <div class="section-label">SECTION 02</div>
+      <h2>VRRP <em>Election</em> and Failover</h2>
+
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s2-vrrp-election.png" alt="VRRP advertisement-based election" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg">📷 <strong>images/s2-vrrp-election.png</strong></div>
+        <p class="img-caption">Primary sends VRRP advertisements; backup takes over when advertisements stop.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration: primary FortiGate on left sending green VRRP advertisement packets toward backup FortiGate on right. Red X on primary's internet link. Backup device now showing "Primary" badge. Destination monitor arrow from primary pointing to 8.8.8.8 with failed connection. Pastel palette, bold outlines, minimal text.</div>
+      </div>
+
+      <p>VRRP FortiGate devices in a VRRP domain periodically send <strong>VRRP advertisement messages</strong> to all other devices in the domain. The device with the <em>highest priority</em> becomes and remains the primary router. Backup routers monitor these advertisements — if they stop receiving them from the current primary, the backup with the highest priority takes over the virtual IP.</p>
+
+      <p>The primary FortiGate stops sending VRRP advertisements if:</p>
+      <ul>
+        <li>The device <strong>fails or crashes</strong></li>
+        <li>It loses connectivity to a configured <strong>VRRP destination address</strong> (vrdst)</li>
+      </ul>
+
+      <p>FortiGate supports up to <em>two VRRP destination addresses</em> per VRRP instance, monitored by the primary device. If the primary cannot reach either destination, it stops advertising, triggering failover. Best practice is to use <strong>remote upstream addresses</strong> (such as 8.8.8.8) that validate internet reachability — not local addresses that would only test local interface health.</p>
+
+      <div class="analogy-box">
+        <div class="analogy-label">Analogy</div>
+        <div class="analogy-text">
+          <p class="analogy-summary">VRRP advertisements work like a heartbeat — silence triggers the backup to step in, whether the primary is dead or just disconnected from the outside world.</p>
+          <ul>
+            <li><strong>VRRP advertisement</strong> — the primary's regular "I'm alive and reachable" pulse</li>
+            <li><strong>vrdst monitoring</strong> — checking not just that the heart beats, but that blood is reaching the extremities (internet)</li>
+            <li><strong>Backup promotion</strong> — the backup assumes control the moment silence exceeds the advertisement interval timeout</li>
+          </ul>
+        </div>
+        <div class="analogy-img" style="margin-top:14px;background:rgba(255,255,255,0.5);border-radius:10px;padding:14px;text-align:center;">
+          <img src="images/a1-vrrp-heartbeat.png" alt="VRRP heartbeat analogy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 10px;">
+          <div class="img-missing-msg" style="display:none;font-size:12px;color:#92400e;padding:8px;background:rgba(146,64,14,0.1);border-radius:6px;">📷 <strong>images/a1-vrrp-heartbeat.png</strong> — add this image to the folder</div>
+          <button class="prompt-toggle" onclick="togglePrompt(this)" type="button">▾ Show analogy image prompt</button>
+          <div class="prompt-content" hidden>Cartoon flat illustration: doctor character (labeled "Backup FortiGate") listening to a stethoscope on a patient labeled "Primary FortiGate". The patient's heartbeat line shows regular pulses labeled "VRRP Advertisement", then flatlines. Doctor picks up a "Virtual IP" crown. A second panel shows the patient's arm connected to the internet (labeled "vrdst 8.8.8.8 check"). Pastel palette, bold outlines, no shadows.</div>
+        </div>
+      </div>
+
+      <div class="callout callout-amber"><strong>Exam tip:</strong> VRRP advertisement interval is configured with <code>adv-interval</code> in centiseconds (100 = 1 second). A lower interval means faster failover detection but more advertisement traffic. The default is 100 centiseconds (1 second).</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">VRRP primary = highest priority device that keeps advertising. Failover triggers when advertisements stop (device fail or vrdst connectivity loss). Up to 2 vrdst addresses per VRRP instance — use remote upstream IPs. adv-interval in centiseconds (default 100 = 1s). Recovered primary reclaims role when it restarts advertising.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s2" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s2','VRRP Election & Failover')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s2" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s2')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · VRRP CONFIGURATION</span>
+      </div>
+      <p class="socratic-insight">VRRP configuration on FortiGate is interface-level, nested under the VRRP object within the interface config. Each VRRP instance has its own ID, virtual IP, priority, and advertisement interval — multiple VRRP instances can exist on a single interface for different virtual IPs.</p>
+      <ul class="socratic-questions">
+        <li>VRRP is configured per interface — not at the system HA level. What does this mean for traffic that arrives on a different interface (e.g., the WAN side) during a failover?</li>
+        <li>If you configure two VRRP instances on the same interface — one where FGT1 is primary (priority 200) and one where FGT2 is primary (priority 200 on the other instance) — what behavior does this create?</li>
+      </ul>
+      <div class="answer-area" data-section="vrrp-config">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">VRRP only protects the default gateway virtual IP on that specific interface. If the WAN interface fails, VRRP on the LAN interface doesn't know — unless you configure vrdst to monitor a remote address reachable through the WAN. This is why vrdst monitoring is important: it links VRRP failover to actual upstream connectivity, not just local interface state.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">This creates per-VRRP-instance load distribution — similar conceptually to VDOM partitioning. FGT1 is primary for VRRP instance 1 (virtual IP A) and secondary for instance 2. FGT2 is primary for instance 2 (virtual IP B) and secondary for instance 1. Endpoints using virtual IP A are served by FGT1; endpoints using virtual IP B are served by FGT2. It's not session load balancing — it's client-group distribution.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s3">
+      <div class="section-label">SECTION 03</div>
+      <h2>VRRP <em>Configuration</em> on FortiGate</h2>
+
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s3-vrrp-config.png" alt="VRRP configuration CLI example" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg">📷 <strong>images/s3-vrrp-config.png</strong></div>
+        <p class="img-caption">VRRP configured under interface with vrip, priority, adv-interval, and vrdst parameters.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration: FortiGate device with a zoom-in box showing the interface configuration hierarchy: system interface → port10 → config vrrp → edit 200 → showing vrip, priority, adv-interval, vrdst parameters in a tree structure. Color-coded parameter names. Pastel palette, bold outlines, dark CLI boxes, minimal text.</div>
+      </div>
+
+      <p>VRRP on FortiGate is configured <em>under each network interface</em>, nested within the interface configuration using <code>config vrrp</code>. Each VRRP instance is identified by a VRRP ID (1–255). Key parameters include:</p>
+
+      <table class="data-table">
+        <thead><tr><th>Parameter</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><strong>vrip</strong></td><td>Virtual IP address shared by all VRRP members in the domain</td></tr>
+          <tr><td><strong>priority</strong></td><td>Election priority (1–255). Higher wins. Default: 100.</td></tr>
+          <tr><td><strong>adv-interval</strong></td><td>Advertisement interval in centiseconds. Default: 100 (= 1 second).</td></tr>
+          <tr><td><strong>vrdst</strong></td><td>Up to 2 destination IPs monitored for connectivity. Primary stops advertising if unreachable.</td></tr>
+          <tr><td><strong>vrdst-priority</strong></td><td>Priority reduction applied when vrdst monitoring fails (instead of stopping advertisements).</td></tr>
+        </tbody>
+      </table>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — VRRP Interface Configuration</div>
+        <pre><code>config system interface
+    edit port10
+        config vrrp
+            edit 200
+                set vrip 10.10.101.250
+                set priority 200
+                set adv-interval 250
+                set vrdst 8.8.8.8
+                set vrdst-priority 30
+            next
+        end
+    next
+end</code></pre>
+      </div>
+
+      <p>In this example, VRRP instance 200 uses virtual IP 10.10.101.250 with a priority of 200. The advertisement interval is 250 centiseconds (2.5 seconds). If the primary loses connectivity to 8.8.8.8, its effective priority drops by 30 — potentially triggering a failover if the backup has a higher resulting priority.</p>
+
+      <div class="callout"><strong>Note:</strong> FortiOS supports adding IPv4 and IPv6 VRRP virtual routers to the same interface simultaneously. This allows a single interface to participate in both IPv4 and IPv6 VRRP domains.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">VRRP configured under: config system interface → edit &lt;port&gt; → config vrrp → edit &lt;ID&gt;. Key params: vrip, priority (1-255, higher wins), adv-interval (centiseconds, default 100), vrdst (max 2 remote IPs), vrdst-priority (priority drop on vrdst failure). Supports IPv4 and IPv6 on same interface simultaneously.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s3" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s3','VRRP Configuration')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s3" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s3')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · HA PROTOCOL COMPARISON</span>
+      </div>
+      <p class="socratic-insight">FGCP, FGSP, and VRRP solve overlapping but distinct problems. The exam tests your ability to select the right protocol for a given scenario — understanding the limits of each is as important as understanding what each does.</p>
+      <ul class="socratic-questions">
+        <li>An enterprise needs session synchronization for seamless failover AND external load balancers already exist. Which protocol or combination is most appropriate?</li>
+        <li>VRRP offers "unlimited" device capacity while FGCP is limited to 4 and FGSP to 16. Why isn't VRRP with many devices the obvious choice for large-scale deployments?</li>
+      </ul>
+      <div class="answer-area" data-section="ha-comparison">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">FGSP is the right protocol — it provides session synchronization between peers and relies on external load balancers for traffic distribution. FGSP is specifically designed for environments where external load balancers already control traffic flow. You could also combine FGSP with FGCP clusters (2-member each) as peers for additional local redundancy at each site.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">VRRP only provides gateway failover — there is no session synchronization, no load balancing, and no configuration synchronization. In a large VRRP deployment, sessions are dropped on failover, each device manages its own policy independently (no sync), and traffic cannot be distributed across multiple devices. VRRP scales in device count but not in HA capability depth.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s4">
+      <div class="section-label">SECTION 04</div>
+      <h2>HA Protocol <em>Comparison</em> — FGCP, FGSP, VRRP</h2>
+
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s4-ha-protocol-compare.png" alt="FGCP vs FGSP vs VRRP comparison table" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg">📷 <strong>images/s4-ha-protocol-compare.png</strong></div>
+        <p class="img-caption">Three-way comparison: redundancy capacity, load balancing, session sync, config sync.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration: three-column comparison infographic. Columns labeled "FGCP" (teal), "FGSP" (coral), "VRRP" (purple). Rows: Redundancy capacity, Load balancing, Session sync, Config sync. Checkmarks (green) and X marks (red) in cells. Pastel palette, bold outlines, minimal text. Educational infographic style.</div>
+      </div>
+
+      <p>The following comparison helps identify which Fortinet HA protocol to deploy based on requirements:</p>
+
+      <table class="data-table">
+        <thead><tr><th>Feature</th><th>FGCP</th><th>FGSP</th><th>VRRP</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Redundancy capacity</strong></td><td>2–4 FortiGates</td><td>2–16 standalone / 2–16 FGCP clusters</td><td>Unlimited VRRP-compatible devices</td></tr>
+          <tr><td><strong>Load balancing</strong></td><td>Native active-active; VDOM partitioning</td><td>External load balancer</td><td>Not available</td></tr>
+          <tr><td><strong>Session synchronization</strong></td><td>Available via config</td><td>Available via config</td><td>Not available</td></tr>
+          <tr><td><strong>Config synchronization</strong></td><td>Native</td><td>Available if required</td><td>Not available</td></tr>
+          <tr><td><strong>Vendor compatibility</strong></td><td>FortiGate only</td><td>FortiGate only</td><td>Any VRRP-compliant device</td></tr>
+          <tr><td><strong>Failover trigger</strong></td><td>Monitored ports, uptime, priority</td><td>External load balancer detection</td><td>VRRP advertisement timeout / vrdst</td></tr>
+        </tbody>
+      </table>
+
+      <p>Use <strong>VRRP</strong> when: integrating with existing heterogeneous network infrastructure, requiring an open standard, or when gateway-level failover is sufficient and sessions can be dropped on failover.</p>
+
+      <p>Use <strong>FGCP</strong> when: deploying 2–4 FortiGates in a controlled environment, needing native configuration sync and session sync, and wanting built-in load balancing without external devices.</p>
+
+      <p>Use <strong>FGSP</strong> when: external load balancers exist, more than 4 devices are needed, asymmetric routing is unavoidable, or when combining standalone FortiGates from different sites into a session-synchronized pool.</p>
+
+      <div class="callout callout-green"><strong>Compatibility note:</strong> FGSP is compatible with FortiGate VRRP. You can run VRRP on interfaces while using FGSP for session synchronization in the same deployment.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-text">VRRP = open standard, unlimited devices, gateway failover only — no session sync, no load balancing. FGCP = 2-4 FortiGates, native everything, proprietary. FGSP = 2-16 peers, external LB required, session sync, scales highest. FGSP + VRRP can coexist. VRRP has no config sync — each device managed independently.</div>
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s4" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s4','HA Protocol Comparison')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s4" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s4')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">ON THIS PAGE</div>
+      <nav class="ssnav">
+        <a class="ssnav-item" href="#s1">VRRP Overview</a>
+        <a class="ssnav-item" href="#s2">VRRP Election &amp; Failover</a>
+        <a class="ssnav-item" href="#s3">VRRP Configuration</a>
+        <a class="ssnav-item" href="#s4">HA Protocol Comparison</a>
+      </nav>
+    </div>
+
+    <a class="hub-link" href="index.html">← Chapter 04 Hub</a>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">PROGRESS</div>
+      <div class="checklist" id="checklist">
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s1" onchange="toggleDone(this)">
+          <span class="check-label">VRRP Overview</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s2" onchange="toggleDone(this)">
+          <span class="check-label">VRRP Election &amp; Failover</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s3" onchange="toggleDone(this)">
+          <span class="check-label">VRRP Configuration</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s4" onchange="toggleDone(this)">
+          <span class="check-label">HA Protocol Comparison</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">QUICK REFERENCE</div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">VRRP</div>
+        <div class="quick-ref-def">Virtual Router Redundancy Protocol — open IETF standard for gateway failover. No session sync or load balancing.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">vrip</div>
+        <div class="quick-ref-def">Virtual IP address shared by all VRRP members. Endpoints use this as their default gateway.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">priority</div>
+        <div class="quick-ref-def">VRRP election value (1–255). Highest active priority wins primary role. Default: 100.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">adv-interval</div>
+        <div class="quick-ref-def">VRRP advertisement interval in centiseconds. Default 100 = 1 second. Lower = faster failover.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">vrdst</div>
+        <div class="quick-ref-def">Up to 2 remote destination IPs monitored by primary. Failover triggers if primary can't reach them.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">vrdst-priority</div>
+        <div class="quick-ref-def">Priority reduction applied when vrdst check fails — reduces effective priority without stopping advertisements.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">VRRP v2 vs v3</div>
+        <div class="quick-ref-def">FortiOS supports both. VRRPv2 = IPv4 only. VRRPv3 = IPv4 and IPv6. Both can run on same interface.</div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="page-nav">
+  <a class="page-nav-btn page-nav-prev" href="subtopic-02-fgcp-and-fgsp.html">
+    <span class="page-nav-label">← PREVIOUS</span>
+    <span class="page-nav-title">FGCP and FGSP</span>
+  </a>
+  <a class="page-nav-btn page-nav-next" href="index.html">
+    <span class="page-nav-label">BACK TO HUB →</span>
+    <span class="page-nav-title">Chapter 04 Hub</span>
+  </a>
+</div>
+
+<footer>
+  EF-NSE7<span>.</span> Chapter 04<span>.</span> Subtopic 03<span>.</span> VRRP
+</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-ch04-sub03-vrrp';
+
+const SECTIONS = {
+  's1': 'VRRP Overview',
+  's2': 'VRRP Election & Failover',
+  's3': 'VRRP Configuration',
+  's4': 'HA Protocol Comparison',
+};
+
+document.querySelectorAll('.socratic-header').forEach(function(h) {
+  h.addEventListener('click', function() { h.closest('.socratic-block').classList.toggle('soc-open'); });
+});
+
+function getQArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-qs') || '[]'); }
+function saveQArr(qs) { localStorage.setItem(PAGE_KEY+'-qs', JSON.stringify(qs)); }
+function addQuestion(key, name) {
+  const ta = document.getElementById('q-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const qs = getQArr(); qs.push({id: Date.now(), section: key, sectionName: name, text});
+  saveQArr(qs); ta.value = ''; renderQPanel();
+  if (!document.getElementById('qpanel-body').classList.contains('open')) toggleQPanel();
+}
+function deleteQ(id) { saveQArr(getQArr().filter(q => q.id !== id)); renderQPanel(); }
+function toggleQPanel() {
+  const body = document.getElementById('qpanel-body');
+  const header = document.getElementById('qpanel-header');
+  const chevron = document.getElementById('qpanel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-qpanel-open', open);
+}
+function renderQPanel() {
+  const qs = getQArr();
+  const count = document.getElementById('qpanel-count');
+  if (count) { count.textContent = qs.length; count.style.display = qs.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.qpanel-hint');
+  if (hint) hint.textContent = qs.length ? `— ${qs.length} question${qs.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('qpanel-body'); if (!body) return;
+  if (!qs.length) { body.innerHTML = '<p class="no-questions">No questions yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  qs.forEach(q => { if (groups[q.section]) groups[q.section].push(q); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(q => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${q.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteQ(${q.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function getNotesArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-notes') || '[]'); }
+function saveNotesArr(ns) { localStorage.setItem(PAGE_KEY+'-notes', JSON.stringify(ns)); }
+function addNote(key) {
+  const ta = document.getElementById('note-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const ns = getNotesArr(); ns.push({id: Date.now(), section: key, sectionName: SECTIONS[key]||key, text});
+  saveNotesArr(ns); ta.value = ''; renderNotesPanel();
+  if (!document.getElementById('notes-panel-body').classList.contains('open')) toggleNotesPanel();
+}
+function deleteNote(id) { saveNotesArr(getNotesArr().filter(n => n.id !== id)); renderNotesPanel(); }
+function toggleNotesPanel() {
+  const body = document.getElementById('notes-panel-body');
+  const header = document.getElementById('notes-panel-header');
+  const chevron = document.getElementById('notes-panel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-notes-panel-open', open);
+}
+function renderNotesPanel() {
+  const ns = getNotesArr();
+  const count = document.getElementById('notes-panel-count');
+  if (count) { count.textContent = ns.length; count.style.display = ns.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.notes-panel-hint');
+  if (hint) hint.textContent = ns.length ? `— ${ns.length} note${ns.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('notes-panel-body'); if (!body) return;
+  if (!ns.length) { body.innerHTML = '<p class="no-questions">No notes yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  ns.forEach(n => { if (groups[n.section]) groups[n.section].push(n); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(n => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteNote(${n.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function toggleDone(input) {
+  localStorage.setItem(PAGE_KEY+'-check-'+input.dataset.key, input.checked);
+}
+function initChecks() {
+  document.querySelectorAll('.check-input').forEach(function(inp) {
+    inp.checked = localStorage.getItem(PAGE_KEY+'-check-'+inp.dataset.key) === 'true';
+  });
+}
+
+function saveSocAnswer(btn) {
+  const area = btn.closest('.answer-area');
+  const ta = area.querySelector('.answer-textarea');
+  if (!ta.value.trim()) { ta.focus(); return; }
+  const key = PAGE_KEY+'-socans-'+area.dataset.section;
+  try { localStorage.setItem(key, ta.value); } catch(e) {}
+  ta.disabled = true; btn.textContent = '✓ Answer saved'; btn.disabled = true;
+  const seeBtn = area.querySelector('.btn-see-answer');
+  seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+}
+function revealSocAnswer(btn) {
+  if (btn.disabled) return;
+  const answers = btn.closest('.answer-area').querySelector('.model-answers');
+  const isHidden = answers.style.display === 'none' || !answers.style.display;
+  answers.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '▲ Hide Model Answer' : '💡 See Model Answer';
+}
+
+function togglePrompt(btn) {
+  const c = btn.nextElementSibling;
+  const isHidden = c.hasAttribute('hidden');
+  if (isHidden) { c.removeAttribute('hidden'); btn.textContent = '▴ Hide image prompt'; }
+  else { c.setAttribute('hidden', ''); btn.textContent = '▾ Show image prompt'; }
+}
+
+if (sessionStorage.getItem('pt')) {
+  document.body.style.opacity = '1';
+  sessionStorage.removeItem('pt');
+}
+document.querySelectorAll('a[href]').forEach(function(a) {
+  a.addEventListener('click', function() { sessionStorage.setItem('pt', '1'); });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderQPanel(); renderNotesPanel(); initChecks();
+  if (localStorage.getItem(PAGE_KEY+'-qpanel-open') === 'true') toggleQPanel();
+  if (localStorage.getItem(PAGE_KEY+'-notes-panel-open') === 'true') toggleNotesPanel();
+  document.querySelectorAll('.answer-area').forEach(function(area) {
+    const key = PAGE_KEY+'-socans-'+area.dataset.section;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const ta = area.querySelector('.answer-textarea'); ta.value = saved; ta.disabled = true;
+        const addBtn = area.querySelector('.btn-add-answer'); addBtn.textContent = '✓ Answer saved'; addBtn.disabled = true;
+        const seeBtn = area.querySelector('.btn-see-answer'); seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+      }
+    } catch(e) {}
+  });
+  document.querySelectorAll('.analogy-box').forEach(function(box) {
+    if (box.dataset.collapsibleInit) return;
+    box.dataset.collapsibleInit = '1';
+    box.classList.add('expanded');
+    const label = box.querySelector(':scope > .analogy-label');
+    if (label) label.addEventListener('click', () => box.classList.toggle('expanded'));
+  });
+  document.querySelectorAll('.analogy-img img').forEach(function(img) {
+    if (img.dataset.zoomInit) return;
+    img.dataset.zoomInit = '1';
+    img.addEventListener('click', () => img.classList.toggle('zoomed'));
+  });
+  document.querySelectorAll('.section-img').forEach(function(img) {
+    img.addEventListener('click', () => img.classList.toggle('si-expanded'));
+  });
+});
+
+(function() {
+  var items = document.querySelectorAll('.ssnav-item');
+  if (!items.length) return;
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      var lnk = document.querySelector('.ssnav-item[href="#'+e.target.id+'"]');
+      if (lnk) lnk.classList.toggle('active', e.isIntersecting);
+    });
+  }, { rootMargin: '-10% 0% -70% 0%' });
+  document.querySelectorAll('.section-block[id]').forEach(function(el) { obs.observe(el); });
+})();
+</script>
+</body>
+</html>

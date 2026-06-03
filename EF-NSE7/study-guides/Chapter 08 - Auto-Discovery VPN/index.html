@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 08 — Auto-Discovery VPN</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Epilogue:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--cream:#fff5f5;--cream-dark:#fde8e8;--ink:#1a0606;--ink-soft:#4a1212;--ink-muted:#8a3a3a;--red:#c0392b;--red-vivid:#e03e2d;--red-light:#fef2f2;--red-border:#f8b4b4;--border:#f0c8c8;--card-bg:#1a0606;--card-border:#2e0c0c;}
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}html.pt-init body{opacity:0;}
+  body{font-family:'Epilogue',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:72px 40px 96px;}
+  .back-link{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-muted);text-decoration:none;margin-bottom:48px;align-self:flex-start;padding:8px 16px;border-radius:20px;border:1px solid var(--border);background:rgba(255,255,255,0.6);transition:color 0.2s,border-color 0.2s,background 0.2s;}
+  .back-link:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);}
+  .content{width:100%;max-width:860px;display:flex;flex-direction:column;}
+  .chapter-label{display:inline-flex;align-items:center;gap:6px;background:var(--ink);color:var(--cream);padding:6px 16px;border-radius:20px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;align-self:flex-start;margin-bottom:20px;}
+  .label-dot{width:5px;height:5px;background:var(--red-vivid);border-radius:50%;}
+  .chapter-title{font-family:'Fraunces',serif;font-size:48px;font-weight:700;line-height:1.05;color:var(--ink);letter-spacing:-0.02em;margin-bottom:8px;}
+  .chapter-title em{font-style:italic;font-weight:400;color:var(--red);}
+  .chapter-subtitle{font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:18px;color:var(--ink-muted);margin-bottom:36px;}
+  .quick-nav{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:40px;}
+  .nav-pill{display:inline-flex;align-items:center;gap:7px;padding:8px 18px;border-radius:100px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-muted);text-decoration:none;border:1px solid var(--border);background:rgba(255,255,255,0.6);transition:color 0.2s,border-color 0.2s,background 0.2s,box-shadow 0.2s;}
+  .nav-pill svg{flex-shrink:0;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+  .nav-pill:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);box-shadow:0 2px 10px rgba(192,57,43,0.12);}
+  .nav-pill:hover svg{transform:translateY(3px);}
+  .nav-dropdown-wrap{position:relative;}
+  .nav-dropdown{position:absolute;top:calc(100% + 8px);left:0;background:#fff;border:1px solid var(--border);border-radius:14px;padding:6px;min-width:280px;box-shadow:0 8px 28px rgba(26,6,6,0.10),0 2px 8px rgba(26,6,6,0.06);opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity 0.18s ease,transform 0.22s cubic-bezier(0.34,1.56,0.64,1);z-index:100;}
+  .nav-dropdown::before{content:'';position:absolute;top:-10px;left:0;right:0;height:10px;}
+  .nav-dropdown-wrap:hover .nav-dropdown{opacity:1;pointer-events:auto;transform:translateY(0);}
+  .nav-dropdown a{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:9px;font-size:12px;font-weight:500;color:var(--ink-soft);text-decoration:none;line-height:1.3;transition:background 0.15s,color 0.15s;}
+  .nav-dropdown a:hover{background:var(--red-light);color:var(--red);}
+  .nav-dropdown a .dd-num{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-muted);flex-shrink:0;opacity:0.6;transition:color 0.15s,opacity 0.15s;}
+  .nav-dropdown a:hover .dd-num{color:var(--red);opacity:1;}
+  .nav-dropdown-divider{height:1px;background:var(--border);margin:4px 6px;}
+  .hero-image-wrap{width:100%;border-radius:24px;overflow:hidden;border:2px solid var(--card-border);background:var(--card-bg);margin-bottom:16px;}
+  .hero-image-wrap img{width:100%;display:block;min-height:340px;object-fit:cover;}
+  .hero-placeholder{width:100%;min-height:340px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:48px 40px;border:2px dashed rgba(192,57,43,0.32);border-radius:22px;background:repeating-linear-gradient(-45deg,transparent,transparent 10px,rgba(192,57,43,0.025) 10px,rgba(192,57,43,0.025) 20px);}
+  .ph-icon{width:52px;height:52px;border-radius:14px;background:rgba(192,57,43,0.13);border:1.5px solid rgba(192,57,43,0.28);display:flex;align-items:center;justify-content:center;color:#e87070;}
+  .ph-label{font-family:'Fraunces',serif;font-style:italic;font-size:18px;color:rgba(255,255,255,0.45);text-align:center;}
+  .ph-filename{font-size:11px;font-weight:600;letter-spacing:0.1em;color:rgba(192,57,43,0.55);font-family:monospace;}
+  .prompt-box{background:var(--card-bg);border:1.5px solid var(--card-border);border-radius:14px;padding:18px 22px;margin-bottom:56px;}
+  .prompt-header{display:flex;align-items:center;gap:8px;font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:rgba(192,57,43,0.65);margin-bottom:10px;}
+  .prompt-dot{width:5px;height:5px;border-radius:50%;background:var(--red-vivid);}
+  .prompt-text{font-size:12.5px;line-height:1.7;color:rgba(255,255,255,0.5);font-style:italic;}
+  .prompt-text strong{color:rgba(255,255,255,0.78);font-style:normal;font-weight:600;}
+  .prompt-filename{color:#e87070;font-family:monospace;font-style:normal;font-size:11px;}
+  .section-label{font-size:10px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:28px;display:flex;align-items:center;gap:10px;}
+  .section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+  .overview{display:flex;flex-direction:column;gap:0;margin-bottom:56px;}
+  .topic-block{padding-bottom:48px;}
+  .topic-block:last-child{padding-bottom:0;}
+  .topic-heading{font-family:'Fraunces',serif;font-size:26px;font-weight:700;line-height:1.15;color:var(--ink);letter-spacing:-0.01em;margin-bottom:14px;padding-left:18px;border-left:3px solid var(--red);}
+  .topic-heading em{font-style:italic;font-weight:400;color:var(--red);}
+  .topic-body{font-size:15.5px;line-height:1.8;color:var(--ink-soft);margin-bottom:28px;}
+  .topic-body strong{color:var(--ink);font-weight:600;}
+  .topic-body em{color:var(--red);font-style:italic;}
+  .callout{border-left:3px solid var(--red-border);background:var(--red-light);border-radius:0 12px 12px 0;padding:14px 20px;margin:20px 0 28px;font-size:14px;line-height:1.65;color:var(--ink-soft);}
+  .callout strong{color:var(--ink);}
+  .topic-divider{height:1px;background:var(--border);margin:0 0 48px;}
+  .inline-img-wrap{margin-bottom:12px;}
+  .inline-image{width:100%;display:block;border-radius:18px;border:2px solid var(--card-border);background:var(--card-bg);object-fit:cover;}
+  .inline-placeholder{width:100%;border-radius:18px;border:2px dashed var(--red-border);background:var(--red-light);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:36px 32px;text-align:center;position:relative;overflow:hidden;}
+  .inline-placeholder::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(-45deg,transparent,transparent 12px,rgba(192,57,43,0.04) 12px,rgba(192,57,43,0.04) 24px);pointer-events:none;}
+  .inline-ph-icon{width:44px;height:44px;border-radius:12px;background:rgba(192,57,43,0.12);border:1.5px solid rgba(192,57,43,0.26);display:flex;align-items:center;justify-content:center;color:var(--red);position:relative;z-index:1;}
+  .inline-ph-label{font-family:'Fraunces',serif;font-style:italic;font-size:16px;color:var(--ink-muted);position:relative;z-index:1;}
+  .inline-ph-file{font-size:10.5px;font-weight:600;letter-spacing:0.1em;color:var(--red);font-family:monospace;position:relative;z-index:1;}
+  .inline-prompt{background:var(--card-bg);border:1.5px solid var(--card-border);border-radius:0 0 14px 14px;border-top:none;padding:16px 22px;margin-bottom:28px;}
+  .inline-prompt .prompt-header{margin-bottom:8px;}
+  .inline-prompt .prompt-text{font-size:12px;}
+  .concepts-wrap{margin-top:8px;}
+  .concepts-heading{font-size:10px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:12px;}
+  .concepts{display:flex;flex-wrap:wrap;gap:8px;}
+  .concept-pill{font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;padding:6px 14px;border-radius:20px;background:var(--red-light);border:1px solid var(--red-border);color:var(--red);transition:background 0.2s,border-color 0.2s;}
+  .concept-pill:hover{background:#fde0e0;border-color:#f0a0a0;}
+  .subtopic-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:80px;}
+  .subtopic-card{position:relative;background:var(--card-bg);border:2px solid var(--card-border);border-radius:18px;padding:26px 28px 22px;text-decoration:none;color:inherit;display:flex;flex-direction:column;overflow:hidden;will-change:transform;transition:transform 0.42s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.35s ease,border-color 0.28s ease,background 0.3s ease;}
+  .subtopic-card::before{content:'';position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(to right,transparent,rgba(255,255,255,0.05) 50%,transparent);transform:skewX(-15deg);pointer-events:none;z-index:1;}
+  @keyframes card-shine{to{left:160%;}}
+  .subtopic-card:hover::before{animation:card-shine 0.5s ease forwards;}
+  .subtopic-card:hover{transform:translateY(-10px) scale(1.016);background:#260808;border-color:var(--red);box-shadow:0 24px 50px rgba(192,57,43,0.34),0 0 0 2px rgba(192,57,43,0.12);}
+  .sub-icon{width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(192,57,43,0.13);border:1.5px solid rgba(192,57,43,0.26);color:#e87070;margin-bottom:16px;transition:background 0.3s,border-color 0.3s,color 0.3s,box-shadow 0.32s,transform 0.5s cubic-bezier(0.34,1.56,0.64,1);}
+  .subtopic-card:hover .sub-icon{background:var(--red);border-color:var(--red-vivid);color:#fff;box-shadow:0 5px 18px rgba(192,57,43,0.48);transform:scale(1.12) rotate(360deg);}
+  .sub-num{font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.24);margin-bottom:5px;transition:color 0.3s;}
+  .subtopic-card:hover .sub-num{color:rgba(192,57,43,0.6);}
+  .sub-title{font-family:'Fraunces',serif;font-size:20px;font-weight:700;line-height:1.15;color:#fff;margin-bottom:10px;transition:color 0.3s;}
+  .subtopic-card:hover .sub-title{color:#ffe0e0;}
+  .sub-desc{font-size:12.5px;line-height:1.5;color:rgba(255,255,255,0.4);flex:1;margin-bottom:20px;transition:color 0.3s;}
+  .subtopic-card:hover .sub-desc{color:rgba(255,255,255,0.62);}
+  .sub-cta{display:inline-flex;align-items:center;gap:5px;align-self:flex-start;padding:6px 14px;border-radius:100px;font-size:10.5px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;background:rgba(192,57,43,0.16);border:1.5px solid rgba(192,57,43,0.32);color:#e87070;transition:background 0.3s,border-color 0.3s,color 0.3s,box-shadow 0.3s;}
+  .sub-arrow{display:inline-block;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+  .subtopic-card:hover .sub-cta{background:var(--red);border-color:var(--red-vivid);color:#fff;box-shadow:0 4px 14px rgba(192,57,43,0.46);}
+  .subtopic-card:hover .sub-arrow{transform:translateX(4px);}
+  @keyframes pageEnter{from{opacity:0;transform:scale(1.03) translateY(-16px);}to{opacity:1;transform:scale(1) translateY(0);}}
+  body{animation:pageEnter 0.5s cubic-bezier(0.15,0.85,0.2,1.08) both;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+  .hero-image-wrap{animation:fadeUp 0.48s 0.06s both;}.prompt-box{animation:fadeUp 0.48s 0.10s both;}.overview{animation:fadeUp 0.48s 0.14s both;}
+  .subtopic-card:nth-child(1){animation:fadeUp 0.44s 0.20s both;}.subtopic-card:nth-child(2){animation:fadeUp 0.44s 0.26s both;}.subtopic-card:nth-child(3){animation:fadeUp 0.44s 0.30s both;}
+  .back-to-top{display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border-radius:100px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-muted);text-decoration:none;border:1px solid var(--border);background:rgba(255,255,255,0.6);transition:color 0.2s,border-color 0.2s,background 0.2s,box-shadow 0.2s,transform 0.25s cubic-bezier(0.34,1.56,0.64,1);margin-top:56px;margin-bottom:32px;}
+  .back-to-top svg{transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+  .back-to-top:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);box-shadow:0 4px 14px rgba(192,57,43,0.14);transform:translateY(-2px);}
+  .back-to-top:hover svg{transform:translateY(-3px);}
+  footer{font-size:11px;letter-spacing:0.12em;color:var(--ink-muted);text-transform:uppercase;margin-bottom:60px;}
+  footer span{color:var(--red);}
+  @media(max-width:720px){body{padding:56px 20px 72px;}.chapter-title{font-size:34px;}.subtopic-grid{grid-template-columns:1fr;}.topic-heading{font-size:22px;}}
+</style>
+</head>
+<body>
+
+  <a class="back-link" href="../nse7-ef-study-guide-hub.html" id="top">← NSE7 Study Hub</a>
+
+  <div class="content">
+    <div class="chapter-label"><span class="label-dot"></span>EF-NSE7 &nbsp;·&nbsp; Chapter 08</div>
+    <h1 class="chapter-title">Auto-Discovery <em>VPN</em></h1>
+    <p class="chapter-subtitle">Building dynamic spoke-to-spoke shortcut tunnels with ADVPN and BGP overlay routing on FortiGate</p>
+
+    <nav class="quick-nav">
+      <a class="nav-pill" href="#subtopics">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        Subtopics
+      </a>
+      <div class="nav-dropdown-wrap">
+        <a class="nav-pill" href="#overview">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          Chapter Overview
+        </a>
+        <div class="nav-dropdown">
+          <a href="#topic-1"><span class="dd-num">01</span>ADVPN Architecture &amp; Shortcut Tunnels</a>
+          <div class="nav-dropdown-divider"></div>
+          <a href="#topic-2"><span class="dd-num">02</span>BGP &amp; Overlay Routing</a>
+          <div class="nav-dropdown-divider"></div>
+          <a href="#topic-3"><span class="dd-num">03</span>Multi-Region &amp; FortiManager Templates</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="hero-image-wrap">
+      <img id="heroImg" src="images/chapter-08-hero.png" alt="Auto-Discovery VPN — overview illustration"/>
+      <div class="hero-placeholder" style="display:none;">
+        <div class="ph-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+        <div class="ph-label">Hero image not generated yet</div>
+        <div class="ph-filename">images/chapter-08-hero.png</div>
+      </div>
+    </div>
+
+    <div class="prompt-box">
+      <div class="prompt-header"><span class="prompt-dot"></span>Image Generation Prompt &nbsp;→&nbsp; <span class="prompt-filename">images/chapter-08-hero.png</span></div>
+      <p class="prompt-text">
+        Detailed cartoon flat illustration of <strong>ADVPN shortcut tunnel creation between spokes</strong>. Light cream background. In the center, a large cartoon <strong>Hub FortiGate</strong> (red boxy appliance labeled 'Hub') sits in a cloud labeled 'Overlay Network 172.16.1.0/24'. Four spoke cartoon routers (small FortiGate boxes labeled Spoke A, B, C, D) surround the hub, each with a solid tunnel connection to the hub (labeled 'IPsec Tunnel'). Then between Spoke A and Spoke C, a magical new tunnel materializes with sparkle lines and a lightning bolt, labeled <strong>'Shortcut Tunnel!'</strong> in a starburst badge. Small message envelopes fly along the shortcut, showing the 6-step shortcut creation: 'offer → query → forward → reply → forward → negotiate'. An arrow from the old path (going via Hub) crosses out with a red X, showing the direct shortcut is now preferred. <strong>Fully detailed cartoon style, soft flat fills, pastel palette (red, teal, lavender, cream), bold outlines, white background.</strong>
+      </p>
+    </div>
+
+    <div class="section-label" id="subtopics">Subtopics</div>
+    <div class="subtopic-grid">
+
+      <a class="subtopic-card" href="subtopic-01-configure-advpn.html">
+        <div class="sub-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+          </svg>
+        </div>
+        <div class="sub-num">Subtopic 01</div>
+        <div class="sub-title">Configure ADVPN</div>
+        <div class="sub-desc">ADVPN hub and spoke IKEv2 configuration, auto-discovery-sender/receiver/forwarder roles, network-id, and overlay routing setup.</div>
+        <div class="sub-cta">Study <span class="sub-arrow">→</span></div>
+      </a>
+
+      <a class="subtopic-card" href="subtopic-02-advpn-shortcuts.html">
+        <div class="sub-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/>
+          </svg>
+        </div>
+        <div class="sub-num">Subtopic 02</div>
+        <div class="sub-title">ADVPN Shortcuts</div>
+        <div class="sub-desc">How shortcut tunnels are dynamically negotiated — the 6-step offer/query/forward/reply/forward/negotiate exchange and add-route/dst-subnet behavior.</div>
+        <div class="sub-cta">Study <span class="sub-arrow">→</span></div>
+      </a>
+
+      <a class="subtopic-card" href="subtopic-03-advpn-with-bgp.html">
+        <div class="sub-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
+        <div class="sub-num">Subtopic 03</div>
+        <div class="sub-title">ADVPN with BGP</div>
+        <div class="sub-desc">iBGP and eBGP overlay routing for ADVPN, route reflectors, multi-region deployments, and FortiManager CLI template provisioning.</div>
+        <div class="sub-cta">Study <span class="sub-arrow">→</span></div>
+      </a>
+
+    </div>
+
+    <div class="section-label" id="overview">Chapter Overview</div>
+    <div class="overview">
+
+      <div class="topic-block">
+        <h2 class="topic-heading" id="topic-1">ADVPN Architecture &amp; <em>Shortcut Tunnels</em></h2>
+        <p class="topic-body">
+          Traditional hub-and-spoke IPsec routes all spoke-to-spoke traffic through the hub — adding latency and consuming hub bandwidth. <strong>ADVPN (Auto-Discovery VPN)</strong> solves this by enabling spokes to discover each other and negotiate direct <strong>shortcut tunnels</strong> on demand. The hub remains the initial forwarding path, but as soon as spoke A sends traffic to spoke B, the hub detects this and triggers a shortcut negotiation — subsequent flows travel directly between spokes.
+        </p>
+        <p class="topic-body">
+          The shortcut creation follows a 6-step message interchange: <em>offer → query → forward → reply → forward → negotiate</em>. The hub sends an <em>offer</em> to the destination spoke containing the originating spoke's connection details. The destination spoke sends a <em>query</em> back through the hub. The hub <em>forwards</em> this query to the originating spoke. The originating spoke sends a <em>reply</em> directly to the destination spoke. The destination spoke <em>forwards</em> back through the hub. Both spokes then <em>negotiate</em> a direct IKEv2 tunnel. FortiGate roles — <strong>auto-discovery-sender</strong> (initiating spoke), <strong>auto-discovery-receiver</strong> (destination spoke), <strong>auto-discovery-forwarder</strong> (hub) — must be configured on the correct tunnel interfaces.
+        </p>
+
+        <div class="inline-img-wrap">
+          <img class="inline-image" src="images/chapter-08-shortcut-tunnels.png" alt="ADVPN shortcut tunnel negotiation diagram illustration"/>
+          <div class="inline-placeholder" style="display:none;">
+            <div class="inline-ph-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+            <div class="inline-ph-label">Image not generated yet</div>
+            <div class="inline-ph-file">images/chapter-08-shortcut-tunnels.png</div>
+          </div>
+          <div class="inline-prompt">
+            <div class="prompt-header"><span class="prompt-dot"></span>Image Generation Prompt &nbsp;→&nbsp; <span class="prompt-filename">images/chapter-08-shortcut-tunnels.png</span></div>
+            <p class="prompt-text">
+              Detailed cartoon flat illustration of the <strong>ADVPN 6-step shortcut message interchange</strong>. Light cream background. Three cartoon FortiGate boxes in a triangle: Hub at the top, Spoke A bottom-left, Spoke C bottom-right. Numbered arrows show the 6 steps in order — each arrow has a numbered badge and message label: <strong>1 'Offer'</strong> (Hub → Spoke C, blue arrow), <strong>2 'Query'</strong> (Spoke C → Hub, green arrow), <strong>3 'Forward'</strong> (Hub → Spoke A, teal arrow), <strong>4 'Reply'</strong> (Spoke A → Spoke C direct, dashed orange arrow — the first direct hop), <strong>5 'Forward'</strong> (Spoke C → Hub, purple arrow), <strong>6 'Negotiate'</strong> (Spoke A ↔ Spoke C, thick glowing gold double arrow labeled 'Direct IKEv2 Tunnel!'). After the 6 steps, a thick shortcut tunnel tube appears between Spoke A and Spoke C. The hub path fades to gray with a small 'no longer needed' note. <strong>Fully detailed cartoon style, pastel palette, bold outlines, cream background.</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="topic-divider"></div>
+
+      <div class="topic-block">
+        <h2 class="topic-heading" id="topic-2">BGP &amp; <em>Overlay Routing</em></h2>
+        <p class="topic-body">
+          ADVPN uses an <strong>overlay network</strong> — a virtual IP space (e.g., 172.16.1.0/24) assigned to tunnel interfaces — to route between spokes without exposing the physical underlay addresses. BGP runs over this overlay to distribute spoke prefixes across the hub-and-spoke topology. Two BGP designs are common: <strong>iBGP with a route reflector</strong> (hub acts as route reflector for all spoke iBGP clients — simpler, one AS) and <strong>eBGP</strong> (each spoke has its own ASN — more flexible, cleaner policy, allows route attribution by AS path).
+        </p>
+        <p class="topic-body">
+          Key ADVPN-BGP parameters on FortiGate: <strong>add-route enable</strong> instructs the hub to install routes to spoke overlay IPs so shortcut negotiation knows where to send offers. <strong>dst-subnet</strong> specifies the LAN subnets behind each spoke, ensuring the shortcut tunnel is created for the right destination prefixes. Non-ADVPN spokes can coexist in the same topology — they receive full routing via the hub but don't participate in shortcut negotiation.
+        </p>
+
+        <div class="callout">
+          <strong>iBGP vs eBGP for ADVPN:</strong> iBGP is simpler (one AS, hub as route reflector) but iBGP split-horizon rules require the route reflector configuration to be exact. eBGP per-spoke is more operationally transparent — each spoke's routes carry its ASN, making troubleshooting and policy enforcement per-site straightforward.
+        </div>
+
+        <div class="inline-img-wrap">
+          <img class="inline-image" src="images/chapter-08-bgp-routing.png" alt="ADVPN BGP overlay routing diagram illustration"/>
+          <div class="inline-placeholder" style="display:none;">
+            <div class="inline-ph-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+            <div class="inline-ph-label">Image not generated yet</div>
+            <div class="inline-ph-file">images/chapter-08-bgp-routing.png</div>
+          </div>
+          <div class="inline-prompt">
+            <div class="prompt-header"><span class="prompt-dot"></span>Image Generation Prompt &nbsp;→&nbsp; <span class="prompt-filename">images/chapter-08-bgp-routing.png</span></div>
+            <p class="prompt-text">
+              Detailed cartoon flat illustration of <strong>ADVPN iBGP overlay routing with route reflector</strong>. Light cream background. The hub FortiGate (large red box, labeled 'Hub / Route Reflector') sits at the top with a golden crown labeled 'RR'. Three spoke FortiGates (smaller boxes) connect up to the hub via overlay tunnel lines labeled '172.16.1.x'. Each spoke has a small LAN network below it (cartoon PCs with a subnet badge: '10.1.1.0/24', '10.2.0.0/24', '10.3.0.0/24'). BGP UPDATE envelopes flow from each spoke to the hub; the hub reflects these routes back to all other spokes (reflected envelopes with a 'RR reflected' stamp). A shortcut tunnel glows directly between two spokes. The overlay address cloud above shows '172.16.1.0/24'. At bottom, two config snippets in comic-book caption boxes: 'add-route enable' and 'dst-subnet 10.x.x.0/24'. <strong>Fully detailed cartoon style, pastel palette (red, teal, amber, cream), bold outlines, white background.</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="topic-divider"></div>
+
+      <div class="topic-block">
+        <h2 class="topic-heading" id="topic-3">Multi-Region &amp; <em>FortiManager Templates</em></h2>
+        <p class="topic-body">
+          Large enterprises use multi-region ADVPN where each region has its own hub, and regional hubs connect to a super-hub (or directly to each other). Spokes in region A can build shortcuts to spokes in region B by traversing the inter-hub link — the regional hub acts as both a spoke to the super-hub and a hub to its local spokes. Routing must be carefully designed to ensure BGP redistributes routes correctly at each level without creating loops.
+        </p>
+        <p class="topic-body">
+          <strong>FortiManager CLI templates</strong> are the standard way to provision ADVPN at scale. A template defines the hub and spoke configurations as variables — device-specific values (overlay IP, local LAN, ASN) are substituted per device. Template groups allow you to apply a stack of templates to hundreds of spoke devices simultaneously, ensuring consistent ADVPN configuration across the organization without manual per-device CLI. This is essential for SD-WAN and ADVPN deployments with dozens or hundreds of branch sites.
+        </p>
+
+        <div class="concepts-wrap">
+          <div class="concepts-heading">Key Concepts</div>
+          <div class="concepts">
+            <span class="concept-pill">ADVPN</span>
+            <span class="concept-pill">Shortcut Tunnels</span>
+            <span class="concept-pill">Overlay Network</span>
+            <span class="concept-pill">IBGP Route Reflector</span>
+            <span class="concept-pill">EBGP per-Spoke</span>
+            <span class="concept-pill">IKEv2</span>
+            <span class="concept-pill">auto-discovery-sender</span>
+            <span class="concept-pill">auto-discovery-forwarder</span>
+            <span class="concept-pill">add-route</span>
+            <span class="concept-pill">dst-subnet</span>
+            <span class="concept-pill">FortiManager Templates</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <a class="back-to-top" href="#top">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+    Back to Top
+  </a>
+  <footer>EF-NSE7<span>.</span> Chapter 08<span>.</span> Auto-Discovery VPN</footer>
+
+  <script>
+    if(sessionStorage.getItem('pt')){document.body.style.opacity='1';sessionStorage.removeItem('pt');}
+    document.querySelectorAll('.subtopic-card,.back-link').forEach(el=>{el.addEventListener('click',()=>sessionStorage.setItem('pt','1'));});
+    (function(){var img=document.getElementById('heroImg'),ph=document.querySelector('.hero-placeholder'),prompt=document.querySelector('.prompt-box');if(!img)return;function onLoad(){if(ph)ph.style.display='none';if(prompt)prompt.style.display='none';}function onError(){img.style.display='none';if(ph)ph.style.display='flex';}img.addEventListener('load',onLoad);img.addEventListener('error',onError);if(img.complete){img.naturalWidth>0?onLoad():onError();}})();
+    document.querySelectorAll('.inline-img-wrap').forEach(function(wrap){var img=wrap.querySelector('.inline-image'),ph=wrap.querySelector('.inline-placeholder'),prompt=wrap.querySelector('.inline-prompt');if(!img)return;function onLoad(){if(ph)ph.style.display='none';if(prompt)prompt.style.display='none';}function onError(){img.style.display='none';if(ph)ph.style.display='flex';if(prompt){prompt.style.display='block';prompt.style.borderRadius='14px';prompt.style.borderTop='1.5px solid var(--card-border)';prompt.style.marginTop='8px';}}img.addEventListener('load',onLoad);img.addEventListener('error',onError);if(img.complete){img.naturalWidth>0?onLoad():onError();}});
+  </script>
+</body>
+</html>

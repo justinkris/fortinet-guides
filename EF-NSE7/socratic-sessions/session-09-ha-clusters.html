@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){if(sessionStorage.getItem('pt'))document.documentElement.style.opacity='0';})()</script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Session 09 — Configure HA Clusters · EF-NSE7 Socratic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:#0a0101;color:#e8ddd5;line-height:1.6;transition:opacity .25s ease;opacity:0}
+:root{
+  --session-color:#5ab288;
+  --bg:#0a0101;--surface:#140808;--border:#2a1515;--muted:#7a6060;
+  --text:#e8ddd5;--text-dim:#b09090;
+  --green:#5ab288;--coral:#e07050;--gold:#d2a541
+}
+
+header{background:#1a0606;border-bottom:1px solid #2a1515;padding-bottom:2rem}
+.header-inner{max-width:960px;margin:0 auto;padding:1.5rem 2rem 0}
+.breadcrumb{font-size:.8rem;color:var(--muted);margin-bottom:1rem}
+.breadcrumb a{color:var(--muted);text-decoration:none;transition:color .15s}
+.breadcrumb a:hover{color:var(--session-color)}
+.breadcrumb span{margin:0 .4rem;opacity:.5}
+.eyebrow{display:inline-flex;align-items:center;gap:.5rem;font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--session-color);background:rgba(90,178,136,.1);border:1px solid rgba(90,178,136,.25);border-radius:20px;padding:.28rem .75rem;margin-bottom:.85rem}
+header h1{font-family:'Fraunces',serif;font-size:2.5rem;font-weight:700;color:#fff;line-height:1.15;margin-bottom:.6rem}
+header h1 em{color:var(--session-color);font-style:italic}
+header .tagline{color:var(--text-dim);font-size:1rem;max-width:600px;line-height:1.6}
+
+.story-section{background:linear-gradient(135deg,#1a0a08,#120606);border-top:3px solid var(--session-color);border-bottom:1px solid #2a1515;padding:3rem 0}
+.story-inner{max-width:960px;margin:0 auto;padding:0 2rem}
+.story-label{font-size:.7rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--session-color);margin-bottom:.6rem}
+.story-section h2{font-family:'Fraunces',serif;font-size:1.65rem;font-weight:700;color:#fff;margin-bottom:1.4rem;line-height:1.25}
+.story-section p{color:#c8b8b0;line-height:1.8;margin-bottom:1.1rem;max-width:780px;font-size:.97rem}
+.story-section p:last-child{margin-bottom:0}
+
+main{max-width:960px;margin:0 auto;padding:2.5rem 2rem}
+.pr-grid{display:grid;grid-template-columns:1fr 300px;gap:2rem;align-items:start}
+@media(max-width:720px){.pr-grid{grid-template-columns:1fr}}
+
+.overview-section{margin-bottom:2rem}
+.section-label{font-size:.7rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.75rem}
+.overview-section h3{font-family:'Fraunces',serif;font-size:1.25rem;font-weight:600;color:#fff;margin-bottom:.85rem}
+.overview-section p{color:var(--text-dim);font-size:.95rem;line-height:1.8;margin-bottom:.9rem}
+.overview-section p:last-child{margin-bottom:0}
+
+.img-placeholder{background:#140808;border:1px solid #2a1515;border-radius:10px;overflow:hidden;margin-bottom:2rem}
+.img-placeholder-top{background:#1c0c0c;border-bottom:1px solid #2a1515;padding:.6rem 1rem;display:flex;justify-content:space-between;align-items:center}
+.img-placeholder-top span{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.img-box{aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;padding:2rem;background:linear-gradient(135deg,#120808,#0e0606)}
+.img-icon{font-size:2.5rem;opacity:.3}
+.img-prompt-label{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;text-align:center}
+.img-prompt-text{font-size:.8rem;color:#6a5050;line-height:1.6;text-align:center;max-width:420px;font-style:italic}
+
+.questions-section h3{font-family:'Fraunces',serif;font-size:1.25rem;font-weight:600;color:#fff;margin-bottom:1rem}
+.question-list{list-style:none;padding:0}
+.question-list li{background:#140808;border:1px solid #2a1515;border-radius:8px;padding:.85rem 1.1rem;margin-bottom:.6rem;display:flex;gap:.75rem;align-items:flex-start;transition:border-color .15s}
+.question-list li:hover{border-color:rgba(90,178,136,.35)}
+.q-num{min-width:22px;height:22px;background:rgba(90,178,136,.15);border:1px solid rgba(90,178,136,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:var(--session-color);margin-top:.1rem;flex-shrink:0}
+.q-text{font-size:.9rem;color:var(--text-dim);line-height:1.6}
+
+.sidebar{display:flex;flex-direction:column;gap:1.25rem}
+.sidebar-card{background:#140808;border:1px solid #2a1515;border-radius:10px;overflow:hidden}
+.card-header{background:#1c0c0c;border-bottom:1px solid #2a1515;padding:.65rem 1.1rem;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.card-body{padding:1.1rem}
+.detail-row{display:flex;flex-direction:column;gap:.15rem;margin-bottom:.9rem}
+.detail-row:last-child{margin-bottom:0}
+.detail-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.detail-value{font-size:.88rem;color:var(--text);font-weight:500}
+.detail-value a{color:var(--session-color);text-decoration:none}
+.detail-value a:hover{text-decoration:underline}
+.prereq-list{list-style:none;padding:0}
+.prereq-list li{font-size:.85rem;color:var(--text-dim);padding:.3rem 0;border-bottom:1px solid #1e0e0e;display:flex;gap:.5rem;align-items:flex-start}
+.prereq-list li:last-child{border-bottom:none}
+.prereq-list li::before{content:'→';color:var(--muted);flex-shrink:0;margin-top:.05rem}
+.notes-card textarea{width:100%;background:#0e0606;border:1px solid #2a1515;border-radius:6px;color:var(--text);font-family:'Inter',sans-serif;font-size:.83rem;line-height:1.6;padding:.75rem;resize:vertical;min-height:90px;outline:none;transition:border-color .15s}
+.notes-card textarea:focus{border-color:rgba(90,178,136,.4)}
+.notes-card textarea::placeholder{color:#4a3535}
+.notes-card label{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.4rem}
+.notes-card .field-wrap{margin-bottom:.75rem}
+.notes-card .field-wrap:last-child{margin-bottom:0}
+
+.page-nav{max-width:960px;margin:0 auto;padding:1.5rem 2rem 2.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;border-top:1px solid #2a1515}
+.page-nav a{color:var(--text-dim);text-decoration:none;font-size:.85rem;display:flex;align-items:center;gap:.4rem;padding:.4rem .75rem;border:1px solid #2a1515;border-radius:6px;transition:all .15s}
+.page-nav a:hover{border-color:var(--session-color);color:var(--session-color)}
+.page-nav .hub-link{color:var(--muted);border-color:transparent}
+.page-nav .hub-link:hover{border-color:#2a1515;color:var(--text-dim)}
+
+footer{text-align:center;padding:1.5rem 2rem;font-size:.78rem;color:var(--muted);border-top:1px solid #2a1515}
+</style>
+<style>
+/* ── Light theme override ── */
+body{background:#faf7f5;color:#1a0606}
+header{background:#fff;border-bottom-color:#e8d5cc}
+header h1,h1{color:#1a0606}
+header .tagline,header p.tagline{color:#7a5050}
+.breadcrumb a{color:#9a6060}
+.eyebrow-label{color:#9a6060}
+/* Cards and surfaces */
+.content-section,.sidebar-card,.copy-block,.session-card,
+details.how-to,.how-to,.img-placeholder{background:#fff;border-color:#e8d5cc}
+.copy-block-header{background:#fdf5f0;border-bottom-color:#e8d5cc}
+.copy-block pre{background:#fdf5f0;color:#4a2020}
+.how-to-body{background:#fff}
+.flow-box{background:#fdf5f0;border-color:#e8d5cc}
+.flow-chip{background:#f0e5e0;color:#7a5050}
+/* Sidebar */
+.sidebar-textarea{background:#fdf5f0;border-color:#e8d5cc;color:#3a2020}
+.sidebar-textarea::placeholder{color:#c09090}
+.sidebar-textarea:focus{border-color:var(--session-color)}
+.card-hint,.sidebar-hint{color:#9a6060}
+/* Typography — scoped away from story section */
+.chapter-name,.session-title,.content-section h2,.target-qs h2,
+.overview-block h2,.sidebar-card-title+h2{color:#1a0606}
+.sidebar-card-title,.copy-block-label,.prereqs-label,.img-label,
+.session-meta,.flow-box h4,.chapter-label,.progress-label,.detail-row .dl,
+.eyebrow-label{color:#9a6060}
+.chapter-name{color:#1a0606}
+.prereqs li,.prereq-list li,.detail-row .dv{color:#5a3030}
+.target-intro,.section-sub{color:#9a6060}
+.step-text strong{color:#1a0606}
+.step-text p,.how-to-body p{color:#5a3030}
+.overview-block p,.content-section p{color:#5a3030}
+/* Borders and dividers */
+.chapter-header{border-bottom-color:#e8d5cc}
+.detail-row{border-bottom-color:#f0e0d8}
+.detail-row .dl{color:#9a6060}
+.q-list li{color:#5a3030;border-bottom-color:#f0e0d8}
+.prereq-list li{border-bottom-color:#f0e0d8;color:#5a3030}
+.divider{border-top-color:#e8d5cc}
+/* Page nav */
+.page-nav{border-top-color:#e8d5cc}
+.nav-link{color:#9a6060;border-color:#e8d5cc}
+.nav-link:hover{color:var(--session-color);border-color:var(--session-color)}
+.nav-link.hub{color:#7a5050}
+.nav-disabled{color:#c0a8a0}
+footer{color:#9a7070;border-top-color:#e8d5cc}
+/* Progress and status */
+.days-badge{background:#fff;border-color:#e8d5cc}
+.progress-bar-bg{background:#f0ddd8}
+.status-none{background:#f5ecec;color:#9a7070}
+.status-started{background:#fdf5e0;color:#8a6a20}
+/* Buttons */
+.btn-prereading{background:#fdf5f0;border-color:#e8d5cc;color:#4a2020}
+.btn-prereading:hover{background:#f5e8e0;border-color:var(--session-color);color:#1a0606}
+.btn-sg{background:#faf5f5;border-color:#ede0d8;color:#7a5050}
+.btn-sg:hover{border-color:#c0a098}
+.btn-done-toggle{border-color:#e8d5cc;color:#9a7070}
+.btn-done-toggle:hover{border-color:var(--session-color);color:var(--session-color)}
+.btn-done-toggle.is-done{border-color:var(--green,#5ab288);color:var(--green,#5ab288);background:#f0f8f0}
+.session-card:hover{border-color:#c8a898}
+.session-card.done{opacity:.5}
+/* Image prompt */
+.img-prompt-text{background:#fdf5f0;border-color:#e8d5cc;color:#7a5050}
+.img-placeholder{border-color:#e8d5cc}
+.img-icon{opacity:.25}
+.sg-link{background:#fdf5f0;border-color:#e8d5cc}
+.sg-link:hover{background:#f5e8e0;border-color:var(--session-color)}
+/* Preserve story section darkness */
+.story-section{background:linear-gradient(135deg,#1a0a08,#120606)!important}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <nav class="breadcrumb">
+      <a href="../study-guides/nse7-ef-study-guide-hub.html">EF-NSE7 Hub</a>
+      <span>›</span>
+      <a href="index.html">Socratic Plan</a>
+      <span>›</span>
+      Session 09
+    </nav>
+    <div class="eyebrow">Session 09 &nbsp;·&nbsp; Chapter 04 — High Availability</div>
+    <h1>Configure HA <em>Clusters</em></h1>
+    <p class="tagline">FortiGate high availability — modes, cluster formation, failover, and session sync basics.</p>
+  </div>
+</header>
+
+<section class="story-section">
+  <div class="story-inner">
+    <div class="story-label">Pre-Reading Story</div>
+    <h2>"Finals Week"</h2>
+    <p>Greenfield State University's campus network served approximately 28,000 students, 3,200 faculty and staff, and a sprawling IoT infrastructure ranging from smart building controls to research sensor arrays. All internet-bound traffic — every HTTPS request, every VPN tunnel, every DNS query — passed through a single FortiGate unit rack-mounted in the main data center. The device had served the campus reliably for four years. It had never missed a heartbeat. Nobody thought much about what would happen if it did.</p>
+    <p>At 11:47 PM on a Tuesday, the first night of final examinations, the FortiGate's primary power supply failed. The unit went dark. Within sixty seconds, 28,000 students discovered they had no internet connectivity — no access to the university's online exam portal, no access to digital textbooks or library databases, no VPN for the several hundred students completing exams from off-campus locations. The IT help desk phone queue maxed out within five minutes. Students filed emergency academic appeals. The Dean of Academic Affairs was awakened by a personal phone call from the Provost. The campus IT director drove back to the office in the middle of the night. The failed unit was physically replaced over the next six hours, during which time most of the university's final examination infrastructure was unavailable. Dozens of professors had to grant extensions. The academic calendar for the semester was disrupted.</p>
+    <p>The post-incident review produced one finding that stung the entire IT leadership team: an HA cluster proposal had been included in the IT infrastructure budget submission for three consecutive years. Each year it had been deferred to fund other priorities. The hardware cost for a second FortiGate unit — the one that would have handled failover in under a second — was a fraction of the reputational and operational cost of that one night. The proposal was approved at emergency pace the following week. The cluster was installed before the next semester's final examination period. HA configuration became a mandatory item in the university's infrastructure checklist, not an optional enhancement.</p>
+  </div>
+</section>
+
+<main>
+  <div class="pr-grid">
+
+    <div class="left-col">
+
+      <div class="overview-section">
+        <div class="section-label">Overview</div>
+        <h3>FortiGate HA — Two Units, One Logical Firewall</h3>
+        <p>FortiGate High Availability (HA) allows two or more FortiGate units to operate as a single logical firewall, providing redundancy against hardware failure, link failure, or software faults. The clustering protocol used by FortiGate is FGCP — FortiGate Clustering Protocol — which handles heartbeat communication, master election, configuration synchronization, and session table synchronization between cluster members. To form a cluster, both units must be the same hardware model, running the same firmware version, and configured with the same HA group ID and HA password. Mismatched parameters are one of the most common reasons a cluster fails to form.</p>
+        <p>HA operates in two primary modes. In Active/Passive (A/P) mode, one unit is the primary and processes all traffic, while the secondary unit stays synchronized but does not pass user traffic unless the primary fails. Failover in A/P mode is typically sub-second — the secondary detects the absence of heartbeat packets and takes over ownership of the cluster's MAC addresses and IP addresses. In Active/Active (A/A) mode, both units process traffic simultaneously, with the primary unit distributing sessions to cluster members using a load-balancing algorithm. A/A mode improves throughput but introduces additional complexity because sessions may be processed by different units on their forward and return paths.</p>
+        <p>The HA heartbeat interface carries the most critical cluster communication — each unit continuously sends heartbeat packets to announce its presence and health. If a unit stops receiving heartbeats from its peer beyond a configurable dead interval, it assumes the peer has failed and triggers the failover sequence. Best practice requires the heartbeat to run on a dedicated interface — preferably a direct cable between the two units — isolated from production network switches. Using a shared switch for the heartbeat introduces the risk of a split-brain scenario, which the next session covers in detail. Before your Socratic session, think about what "session synchronization" means in practical terms — what would happen to an active TCP connection during a failover if sessions were not synchronized?</p>
+      </div>
+
+      <div class="img-placeholder">
+        <img src="images/session-09-ha-clusters.png" alt="Session 09 concept illustration" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 1rem;object-fit:cover;" onerror="this.style.display='none'">
+
+        <div class="img-placeholder-top">
+          <span>Session 09 Illustration</span>
+          <span>Image Prompt Below</span>
+        </div>
+        <div class="img-box">
+          <div class="img-icon">🖼</div>
+          <div class="img-prompt-label">Generate with your preferred image tool</div>
+          <div class="img-prompt-text">Flat illustration of FortiGate HA cluster: two FortiGate units side by side. Primary unit has a star/crown badge, secondary has a standby clock icon. Heartbeat cable between them labeled "FGCP Heartbeat". Session sync double-arrow between units. Upstream router above and downstream switch below both connected to both units. Pastel green palette, clean layout.</div>
+        </div>
+      </div>
+
+      <div class="questions-section">
+        <div class="section-label">Target Questions</div>
+        <h3>Come ready to answer these in the Socratic session</h3>
+        <ul class="question-list">
+          <li>
+            <div class="q-num">1</div>
+            <div class="q-text">What is the difference between Active/Active and Active/Passive HA modes on FortiGate?</div>
+          </li>
+          <li>
+            <div class="q-num">2</div>
+            <div class="q-text">What parameters must match between cluster members for the cluster to form?</div>
+          </li>
+          <li>
+            <div class="q-num">3</div>
+            <div class="q-text">What is the HA heartbeat interface and what information does it carry?</div>
+          </li>
+          <li>
+            <div class="q-num">4</div>
+            <div class="q-text">What is the HA group ID and HA password, and what happens if they don't match?</div>
+          </li>
+          <li>
+            <div class="q-num">5</div>
+            <div class="q-text">In Active/Passive mode, which unit handles traffic — and what happens to existing sessions during failover?</div>
+          </li>
+          <li>
+            <div class="q-num">6</div>
+            <div class="q-text">What is the HA override feature and what problem does it solve — when would you enable it?</div>
+          </li>
+          <li>
+            <div class="q-num">7</div>
+            <div class="q-text">How do you access the secondary unit's management interface in an A/P cluster?</div>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <aside class="sidebar">
+
+      <div class="sidebar-card">
+        <div class="card-header">Session Details</div>
+        <div class="card-body">
+          <div class="detail-row">
+            <span class="detail-label">Session</span>
+            <span class="detail-value">09 of 33</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Chapter</span>
+            <span class="detail-value">04 — High Availability</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Subtopic</span>
+            <span class="detail-value">Configure HA Clusters</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Study Guide</span>
+            <span class="detail-value"><a href="../study-guides/Chapter 04 - High Availability/subtopic-01-configure-ha-clusters.html">Open Study Guide →</a></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="card-header">Prerequisites</div>
+        <div class="card-body">
+          <ul class="prereq-list">
+            <li>Sessions 01–02 — Network security architecture</li>
+            <li>Basic understanding of redundancy concepts</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="sidebar-card notes-card">
+        <div class="card-header">My Questions &amp; Notes</div>
+        <div class="card-body">
+          <div class="field-wrap">
+            <label for="myQs">My Questions (before the session)</label>
+            <textarea id="myQs" placeholder="What am I still unclear about? What do I want to make sure Claude asks me?"></textarea>
+          </div>
+          <div class="field-wrap">
+            <label for="myNotes">My Notes (after the session)</label>
+            <textarea id="myNotes" placeholder="Key takeaways, things that surprised me, gaps to revisit..."></textarea>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+  </div>
+</main>
+
+<nav class="page-nav">
+  <a href="session-08-inter-vdom-routing.html">← Session 08</a>
+  <a href="index.html" class="hub-link">Socratic Plan</a>
+  <a href="session-10-fgcp.html">Session 10 →</a>
+</nav>
+
+<footer>
+  EF-NSE7 Socratic Study Plan &nbsp;·&nbsp; Session 09 — Configure HA Clusters &nbsp;·&nbsp; Chapter 04
+</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-pr-s09';
+['myQs','myNotes'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(!el)return;
+  const saved=localStorage.getItem(PAGE_KEY+'-'+id);
+  if(saved)el.value=saved;
+  el.addEventListener('input',()=>localStorage.setItem(PAGE_KEY+'-'+id,el.value));
+});
+window.addEventListener('load',()=>{document.body.style.opacity='1';if(sessionStorage.getItem('pt'))sessionStorage.removeItem('pt');});
+document.querySelectorAll('a[href]').forEach(a=>{
+  if(!a.getAttribute('href').startsWith('#'))a.addEventListener('click',()=>sessionStorage.setItem('pt','1'));
+});
+</script>
+</body>
+</html>

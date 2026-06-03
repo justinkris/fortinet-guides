@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configure the Security Fabric — EF-NSE7 Ch09</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#fff5f5;--surface:#ffffff;--surface-2:#fef2f2;--border:#f0c8c8;--border-dim:#fde8e8;
+  --text:#1a0606;--text-soft:#4a1212;--text-muted:#8a3a3a;
+  --red:#c0392b;--red-vivid:#e03e2d;--red-glow:rgba(192,57,43,0.07);--red-dim:#f8b4b4;
+  --red-deep:#7f1d1d;--red-light:#fef2f2;--red-border:#f8b4b4;
+  --green:#1a7c4a;--green-light:#d4f0e0;--green-border:#a7e0c0;
+  --amber:#b45309;--amber-light:#fef9c3;--amber-border:#fde68a;
+}
+html{scroll-behavior:smooth;}
+html.pt-init body{opacity:0;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* HEADER */
+header{padding:48px 60px 36px;background:#1a0606;display:flex;align-items:flex-end;gap:32px;}
+.header-left{flex:1;}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);letter-spacing:0.08em;margin-bottom:12px;flex-wrap:wrap;}
+.breadcrumb a{color:#e87070;text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.breadcrumb-sep{color:rgba(232,112,112,0.35);}
+.header-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(232,112,112,0.1);border:1px solid rgba(232,112,112,0.25);padding:5px 14px;border-radius:20px;font-size:11px;color:#e87070;letter-spacing:0.08em;margin-bottom:14px;}
+.dot-live{width:6px;height:6px;background:#e87070;border-radius:50%;display:inline-block;animation:blink 2.4s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+header h1{font-family:'Fraunces',serif;font-size:44px;font-weight:700;line-height:1.0;color:#fff;margin-bottom:10px;}
+header h1 em{font-style:italic;font-weight:400;color:#e87070;}
+header p{font-size:13px;color:rgba(255,255,255,0.42);margin-top:10px;line-height:1.7;}
+
+/* MOTIVATION BANNER */
+.motivation-banner{padding:20px 60px;min-height:84px;display:flex;flex-direction:column;justify-content:center;border-bottom:1px solid var(--border);background:var(--surface);}
+.motivation-text{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--text);}
+.motivation-text em{font-style:italic;color:var(--red);}
+.motivation-sub{font-size:12px;color:var(--text-muted);line-height:1.7;margin-top:4px;}
+
+/* TOP PANELS */
+.top-panels{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+.top-panels .qpanel{border-bottom:none;border-right:1px solid var(--border);}
+.top-panels .qpanel-header{padding-left:32px;padding-right:32px;}
+.top-panels .qpanel-body{padding-left:32px;padding-right:32px;}
+.qpanel{background:var(--surface);}
+.qpanel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 20px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.qpanel-header:hover,.qpanel-header.open{background:var(--surface-2);}
+.qpanel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.qpanel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.qpanel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.qpanel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.qpanel-body{display:none;padding:0 20px 22px;}
+.qpanel-body.open{display:block;}
+.notes-panel{background:var(--surface);}
+.notes-panel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 32px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.notes-panel-header:hover,.notes-panel-header.open{background:var(--surface-2);}
+.notes-panel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.notes-panel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.notes-panel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.notes-panel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.notes-panel-body{display:none;padding:0 32px 22px;}
+.notes-panel-body.open{display:block;}
+.q-group{margin-bottom:16px;}
+.q-group-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+.q-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-dim);}
+.q-item:last-child{border-bottom:none;}
+.q-num{font-size:10px;font-weight:700;color:var(--red);min-width:16px;margin-top:2px;}
+.q-text{font-size:12px;color:var(--text-soft);line-height:1.5;flex:1;}
+.q-del{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 4px;margin-top:1px;}
+.q-del:hover{color:var(--red);}
+.no-questions{font-size:12px;color:var(--text-muted);padding:8px 0;}
+.btn-add-q{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-q:hover{opacity:0.85;}
+
+/* STICKY SECTION NAV */
+.section-nav{position:sticky;top:0;z-index:90;display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);padding:0 32px;overflow-x:auto;}
+.nav-tab{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:12px 18px;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--red);border-bottom-color:var(--red);}
+
+/* MAIN GRID */
+main{display:grid;grid-template-columns:1fr 320px;gap:0;align-items:start;max-width:1200px;margin:0 auto;padding:0;}
+.main-content{padding:36px 40px 60px 60px;}
+.sidebar{padding:32px 24px 60px 20px;position:sticky;top:57px;max-height:calc(100vh - 57px);overflow-y:auto;}
+
+/* SECTION BLOCK */
+.section-block{margin-bottom:48px;}
+.section-label{font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.section-block h2{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1.15;margin-bottom:16px;padding-left:16px;border-left:3px solid var(--red);}
+.section-block h2 em{font-style:italic;font-weight:400;color:var(--red);}
+.section-block p{font-size:14px;line-height:1.8;color:var(--text-soft);margin-bottom:14px;}
+.section-block p strong{color:var(--text);font-weight:600;}
+.section-block p em{color:var(--red);font-style:italic;}
+.section-block ul,.section-block ol{padding-left:22px;margin-bottom:14px;}
+.section-block li{font-size:14px;line-height:1.75;color:var(--text-soft);margin-bottom:4px;}
+.section-block li strong{color:var(--text);font-weight:600;}
+
+/* CALLOUTS */
+.callout{border-left:3px solid var(--red-border);background:var(--red-light);border-radius:0 10px 10px 0;padding:12px 18px;margin:16px 0;font-size:13.5px;line-height:1.65;color:var(--text-soft);}
+.callout strong{color:var(--text);}
+.callout-green{border-left-color:var(--green-border);background:var(--green-light);}
+.callout-amber{border-left-color:var(--amber-border);background:var(--amber-light);}
+.callout-warn{border-left-color:var(--amber-border);background:var(--amber-light);}
+.callout-info{border-left-color:var(--border);background:var(--surface-2);}
+
+/* SECTION IMAGE */
+.section-img-wrap{margin:0 0 20px;display:flex;flex-direction:column;align-items:center;}
+.section-img{width:260px;max-width:100%;border-radius:12px;cursor:zoom-in;transition:width 0.3s ease;border:1px solid var(--border);display:block;}
+.section-img.si-expanded{width:100%;cursor:zoom-out;border-radius:16px;}
+.si-placeholder{display:none;width:260px;max-width:100%;border:2px dashed var(--border);border-radius:12px;background:var(--surface-2);padding:14px 16px;flex-direction:column;align-items:flex-start;gap:8px;}
+.si-placeholder.si-show{display:flex;}
+.si-filename{font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+.img-caption{font-size:11px;color:var(--text-muted);text-align:center;margin-top:6px;line-height:1.4;font-style:italic;}
+
+/* CODE BLOCK */
+.code-block{background:#1a0606;border-radius:12px;padding:20px 24px;margin:16px 0;overflow-x:auto;}
+.code-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#e87070;margin-bottom:10px;}
+.code-block pre{margin:0;}
+.code-block code{font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:rgba(255,255,255,0.82);}
+
+/* SOCRATIC */
+.socratic-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:16px;border-top:3px solid var(--red);}
+.socratic-header{display:flex;align-items:center;gap:8px;margin-bottom:0;cursor:pointer;user-select:none;}
+.socratic-header::after{content:'▸ Expand';margin-left:auto;font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'Inter',sans-serif;}
+.socratic-block.soc-open .socratic-header{margin-bottom:10px;}
+.socratic-block.soc-open .socratic-header::after{content:'▾ Collapse';}
+.socratic-block:not(.soc-open) .socratic-insight,
+.socratic-block:not(.soc-open) .socratic-questions,
+.socratic-block:not(.soc-open) .answer-area{display:none;}
+.socratic-icon{font-size:17px;flex-shrink:0;}
+.socratic-label{font-size:9px;font-weight:700;letter-spacing:0.18em;color:var(--text-muted);}
+.socratic-insight{font-size:13px;color:var(--text-soft);line-height:1.75;margin-bottom:12px;border-left:3px solid var(--border);padding-left:12px;font-style:italic;}
+.socratic-questions{list-style:none;padding:0;margin:0;}
+.socratic-questions li{font-size:12.5px;color:var(--text);padding:7px 0 7px 22px;position:relative;border-bottom:1px solid var(--border-dim);line-height:1.6;}
+.socratic-questions li:last-child{border-bottom:none;}
+.socratic-questions li::before{content:'?';position:absolute;left:0;font-weight:700;font-size:12px;top:8px;color:var(--red);}
+.answer-area{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.answer-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.answer-textarea:focus{border-color:var(--text);}
+.answer-textarea:disabled{opacity:0.7;background:var(--surface-2);cursor:default;}
+.answer-buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.btn-add-answer{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-answer:hover:not(:disabled){opacity:0.85;}
+.btn-add-answer:disabled{opacity:0.5;cursor:default;}
+.btn-see-answer{background:var(--surface);color:var(--text-muted);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-see-answer:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-see-answer:not(:disabled){color:var(--red);border-color:var(--red);}
+.btn-see-answer:hover:not(:disabled){background:var(--red-glow);}
+.model-answers{margin-top:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.model-answer-item{padding:10px 0;border-bottom:1px solid var(--border-dim);}
+.model-answer-item:first-child{padding-top:0;}
+.model-answer-item:last-child{border-bottom:none;padding-bottom:0;}
+.model-answer-q{font-size:9px;font-weight:700;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:4px;}
+.model-answer-text{font-size:13px;color:var(--text-soft);line-height:1.7;}
+
+/* MENTAL NOTE */
+.mental-note-block{border-radius:10px;padding:12px 16px;margin:16px 0;display:flex;gap:10px;align-items:flex-start;background:rgba(192,57,43,0.07);border:1px solid var(--border);}
+.mental-note-block-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.mental-note-block-inner{flex:1;}
+.mental-note-block-label{font-size:9px;font-weight:700;letter-spacing:0.16em;color:var(--red);margin-bottom:3px;}
+.mental-note-block-text{font-size:13px;font-weight:600;line-height:1.55;color:var(--text);}
+
+/* ANALOGY BOX */
+.analogy-box{background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #b45309;border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0;}
+.analogy-label{display:flex;align-items:center;gap:6px;user-select:none;cursor:pointer;font-size:9px;font-weight:700;letter-spacing:0.16em;color:#b45309;margin-bottom:4px;}
+.analogy-label::after{content:'▾  Reveal illustration';margin-left:auto;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:none;opacity:0.75;}
+.analogy-label:hover::after{opacity:1;}
+.analogy-box.expanded > .analogy-label::after{content:'▴  Hide illustration';}
+.analogy-text{font-size:13px;color:#78350f;line-height:1.65;font-style:italic;}
+.analogy-box > .analogy-img{display:none;}
+.analogy-box.expanded > .analogy-img{display:block;}
+.analogy-img img{max-width:360px;width:100%;cursor:zoom-in;transition:max-width 0.25s ease;border-radius:8px;margin-top:10px;}
+.analogy-img img.zoomed{max-width:100%;cursor:zoom-out;}
+.analogy-img .img-missing-msg{display:none!important;}
+.analogy-summary{font-style:normal;font-weight:600;color:#92400e;margin-bottom:10px;}
+.analogy-text ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;}
+.analogy-text li{padding-left:18px;position:relative;}
+.analogy-text li::before{content:'•';position:absolute;left:0;font-weight:700;color:#b45309;}
+.prompt-toggle{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:10px;font-weight:600;letter-spacing:0.08em;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;text-transform:uppercase;}
+.prompt-toggle:hover{color:var(--text);border-color:var(--text);}
+.prompt-content{margin-top:10px;padding:10px 14px;background:rgba(0,0,0,0.04);border-radius:8px;font-size:11.5px;color:var(--text-muted);font-style:italic;line-height:1.65;text-align:left;}
+.prompt-content[hidden]{display:none;}
+.img-missing-msg{display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;}
+
+/* LESSON TOOLS */
+.lesson-tools{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:40px;}
+.lesson-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.tool-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.tool-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.tool-textarea:focus{border-color:var(--red);}
+.tool-row{margin-top:8px;display:flex;gap:8px;}
+
+/* SIDEBAR */
+.sidebar-section{margin-bottom:28px;}
+.sidebar-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;}
+.ssnav{display:flex;flex-direction:column;gap:2px;margin-top:4px;}
+.ssnav-item{font-size:12px;color:var(--text-soft);padding:6px 10px;border-radius:6px;text-decoration:none;line-height:1.4;display:block;transition:background 0.15s,color 0.15s;}
+.ssnav-item:hover,.ssnav-item.active{background:var(--red-glow);color:var(--red);}
+.hub-link{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);margin-bottom:16px;transition:color 0.15s,border-color 0.15s,background 0.15s;}
+.hub-link:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);}
+.check-item{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;}
+.check-input{accent-color:var(--red);width:14px;height:14px;flex-shrink:0;cursor:pointer;}
+.check-label{font-size:12px;color:var(--text-soft);line-height:1.4;}
+.check-item:has(.check-input:checked) .check-label{color:var(--text-muted);text-decoration:line-through;}
+.quick-ref{background:#1a0606;border-radius:10px;padding:12px 16px;margin-bottom:8px;}
+.quick-ref-term{font-size:10px;font-weight:700;letter-spacing:0.12em;color:#e87070;margin-bottom:3px;text-transform:uppercase;}
+.quick-ref-def{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;}
+
+/* DATA TABLE */
+.data-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;}
+.data-table th{background:#1a0606;color:#e87070;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:10px 14px;text-align:left;}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-soft);line-height:1.55;vertical-align:top;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:nth-child(even) td{background:var(--surface-2);}
+.data-table td strong{color:var(--text);font-weight:600;}
+
+/* PAGE NAV */
+.page-nav{display:flex;border-top:2px solid var(--border);background:var(--surface);}
+.page-nav-btn{flex:1;display:flex;flex-direction:column;gap:4px;padding:16px 28px;text-decoration:none;transition:background 0.15s;cursor:pointer;}
+.page-nav-btn:hover:not(.page-nav-disabled){background:var(--surface-2);}
+.page-nav-prev{border-right:1px solid var(--border);}
+.page-nav-next{text-align:right;}
+.page-nav-disabled{opacity:0.3;pointer-events:none;}
+.page-nav-label{font-size:10px;font-weight:600;letter-spacing:0.14em;color:var(--text-muted);display:block;}
+.page-nav-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;color:var(--red);display:block;}
+
+/* FOOTER */
+footer{font-size:11px;letter-spacing:0.12em;color:var(--text-muted);text-transform:uppercase;padding:20px 60px;border-top:1px solid var(--border);}
+footer span{color:var(--red);}
+
+/* RESPONSIVE */
+@media(max-width:1000px){main{grid-template-columns:1fr;}.sidebar{position:static;max-height:none;padding:0 40px 40px;}}
+@media(max-width:720px){header{padding:28px 24px 24px;}header h1{font-size:32px;}.motivation-banner{padding:16px 24px;}.main-content{padding:24px 24px 40px;}.section-nav{padding:0 16px;}.top-panels{grid-template-columns:1fr;}.top-panels .qpanel{border-right:none;border-bottom:1px solid var(--border);}.lesson-tools-grid{grid-template-columns:1fr;}footer{padding:16px 24px;}}
+</style>
+</head>
+<body>
+<div id="pt-overlay"></div>
+
+<header>
+  <div class="header-left">
+    <div class="breadcrumb">
+      <a href="../nse7-ef-study-guide-hub.html">EF-NSE7</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="index.html">Chapter 09 — Security Fabric</a>
+      <span class="breadcrumb-sep">›</span>
+      Subtopic 01
+    </div>
+    <div class="header-eyebrow"><span class="dot-live"></span> Study Guide · EF-NSE7</div>
+    <h1>Configure the <em>Security Fabric</em></h1>
+    <p>How FortiGate units join and operate as a unified Security Fabric — topology, use cases, SAML SSO, and centralized logging — all exam-tested concepts.</p>
+  </div>
+</header>
+
+<div class="motivation-banner">
+  <div class="motivation-text">The Security Fabric is only as strong as its <em>architecture</em>.</div>
+  <p class="motivation-sub">Understanding the root vs. downstream roles, logging deduplication rules, and SAML IdP behavior is essential for both the exam and real enterprise deployments.</p>
+</div>
+
+<div class="top-panels">
+  <div class="qpanel" id="qpanel">
+    <button class="qpanel-header" onclick="toggleQPanel()" id="qpanel-header">
+      <span class="qpanel-title">MY QUESTIONS</span>
+      <span class="qpanel-count" id="qpanel-count">0</span>
+      <span class="qpanel-hint">— click to expand</span>
+      <span class="qpanel-chevron" id="qpanel-chevron">▾</span>
+    </button>
+    <div class="qpanel-body" id="qpanel-body"></div>
+  </div>
+  <div class="notes-panel" id="notes-panel">
+    <button class="notes-panel-header" onclick="toggleNotesPanel()" id="notes-panel-header">
+      <span class="notes-panel-title">MY NOTES</span>
+      <span class="notes-panel-count" id="notes-panel-count">0</span>
+      <span class="notes-panel-hint">— click to expand</span>
+      <span class="notes-panel-chevron" id="notes-panel-chevron">▾</span>
+    </button>
+    <div class="notes-panel-body" id="notes-panel-body"></div>
+  </div>
+</div>
+
+<nav class="section-nav" id="section-nav">
+  <a class="nav-tab active" href="#s1">Overview</a>
+  <a class="nav-tab" href="#s2">Logging</a>
+  <a class="nav-tab" href="#s3">FortiNDR</a>
+  <a class="nav-tab" href="#s4">FortiNAC</a>
+  <a class="nav-tab" href="#s5">SAML SSO</a>
+</nav>
+
+<main>
+  <div class="main-content">
+
+    <!-- SECTION 1 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · SECURITY FABRIC OVERVIEW</span>
+      </div>
+      <p class="socratic-insight">The Fortinet Security Fabric is described as broad, integrated, and automated — but those three words carry specific technical meaning. A platform being "broad" means it covers the full attack surface, not just one segment. Being "integrated" means devices share context, not just logs. Being "automated" means the system self-heals without waiting for human input.</p>
+      <ul class="socratic-questions">
+        <li>Why does the Security Fabric communicate through connectors instead of having every device log directly to a central manager?</li>
+        <li>If the Security Fabric is open to third-party devices, what risk does that introduce, and how does the root FortiGate control it?</li>
+      </ul>
+      <div class="answer-area" data-section="sf-overview">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Connectors provide structured, API-based communication that enables automatic updates — for example, an SDN connector can dynamically update address objects when cloud VMs change IP. Direct logging alone doesn't create that bidirectional feedback loop needed for policy enforcement.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Any device joining the Fabric must submit a connection request that the root FortiGate administrator explicitly accepts. This explicit acceptance step prevents unauthorized devices from joining and gaining visibility or control within the Fabric topology.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s1">
+      <div class="section-label">SECTION 01</div>
+      <h2>Security Fabric <em>Overview</em></h2>
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s1-sf-overview.png" alt="Security Fabric broad-integrated-automated diagram" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg"><strong>images/s1-sf-overview.png</strong></div>
+        <p class="img-caption">The Security Fabric hub — FortiOS at the center connecting network, cloud, application, and security operations domains.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration: FortiOS firewall icon at center of a circular hub, six sectors radiating outward labeled Network Access, Fabric Management Center, Open Fabric Ecosystem, Cloud Infrastructure, Applications, Security Operations, Secure WLAN/LAN. Each sector connected by bold arrows. Pastel palette (coral, teal, slate), bold outlines, no shadows, educational infographic style.</div>
+      </div>
+      <p>The <strong>Fortinet Security Fabric</strong> is a high-performance cybersecurity mesh platform powered by FortiOS. It brings together an ecosystem of security products to provide comprehensive, real-time protection from users to applications. The Fabric is built on three foundational pillars: <strong>Broad</strong> (detect threats and enforce security everywhere), <strong>Integrated</strong> (close security gaps and reduce complexity), and <strong>Automated</strong> (enable faster time-to-prevention and efficient operations).</p>
+      <p>The <em>automated</em> dimension is particularly important for the exam: the Security Fabric uses AI-driven, context-aware capabilities to deliver near-real-time, user-to-application coordinated protection. Process automation frees IT teams from repetitive tasks. The Fabric is open — it allows communication between Fortinet and third-party devices through <strong>connectors</strong>, which are the primary integration mechanism.</p>
+      <div class="callout callout-info"><strong>Note:</strong> The Security Fabric is configured on the root FortiGate under <em>Security Fabric &gt; Fabric Connectors</em> (for Fortinet devices) and <em>Security Fabric &gt; External Connectors</em> (for third-party and cloud integrations).</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Three pillars: Broad = full attack surface coverage, Integrated = shared context across devices, Automated = self-healing with AI. Connectors are the technical bridge — fabric connectors for Fortinet, external connectors for third parties.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s1" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s1','Security Fabric Overview')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s1" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s1')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · CENTRALIZED LOGGING</span>
+      </div>
+      <p class="socratic-insight">In a Security Fabric, multiple FortiGate devices can see the same session. Without a deduplication rule, FortiAnalyzer would receive multiple logs for the same flow — making reporting unreliable and automation triggers fire incorrectly. The Fabric solves this with a "first handler logs" rule, but there are exceptions that matter for exam questions.</p>
+      <ul class="socratic-questions">
+        <li>Why does an upstream FortiGate that performs NAT generate an additional log even though it isn't the "first handler" for the session?</li>
+        <li>If the root FortiGate goes offline, do leaf FortiGates stop sending logs to FortiAnalyzer? Explain why or why not.</li>
+      </ul>
+      <div class="answer-area" data-section="sf-logging">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">NAT changes the source IP and port — details that don't appear in the original traffic log. A second log is necessary to record the translated addresses and ports so that the FortiAnalyzer correlation engine can accurately reconstruct the full session path. Without this, threat investigation after a NAT hop would be incomplete.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">No — each FortiGate in the Fabric logs independently to FortiAnalyzer, regardless of the root's status. Logging is a direct connection per device; it doesn't relay through the root FortiGate. This is a key resilience characteristic of the Fabric logging architecture.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s2">
+      <div class="section-label">SECTION 02</div>
+      <h2>Centralized Logging with <em>FortiAnalyzer</em></h2>
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s2-logging.png" alt="ISFW NGFW DCFW logging flow to FortiAnalyzer" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg"><strong>images/s2-logging.png</strong></div>
+        <p class="img-caption">Three-tier Security Fabric logging: ISFW logs first touch, NGFW adds NAT log, DCFW adds UTM log — FortiAnalyzer correlates all three.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat illustration: left-to-right flow, Client-1 laptop → ISFW box → NGFW box → DCFW box → Corporate File Server, with FortiAnalyzer appliance below connected to all three FortiGates by dashed arrows. ISFW labeled "creates traffic log". NGFW labeled "adds NAT log". DCFW labeled "adds UTM/IPS log". FortiAnalyzer labeled "correlates all". Pastel palette, bold outlines, no shadows.</div>
+      </div>
+      <p>The <strong>FortiAnalyzer Fabric connector</strong> consolidates traffic logs across the entire Security Fabric. The key rule is: <em>the first FortiGate that handles a session logs it</em>. Any upstream FortiGate that receives a packet from a MAC address belonging to another Fabric member does <strong>not</strong> generate a duplicate traffic log for that session.</p>
+      <p>There are two important exceptions. First, if an upstream FortiGate performs <strong>NAT</strong>, it generates an additional log to record the translated port and address information. Second, upstream FortiGates still log <strong>UTM events</strong> (like IPS signature matches) if UTM is configured on them. FortiAnalyzer performs UTM and traffic log correlation automatically — no extra configuration is required.</p>
+      <div class="callout callout-warn"><strong>Exam tip:</strong> Each FortiGate logs directly and independently to FortiAnalyzer — logs do NOT relay through the root FortiGate. If the root goes down, leaf FortiGate logging continues unaffected.</div>
+      <div class="callout callout-info"><strong>Note:</strong> FortiAnalyzer's log correlation enables accurate reporting, automation triggers, and Security Fabric–wide threat visibility. Without it, the same session could appear with conflicting details across multiple logs.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">First handler logs the session. Two exceptions add additional logs: (1) upstream FortiGate performs NAT → extra log for translated details; (2) upstream FortiGate has UTM configured → logs UTM events. All logging is direct to FortiAnalyzer, never relayed through the root.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s2" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s2','Centralized Logging')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s2" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s2')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · FORTINDR INTEGRATION</span>
+      </div>
+      <p class="socratic-insight">FortiNDR adds a second layer of malware analysis beyond traditional antivirus. When FortiGate's AV doesn't flag a file, FortiNDR gets the chance to inspect it using machine learning. The key design question is: how does FortiGate hold a user session while waiting for FortiNDR's verdict without breaking the user experience?</p>
+      <ul class="socratic-questions">
+        <li>In FortiNDR's inline blocking mode, what happens to the user's session while FortiNDR analyzes the file?</li>
+        <li>Why must FortiNDR connection requests be explicitly accepted on the root FortiGate, even after the Security Fabric is already running?</li>
+      </ul>
+      <div class="answer-area" data-section="sf-fortindr">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">FortiGate places the user session on hold while it forwards the file to FortiNDR. FortiNDR returns a verdict (clean or malicious) within seconds using ML and ANN analysis. FortiGate then either releases the file to the user or terminates the session, depending on the verdict.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">The acceptance step is an access control checkpoint. Any device claiming to be a Fabric member could potentially gain visibility into topology and trigger actions — explicit acceptance ensures the Fabric administrator has reviewed and authorized each device. This is the same principle used for any new Fabric member.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s3">
+      <div class="section-label">SECTION 03</div>
+      <h2>Use Case — Adding <em>FortiNDR</em> to the Fabric</h2>
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s3-fortindr.png" alt="FortiNDR inline blocking flow" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg"><strong>images/s3-fortindr.png</strong></div>
+        <p class="img-caption">FortiNDR inline blocking: suspicious file → FortiGate holds session → FortiNDR verdict → release or terminate.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat illustration: numbered sequence 1–5, left to right: (1) laptop downloads suspicious file from internet cloud; (2) FortiGate firewall holds session, shown as pause icon; (3) file sent to FortiNDR brain icon; (4) FortiNDR returns verdict (green checkmark or red X); (5) FortiGate releases file or terminates session. Pastel palette, bold outlines, no shadows.</div>
+      </div>
+      <p>After enabling the Security Fabric on a device like <strong>FortiNDR</strong>, the device submits a connection request to the <strong>Security Fabric root FortiGate</strong>. The administrator must accept this request — it appears as a notification badge in the FortiGate GUI. Once accepted, FortiNDR is visible in both the <em>Logical Topology</em> and <em>Physical Topology</em> views.</p>
+      <p>When operating in <strong>inline blocking mode</strong>, FortiNDR intercepts files that FortiGate's standard antivirus engine does not flag. FortiGate places the user session on hold and forwards the file to FortiNDR, which applies machine learning (ML) and artificial neural network (ANN) analysis. The verdict (clean or malicious) is returned within seconds. If clean, FortiGate releases the file. If malicious, FortiGate terminates the session.</p>
+      <p>FortiNDR shares statistics with the root FortiGate dashboard via optional widgets: <strong>Detection Statistics (24 Hours)</strong> and <strong>Network Anomalies (24 Hours)</strong>. For downstream FortiGate devices, files transit through the Security Fabric root FortiGate device before reaching FortiNDR.</p>
+      <div class="callout callout-warn"><strong>Exam tip:</strong> FortiNDR connects to the Fabric Root on a specific port (e.g., port5 in lab topology). Downstream FortiGate files route through the root to reach FortiNDR — they do not connect to FortiNDR directly.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">FortiNDR inline blocking = FortiGate holds session → FortiNDR uses ML+ANN → verdict in seconds → release or terminate. Acceptance at root is mandatory. Dashboard widgets: Detection Statistics and Network Anomalies (both 24-hour windows).</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s3" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s3','FortiNDR Integration')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s3" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s3')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · FORTINAC DYNAMIC ADDRESSING</span>
+      </div>
+      <p class="socratic-insight">FortiNAC knows about every device connected to the network through its integration with switches, APs, and routers. The challenge is getting that device identity information into FortiGate's policy engine in real time. The answer is dynamic firewall addresses — but there's a minimum threshold for when they become active.</p>
+      <ul class="socratic-questions">
+        <li>Why does FortiNAC require two user login events before the tag dynamic firewall address becomes active in FortiOS?</li>
+        <li>Where in the FortiGate GUI would you find the FortiNAC-created dynamic firewall addresses, and how would you use them in policy?</li>
+      </ul>
+      <div class="answer-area" data-section="sf-fortinac">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Two login events are required to ensure the data is reliable — FortiNAC must confirm the IP address association is stable before pushing it to FortiGate via the REST API. A single event could be transient. The second event confirms the binding is persistent enough to enforce in policy.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">The addresses appear in Policy &amp; Objects &gt; Addresses under the FortiNAC Tag (IP Address) section. They can be used as source or destination addresses in firewall policies, enabling identity-based access control that dynamically reflects current login state on FortiNAC.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s4">
+      <div class="section-label">SECTION 04</div>
+      <h2>Use Case — <em>FortiNAC</em> and Dynamic Firewall Addressing</h2>
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s4-fortinac.png" alt="FortiNAC dynamic address flow" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg"><strong>images/s4-fortinac.png</strong></div>
+        <p class="img-caption">FortiNAC passes device IP, group names, and firewall tags to the root FortiGate via REST API on user login.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat illustration: two-panel. Left panel: FortiNAC appliance icon. Center: three arrows labeled "Device IP address", "FortiNAC group", "Firewall tags" flowing right. Right panel: FortiGate firewall icon. Below both: user device laptop icon pointing to FortiNAC labeled "User logs in". Pastel palette, bold outlines, no shadows.</div>
+      </div>
+      <p><strong>FortiNAC</strong> communicates with infrastructure devices — wireless controllers, APs, switches, and routers — that detect connected endpoints. You add FortiNAC to the Security Fabric on the root FortiGate. When a user logs in, FortiNAC synchronizes the login information with FortiGate via the <strong>REST API</strong>, pushing three pieces of data: the device IP address, <strong>FortiNAC group names</strong>, and <strong>firewall tags</strong>.</p>
+      <p>FortiGate uses this data to update a dynamic firewall address object. This address object appears in FortiOS under <em>Policy &amp; Objects &gt; Addresses</em> in the <strong>FortiNAC Tag (IP Address)</strong> section. Two user login events must occur before these dynamic addresses become active. The firewall policies can use FortiNAC tag dynamic addresses as source or destination, enabling SSO for end users connecting through FortiNAC-managed infrastructure.</p>
+      <div class="callout callout-warn"><strong>Exam tip:</strong> FortiNAC requires exactly two login events to trigger the dynamic firewall address. This is a specific number to memorize — one is not enough.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">FortiNAC → root FortiGate via REST API: pushes device IP + FortiNAC group + firewall tags. Requires 2 login events to activate. Dynamic addresses visible at Policy &amp; Objects &gt; Addresses → FortiNAC Tag (IP Address). Usable as source/destination in policies.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s4" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s4','FortiNAC Dynamic Addressing')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s4" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s4')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 5 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · SAML SSO</span>
+      </div>
+      <p class="socratic-insight">SAML SSO in the Security Fabric lets administrators move between FortiGate, FortiAnalyzer, and FortiManager without re-authenticating. The architecture has a strict role assignment: only one device can be the Identity Provider. Understanding which device plays which role — and what constraints exist — is frequently tested.</p>
+      <ul class="socratic-questions">
+        <li>In a Security Fabric SAML SSO configuration, which device acts as the Identity Provider (IdP) and which devices act as Service Providers (SP)?</li>
+        <li>What is the browser session constraint on SAML SSO, and what happens if an administrator opens a different browser?</li>
+      </ul>
+      <div class="answer-area" data-section="sf-saml">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Only the root FortiGate can act as the Identity Provider (IdP). Downstream FortiGates, FortiAnalyzer, and FortiManager are configured as Service Providers (SP). This is a hard constraint — no downstream device can be the IdP, regardless of licensing or capability.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">SSO works only within the same browser session. If an administrator opens a different browser or a new private/incognito window, they must authenticate again. The SSO token is bound to the browser session, not the device or OS user account.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s5">
+      <div class="section-label">SECTION 05</div>
+      <h2>Use Case — Security Fabric with <em>SAML SSO</em></h2>
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s5-saml.png" alt="SAML SSO Security Fabric topology" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg"><strong>images/s5-saml.png</strong></div>
+        <p class="img-caption">Root FortiGate = IdP. Downstream FortiGates, FortiAnalyzer, FortiManager = Service Providers. One login unlocks all.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat illustration: root FortiGate firewall in center labeled "IdP (Identity Provider)". Three arrows pointing outward to: downstream FortiGate labeled "SP", FortiAnalyzer labeled "SP", FortiManager labeled "SP". Admin icon at top-left clicking "Sign in with Security Fabric". Single login badge icon showing "SSO". Pastel palette, bold outlines, no shadows.</div>
+      </div>
+      <p>In a Security Fabric environment, you can enable <strong>SAML SSO authentication</strong> to allow administrators to access downstream FortiGate devices, FortiAnalyzer, and FortiManager without re-entering credentials for each device. The <em>root FortiGate acts as the Identity Provider (IdP)</em> — this is the only device that can hold this role. All other devices in the Fabric are configured as <strong>Service Providers (SP)</strong>.</p>
+      <p>Once an administrator authenticates against the root FortiGate, they can move between any Fabric device without logging in again, as long as they remain within the same browser session. The top banner in the FortiGate GUI shows a list to access Security Fabric members. FortiManager and FortiAnalyzer can also register as SPs. The "Sign in with Security Fabric" option appears on the login screen of each SP device.</p>
+      <div class="callout callout-warn"><strong>Exam tip:</strong> Only the root FortiGate can be the SAML IdP — this is a hard rule. Downstream FortiGates, FortiAnalyzer, and FortiManager are always SPs. SSO only works within the same browser session.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Root FortiGate = sole IdP. Downstream FortiGates + FortiAnalyzer + FortiManager = SPs. SSO valid only within same browser session — different browser = re-authenticate. Configured under Security Fabric settings; "Sign in with Security Fabric" appears on SP login pages.</div>
+        </div>
+      </div>
+
+      <div class="analogy-box">
+        <div class="analogy-label">Analogy</div>
+        <div class="analogy-text">
+          <p class="analogy-summary">SAML SSO in the Security Fabric works like a hotel keycard system: the front desk (root FortiGate) issues your keycard once, and you can open any authorized room (Fabric device) without stopping at the front desk again — until you check out (end the browser session).</p>
+          <ul>
+            <li><strong>Root FortiGate (IdP)</strong> — the hotel front desk that verifies identity and issues the keycard</li>
+            <li><strong>Downstream devices (SPs)</strong> — individual rooms that accept the keycard without calling the front desk each time</li>
+            <li><strong>Browser session</strong> — the duration of your hotel stay; checking out (closing the browser) revokes the keycard</li>
+          </ul>
+        </div>
+        <div class="analogy-img" style="margin-top:14px;background:rgba(255,255,255,0.5);border-radius:10px;padding:14px;text-align:center;">
+          <img src="images/a1-saml-hotel.png" alt="Hotel keycard analogy for SAML SSO"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='block';" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 10px;">
+          <div class="img-missing-msg" style="display:none;font-size:12px;color:#92400e;padding:8px;background:rgba(146,64,14,0.1);border-radius:6px;">📷 <strong>images/a1-saml-hotel.png</strong> — add this image to the folder</div>
+          <button class="prompt-toggle" onclick="togglePrompt(this)" type="button">▾ Show analogy image prompt</button>
+          <div class="prompt-content" hidden>Cartoon flat illustration: left side — hotel front desk clerk labeled "Root FortiGate (IdP)" handing keycard to admin figure. Right side — three doors labeled "Downstream FGT", "FortiAnalyzer", "FortiManager" with green checkmarks as keycard is inserted. Bottom caption: "Same browser session = one keycard opens all doors". Pastel palette, bold outlines, no shadows, educational infographic style.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s5" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s5','SAML SSO')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s5" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s5')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">ON THIS PAGE</div>
+      <nav class="ssnav">
+        <a class="ssnav-item" href="#s1">Security Fabric Overview</a>
+        <a class="ssnav-item" href="#s2">Centralized Logging</a>
+        <a class="ssnav-item" href="#s3">FortiNDR Integration</a>
+        <a class="ssnav-item" href="#s4">FortiNAC Dynamic Addressing</a>
+        <a class="ssnav-item" href="#s5">SAML SSO</a>
+      </nav>
+    </div>
+
+    <a class="hub-link" href="index.html">← Chapter 09 Hub</a>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">PROGRESS</div>
+      <div class="checklist" id="checklist">
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s1" onchange="toggleDone(this)">
+          <span class="check-label">Security Fabric Overview</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s2" onchange="toggleDone(this)">
+          <span class="check-label">Centralized Logging</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s3" onchange="toggleDone(this)">
+          <span class="check-label">FortiNDR Integration</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s4" onchange="toggleDone(this)">
+          <span class="check-label">FortiNAC Dynamic Addressing</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s5" onchange="toggleDone(this)">
+          <span class="check-label">SAML SSO</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">QUICK REFERENCE</div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Security Fabric</div>
+        <div class="quick-ref-def">FortiOS-powered cybersecurity mesh: broad (full attack surface), integrated (shared context), automated (AI-driven response).</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Fabric Connector</div>
+        <div class="quick-ref-def">Configured under Security Fabric &gt; Fabric Connectors on root FortiGate. Connects Fortinet products (FortiAnalyzer, EMS, Central Management).</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">First Handler Rule</div>
+        <div class="quick-ref-def">The first FortiGate to handle a session creates the traffic log. Upstream devices skip duplicate logs unless NAT or UTM events occur.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">FortiNDR Inline Blocking</div>
+        <div class="quick-ref-def">FortiGate holds user session while FortiNDR uses ML+ANN to analyze files not flagged by AV. Verdict (clean/malicious) returned in seconds.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">FortiNAC Tag Address</div>
+        <div class="quick-ref-def">Dynamic firewall address created when FortiNAC pushes device IP + group + tags via REST API. Requires 2 login events to activate.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">SAML IdP</div>
+        <div class="quick-ref-def">Only the root FortiGate can be the SAML Identity Provider. All other Fabric devices (downstream FGTs, FAZ, FMG) are Service Providers.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Browser Session Constraint</div>
+        <div class="quick-ref-def">SAML SSO tokens are bound to a single browser session. A different browser or incognito window requires re-authentication.</div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="page-nav">
+  <a class="page-nav-btn page-nav-prev" href="index.html">
+    <span class="page-nav-label">← BACK TO HUB</span>
+    <span class="page-nav-title">Chapter 09 Hub</span>
+  </a>
+  <a class="page-nav-btn page-nav-next" href="subtopic-02-fabric-connectors.html">
+    <span class="page-nav-label">NEXT →</span>
+    <span class="page-nav-title">Fabric Connectors</span>
+  </a>
+</div>
+
+<footer>
+  EF-NSE7<span>.</span> Chapter 09<span>.</span> Subtopic 01<span>.</span> Configure the Security Fabric
+</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-ch09-sub01-configure-security-fabric';
+
+const SECTIONS = {
+  's1': 'Security Fabric Overview',
+  's2': 'Centralized Logging',
+  's3': 'FortiNDR Integration',
+  's4': 'FortiNAC Dynamic Addressing',
+  's5': 'SAML SSO',
+};
+
+document.querySelectorAll('.socratic-header').forEach(function(h) {
+  h.addEventListener('click', function() { h.closest('.socratic-block').classList.toggle('soc-open'); });
+});
+
+function getQArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-qs') || '[]'); }
+function saveQArr(qs) { localStorage.setItem(PAGE_KEY+'-qs', JSON.stringify(qs)); }
+function addQuestion(key, name) {
+  const ta = document.getElementById('q-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const qs = getQArr(); qs.push({id: Date.now(), section: key, sectionName: name, text});
+  saveQArr(qs); ta.value = ''; renderQPanel();
+  if (!document.getElementById('qpanel-body').classList.contains('open')) toggleQPanel();
+}
+function deleteQ(id) { saveQArr(getQArr().filter(q => q.id !== id)); renderQPanel(); }
+function toggleQPanel() {
+  const body = document.getElementById('qpanel-body');
+  const header = document.getElementById('qpanel-header');
+  const chevron = document.getElementById('qpanel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-qpanel-open', open);
+}
+function renderQPanel() {
+  const qs = getQArr();
+  const count = document.getElementById('qpanel-count');
+  if (count) { count.textContent = qs.length; count.style.display = qs.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.qpanel-hint');
+  if (hint) hint.textContent = qs.length ? `— ${qs.length} question${qs.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('qpanel-body'); if (!body) return;
+  if (!qs.length) { body.innerHTML = '<p class="no-questions">No questions yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  qs.forEach(q => { if (groups[q.section]) groups[q.section].push(q); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(q => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${q.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteQ(${q.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function getNotesArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-notes') || '[]'); }
+function saveNotesArr(ns) { localStorage.setItem(PAGE_KEY+'-notes', JSON.stringify(ns)); }
+function addNote(key) {
+  const ta = document.getElementById('note-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const ns = getNotesArr(); ns.push({id: Date.now(), section: key, sectionName: SECTIONS[key]||key, text});
+  saveNotesArr(ns); ta.value = ''; renderNotesPanel();
+  if (!document.getElementById('notes-panel-body').classList.contains('open')) toggleNotesPanel();
+}
+function deleteNote(id) { saveNotesArr(getNotesArr().filter(n => n.id !== id)); renderNotesPanel(); }
+function toggleNotesPanel() {
+  const body = document.getElementById('notes-panel-body');
+  const header = document.getElementById('notes-panel-header');
+  const chevron = document.getElementById('notes-panel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-notes-panel-open', open);
+}
+function renderNotesPanel() {
+  const ns = getNotesArr();
+  const count = document.getElementById('notes-panel-count');
+  if (count) { count.textContent = ns.length; count.style.display = ns.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.notes-panel-hint');
+  if (hint) hint.textContent = ns.length ? `— ${ns.length} note${ns.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('notes-panel-body'); if (!body) return;
+  if (!ns.length) { body.innerHTML = '<p class="no-questions">No notes yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  ns.forEach(n => { if (groups[n.section]) groups[n.section].push(n); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(n => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteNote(${n.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function toggleDone(input) { localStorage.setItem(PAGE_KEY+'-check-'+input.dataset.key, input.checked); }
+function initChecks() {
+  document.querySelectorAll('.check-input').forEach(function(inp) {
+    inp.checked = localStorage.getItem(PAGE_KEY+'-check-'+inp.dataset.key) === 'true';
+  });
+}
+
+function saveSocAnswer(btn) {
+  const area = btn.closest('.answer-area');
+  const ta = area.querySelector('.answer-textarea');
+  if (!ta.value.trim()) { ta.focus(); return; }
+  const key = PAGE_KEY+'-socans-'+area.dataset.section;
+  try { localStorage.setItem(key, ta.value); } catch(e) {}
+  ta.disabled = true; btn.textContent = '✓ Answer saved'; btn.disabled = true;
+  const seeBtn = area.querySelector('.btn-see-answer');
+  seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+}
+function revealSocAnswer(btn) {
+  if (btn.disabled) return;
+  const answers = btn.closest('.answer-area').querySelector('.model-answers');
+  const isHidden = answers.style.display === 'none' || !answers.style.display;
+  answers.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '▲ Hide Model Answer' : '💡 See Model Answer';
+}
+
+function togglePrompt(btn) {
+  const c = btn.nextElementSibling;
+  const isHidden = c.hasAttribute('hidden');
+  if (isHidden) { c.removeAttribute('hidden'); btn.textContent = '▴ Hide image prompt'; }
+  else { c.setAttribute('hidden', ''); btn.textContent = '▾ Show image prompt'; }
+}
+
+if (sessionStorage.getItem('pt')) {
+  document.body.style.opacity = '1';
+  sessionStorage.removeItem('pt');
+}
+document.querySelectorAll('a[href]').forEach(function(a) {
+  a.addEventListener('click', function() { sessionStorage.setItem('pt', '1'); });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderQPanel(); renderNotesPanel(); initChecks();
+  if (localStorage.getItem(PAGE_KEY+'-qpanel-open') === 'true') toggleQPanel();
+  if (localStorage.getItem(PAGE_KEY+'-notes-panel-open') === 'true') toggleNotesPanel();
+  document.querySelectorAll('.answer-area').forEach(function(area) {
+    const key = PAGE_KEY+'-socans-'+area.dataset.section;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const ta = area.querySelector('.answer-textarea'); ta.value = saved; ta.disabled = true;
+        const addBtn = area.querySelector('.btn-add-answer'); addBtn.textContent = '✓ Answer saved'; addBtn.disabled = true;
+        const seeBtn = area.querySelector('.btn-see-answer'); seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+      }
+    } catch(e) {}
+  });
+  document.querySelectorAll('.analogy-box').forEach(function(box) {
+    if (box.dataset.collapsibleInit) return;
+    box.dataset.collapsibleInit = '1';
+    box.classList.add('expanded');
+    const label = box.querySelector(':scope > .analogy-label');
+    if (label) label.addEventListener('click', () => box.classList.toggle('expanded'));
+  });
+  document.querySelectorAll('.analogy-img img').forEach(function(img) {
+    if (img.dataset.zoomInit) return;
+    img.dataset.zoomInit = '1';
+    img.addEventListener('click', () => img.classList.toggle('zoomed'));
+  });
+  document.querySelectorAll('.section-img').forEach(function(img) {
+    img.addEventListener('click', () => img.classList.toggle('si-expanded'));
+  });
+});
+
+(function() {
+  var items = document.querySelectorAll('.ssnav-item');
+  if (!items.length) return;
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      var lnk = document.querySelector('.ssnav-item[href="#'+e.target.id+'"]');
+      if (lnk) lnk.classList.toggle('active', e.isIntersecting);
+    });
+  }, { rootMargin: '-10% 0% -70% 0%' });
+  document.querySelectorAll('.section-block[id]').forEach(function(el) { obs.observe(el); });
+})();
+</script>
+</body>
+</html>

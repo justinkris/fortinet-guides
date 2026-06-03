@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configure BGP — EF-NSE7 Ch05 Sub02</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff5f5;--surface:#ffffff;--surface-2:#fef2f2;--border:#f0c8c8;--border-dim:#fde8e8;
+  --text:#1a0606;--text-soft:#4a1212;--text-muted:#8a3a3a;
+  --red:#c0392b;--red-vivid:#e03e2d;--red-glow:rgba(192,57,43,0.07);--red-dim:#f8b4b4;
+  --red-deep:#7f1d1d;--red-light:#fef2f2;--red-border:#f8b4b4;
+  --green:#1a7c4a;--green-light:#d4f0e0;--green-border:#a7e0c0;
+  --amber:#b45309;--amber-light:#fef9c3;--amber-border:#fde68a;
+}
+html{scroll-behavior:smooth;}
+html.pt-init body{opacity:0;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+header{padding:48px 60px 36px;background:#1a0606;display:flex;align-items:flex-end;gap:32px;}
+.header-left{flex:1;}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);letter-spacing:0.08em;margin-bottom:12px;flex-wrap:wrap;}
+.breadcrumb a{color:#e87070;text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.breadcrumb-sep{color:rgba(232,112,112,0.35);}
+.header-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(232,112,112,0.1);border:1px solid rgba(232,112,112,0.25);padding:5px 14px;border-radius:20px;font-size:11px;color:#e87070;letter-spacing:0.08em;margin-bottom:14px;}
+.dot-live{width:6px;height:6px;background:#e87070;border-radius:50%;display:inline-block;animation:blink 2.4s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+header h1{font-family:'Fraunces',serif;font-size:44px;font-weight:700;line-height:1.0;color:#fff;margin-bottom:10px;}
+header h1 em{font-style:italic;font-weight:400;color:#e87070;}
+header p{font-size:13px;color:rgba(255,255,255,0.42);margin-top:10px;line-height:1.7;}
+.motivation-banner{padding:20px 60px;min-height:84px;display:flex;flex-direction:column;justify-content:center;border-bottom:1px solid var(--border);background:var(--surface);}
+.motivation-text{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--text);}
+.motivation-text em{font-style:italic;color:var(--red);}
+.motivation-sub{font-size:12px;color:var(--text-muted);line-height:1.7;margin-top:4px;}
+.top-panels{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+.top-panels .qpanel{border-bottom:none;border-right:1px solid var(--border);}
+.top-panels .qpanel-header{padding-left:32px;padding-right:32px;}
+.top-panels .qpanel-body{padding-left:32px;padding-right:32px;}
+.qpanel{background:var(--surface);}
+.qpanel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 20px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.qpanel-header:hover,.qpanel-header.open{background:var(--surface-2);}
+.qpanel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.qpanel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.qpanel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.qpanel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.qpanel-body{display:none;padding:0 20px 22px;}
+.qpanel-body.open{display:block;}
+.notes-panel{background:var(--surface);}
+.notes-panel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 32px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.notes-panel-header:hover,.notes-panel-header.open{background:var(--surface-2);}
+.notes-panel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.notes-panel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.notes-panel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.notes-panel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.notes-panel-body{display:none;padding:0 32px 22px;}
+.notes-panel-body.open{display:block;}
+.q-group{margin-bottom:16px;}
+.q-group-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+.q-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-dim);}
+.q-item:last-child{border-bottom:none;}
+.q-num{font-size:10px;font-weight:700;color:var(--red);min-width:16px;margin-top:2px;}
+.q-text{font-size:12px;color:var(--text-soft);line-height:1.5;flex:1;}
+.q-del{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 4px;margin-top:1px;}
+.q-del:hover{color:var(--red);}
+.no-questions{font-size:12px;color:var(--text-muted);padding:8px 0;}
+.btn-add-q{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-q:hover{opacity:0.85;}
+.section-nav{position:sticky;top:0;z-index:90;display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);padding:0 32px;overflow-x:auto;}
+.nav-tab{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:12px 18px;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--red);border-bottom-color:var(--red);}
+main{display:grid;grid-template-columns:1fr 320px;gap:0;align-items:start;max-width:1200px;margin:0 auto;padding:0;}
+.main-content{padding:36px 40px 60px 60px;}
+.sidebar{padding:32px 24px 60px 20px;position:sticky;top:57px;max-height:calc(100vh - 57px);overflow-y:auto;}
+.section-block{margin-bottom:48px;}
+.section-label{font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.section-block h2{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1.15;margin-bottom:16px;padding-left:16px;border-left:3px solid var(--red);}
+.section-block h2 em{font-style:italic;font-weight:400;color:var(--red);}
+.section-block p{font-size:14px;line-height:1.8;color:var(--text-soft);margin-bottom:14px;}
+.section-block p strong{color:var(--text);font-weight:600;}
+.section-block p em{color:var(--red);font-style:italic;}
+.section-block ul,.section-block ol{padding-left:22px;margin-bottom:14px;}
+.section-block li{font-size:14px;line-height:1.75;color:var(--text-soft);margin-bottom:4px;}
+.section-block li strong{color:var(--text);font-weight:600;}
+.callout{border-left:3px solid var(--red-border);background:var(--red-light);border-radius:0 10px 10px 0;padding:12px 18px;margin:16px 0;font-size:13.5px;line-height:1.65;color:var(--text-soft);}
+.callout strong{color:var(--text);}
+.callout-green{border-left-color:var(--green-border);background:var(--green-light);}
+.callout-amber{border-left-color:var(--amber-border);background:var(--amber-light);}
+.section-img-wrap{margin:0 0 20px;display:flex;flex-direction:column;align-items:center;}
+.section-img{width:260px;max-width:100%;border-radius:12px;cursor:zoom-in;transition:width 0.3s ease;border:1px solid var(--border);display:block;}
+.section-img.si-expanded{width:100%;cursor:zoom-out;border-radius:16px;}
+.si-placeholder{display:none;width:260px;max-width:100%;border:2px dashed var(--border);border-radius:12px;background:var(--surface-2);padding:14px 16px;flex-direction:column;align-items:flex-start;gap:8px;}
+.si-placeholder.si-show{display:flex;}
+.si-filename{font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+.code-block{background:#1a0606;border-radius:12px;padding:20px 24px;margin:16px 0;overflow-x:auto;}
+.code-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#e87070;margin-bottom:10px;}
+.code-block pre{margin:0;}
+.code-block code{font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:rgba(255,255,255,0.82);}
+.socratic-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:16px;border-top:3px solid var(--red);}
+.socratic-header{display:flex;align-items:center;gap:8px;margin-bottom:0;cursor:pointer;user-select:none;}
+.socratic-header::after{content:'▸ Expand';margin-left:auto;font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'Inter',sans-serif;}
+.socratic-block.soc-open .socratic-header{margin-bottom:10px;}
+.socratic-block.soc-open .socratic-header::after{content:'▾ Collapse';}
+.socratic-block:not(.soc-open) .socratic-insight,
+.socratic-block:not(.soc-open) .socratic-questions,
+.socratic-block:not(.soc-open) .answer-area{display:none;}
+.socratic-icon{font-size:17px;flex-shrink:0;}
+.socratic-label{font-size:9px;font-weight:700;letter-spacing:0.18em;color:var(--text-muted);}
+.socratic-insight{font-size:13px;color:var(--text-soft);line-height:1.75;margin-bottom:12px;border-left:3px solid var(--border);padding-left:12px;font-style:italic;}
+.socratic-questions{list-style:none;padding:0;margin:0;}
+.socratic-questions li{font-size:12.5px;color:var(--text);padding:7px 0 7px 22px;position:relative;border-bottom:1px solid var(--border-dim);line-height:1.6;}
+.socratic-questions li:last-child{border-bottom:none;}
+.socratic-questions li::before{content:'?';position:absolute;left:0;font-weight:700;font-size:12px;top:8px;color:var(--red);}
+.answer-area{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.answer-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.answer-textarea:focus{border-color:var(--text);}
+.answer-textarea:disabled{opacity:0.7;background:var(--surface-2);cursor:default;}
+.answer-buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.btn-add-answer{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-answer:hover:not(:disabled){opacity:0.85;}
+.btn-add-answer:disabled{opacity:0.5;cursor:default;}
+.btn-see-answer{background:var(--surface);color:var(--text-muted);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-see-answer:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-see-answer:not(:disabled){color:var(--red);border-color:var(--red);}
+.btn-see-answer:hover:not(:disabled){background:var(--red-glow);}
+.model-answers{margin-top:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.model-answer-item{padding:10px 0;border-bottom:1px solid var(--border-dim);}
+.model-answer-item:first-child{padding-top:0;}
+.model-answer-item:last-child{border-bottom:none;padding-bottom:0;}
+.model-answer-q{font-size:9px;font-weight:700;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:4px;}
+.model-answer-text{font-size:13px;color:var(--text-soft);line-height:1.7;}
+.mental-note-block{border-radius:10px;padding:12px 16px;margin:16px 0;display:flex;gap:10px;align-items:flex-start;background:rgba(192,57,43,0.07);border:1px solid var(--border);}
+.mental-note-block-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.mental-note-block-inner{flex:1;}
+.mental-note-block-label{font-size:9px;font-weight:700;letter-spacing:0.16em;color:var(--red);margin-bottom:3px;}
+.mental-note-block-text{font-size:13px;font-weight:600;line-height:1.55;color:var(--text);}
+.analogy-box{background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #b45309;border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0;}
+.analogy-label{display:flex;align-items:center;gap:6px;user-select:none;cursor:pointer;font-size:9px;font-weight:700;letter-spacing:0.16em;color:#b45309;margin-bottom:4px;}
+.analogy-label::after{content:'▾  Reveal illustration';margin-left:auto;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:none;opacity:0.75;}
+.analogy-label:hover::after{opacity:1;}
+.analogy-box.expanded > .analogy-label::after{content:'▴  Hide illustration';}
+.analogy-text{font-size:13px;color:#78350f;line-height:1.65;font-style:italic;}
+.analogy-box > .analogy-img{display:none;}
+.analogy-box.expanded > .analogy-img{display:block;}
+.analogy-img img{max-width:360px;width:100%;cursor:zoom-in;transition:max-width 0.25s ease;border-radius:8px;margin-top:10px;}
+.analogy-img img.zoomed{max-width:100%;cursor:zoom-out;}
+.prompt-toggle{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:10px;font-weight:600;letter-spacing:0.08em;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;text-transform:uppercase;}
+.prompt-toggle:hover{color:var(--text);border-color:var(--text);}
+.prompt-content{margin-top:10px;padding:10px 14px;background:rgba(0,0,0,0.04);border-radius:8px;font-size:11.5px;color:var(--text-muted);font-style:italic;line-height:1.65;text-align:left;}
+.prompt-content[hidden]{display:none;}
+.lesson-tools{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:40px;}
+.lesson-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.tool-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.tool-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.tool-textarea:focus{border-color:var(--red);}
+.tool-row{margin-top:8px;display:flex;gap:8px;}
+.sidebar-section{margin-bottom:28px;}
+.sidebar-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;}
+.ssnav{display:flex;flex-direction:column;gap:2px;margin-top:4px;}
+.ssnav-item{font-size:12px;color:var(--text-soft);padding:6px 10px;border-radius:6px;text-decoration:none;line-height:1.4;display:block;transition:background 0.15s,color 0.15s;}
+.ssnav-item:hover,.ssnav-item.active{background:var(--red-glow);color:var(--red);}
+.hub-link{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);margin-bottom:16px;transition:color 0.15s,border-color 0.15s,background 0.15s;}
+.hub-link:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);}
+.check-item{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;}
+.check-input{accent-color:var(--red);width:14px;height:14px;flex-shrink:0;cursor:pointer;}
+.check-label{font-size:12px;color:var(--text-soft);line-height:1.4;}
+.check-item:has(.check-input:checked) .check-label{color:var(--text-muted);text-decoration:line-through;}
+.quick-ref{background:#1a0606;border-radius:10px;padding:12px 16px;margin-bottom:8px;}
+.quick-ref-term{font-size:10px;font-weight:700;letter-spacing:0.12em;color:#e87070;margin-bottom:3px;text-transform:uppercase;}
+.quick-ref-def{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;}
+.page-nav{display:flex;border-top:2px solid var(--border);background:var(--surface);}
+.page-nav-btn{flex:1;display:flex;flex-direction:column;gap:4px;padding:16px 28px;text-decoration:none;transition:background 0.15s;cursor:pointer;}
+.page-nav-btn:hover:not(.page-nav-disabled){background:var(--surface-2);}
+.page-nav-prev{border-right:1px solid var(--border);}
+.page-nav-next{text-align:right;}
+.page-nav-disabled{opacity:0.3;pointer-events:none;}
+.page-nav-label{font-size:10px;font-weight:600;letter-spacing:0.14em;color:var(--text-muted);display:block;}
+.page-nav-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;color:var(--red);display:block;}
+footer{font-size:11px;letter-spacing:0.12em;color:var(--text-muted);text-transform:uppercase;padding:20px 60px;border-top:1px solid var(--border);}
+footer span{color:var(--red);}
+.img-caption{font-size:11px;color:var(--text-muted);text-align:center;margin-top:6px;line-height:1.4;font-style:italic;}
+.analogy-summary{font-style:normal;font-weight:600;color:#92400e;margin-bottom:10px;}
+.analogy-text ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;}
+.analogy-text li{padding-left:18px;position:relative;}
+.analogy-text li::before{content:'•';position:absolute;left:0;font-weight:700;color:#b45309;}
+.data-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;}
+.data-table th{background:#1a0606;color:#e87070;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:10px 14px;text-align:left;}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-soft);line-height:1.55;vertical-align:top;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:nth-child(even) td{background:var(--surface-2);}
+.data-table td strong{color:var(--text);font-weight:600;}
+@media(max-width:1000px){main{grid-template-columns:1fr;}.sidebar{position:static;max-height:none;padding:0 40px 40px;}}
+@media(max-width:720px){header{padding:28px 24px 24px;}header h1{font-size:32px;}.motivation-banner{padding:16px 24px;}.main-content{padding:24px 24px 40px;}.section-nav{padding:0 16px;}.top-panels{grid-template-columns:1fr;}.top-panels .qpanel{border-right:none;border-bottom:1px solid var(--border);}.lesson-tools-grid{grid-template-columns:1fr;}footer{padding:16px 24px;}}
+</style>
+</head>
+<body>
+
+<div id="pt-overlay"></div>
+
+<header>
+  <div class="header-left">
+    <div class="breadcrumb">
+      <a href="../nse7-ef-study-guide-hub.html">EF-NSE7</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="index.html">Chapter 05 — Dynamic Routing Protocols</a>
+      <span class="breadcrumb-sep">›</span>
+      Subtopic 02
+    </div>
+    <div class="header-eyebrow"><span class="dot-live"></span> Study Guide · EF-NSE7</div>
+    <h1>Deploy <em>BGP</em> in Enterprise Networks</h1>
+    <p>Understand eBGP vs. iBGP, the BGP RIB pipeline, route filtering with access/prefix lists and route maps, ECMP multipath, loopback sources, neighbor groups, and the diagnostic command set for the EF-NSE7 exam.</p>
+  </div>
+</header>
+
+<div class="motivation-banner">
+  <div class="motivation-text">BGP runs the internet — understanding <em>how routes flow through the RIB</em> and where filters apply is your key to enterprise-level routing control.</div>
+  <p class="motivation-sub">This subtopic covers BGP fundamentals through FortiGate-specific deployment patterns including ECMP multipath, loopback-sourced sessions, neighbor groups for SD-WAN, and the full filtering pipeline from RIB-in to RIB-out.</p>
+</div>
+
+<div class="top-panels">
+  <div class="qpanel" id="qpanel">
+    <button class="qpanel-header" onclick="toggleQPanel()" id="qpanel-header">
+      <span class="qpanel-title">MY QUESTIONS</span>
+      <span class="qpanel-count" id="qpanel-count">0</span>
+      <span class="qpanel-hint">— click to expand</span>
+      <span class="qpanel-chevron" id="qpanel-chevron">▾</span>
+    </button>
+    <div class="qpanel-body" id="qpanel-body"></div>
+  </div>
+  <div class="notes-panel" id="notes-panel">
+    <button class="notes-panel-header" onclick="toggleNotesPanel()" id="notes-panel-header">
+      <span class="notes-panel-title">MY NOTES</span>
+      <span class="notes-panel-count" id="notes-panel-count">0</span>
+      <span class="notes-panel-hint">— click to expand</span>
+      <span class="notes-panel-chevron" id="notes-panel-chevron">▾</span>
+    </button>
+    <div class="notes-panel-body" id="notes-panel-body"></div>
+  </div>
+</div>
+
+<nav class="section-nav" id="section-nav">
+  <a class="nav-tab active" href="#s1">BGP Overview</a>
+  <a class="nav-tab" href="#s2">Protocol Redistribution &amp; RIB</a>
+  <a class="nav-tab" href="#s3">ECMP &amp; Loopback Source</a>
+  <a class="nav-tab" href="#s4">Neighbor Groups</a>
+  <a class="nav-tab" href="#s5">BGP via FortiManager</a>
+</nav>
+
+<main>
+  <div class="main-content">
+
+    <!-- ═══════════════ SECTION 1 ═══════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · BGP OVERVIEW</span>
+      </div>
+      <p class="socratic-insight">BGP uses autonomous systems (AS) as its fundamental unit — two routers in the same AS use iBGP, while routers in different ASes use eBGP. This distinction profoundly affects how BGP behaves: iBGP does not re-advertise routes learned from one iBGP peer to another, which forces every iBGP router to peer with every other iBGP router in the AS — a full mesh requirement that scales poorly.</p>
+      <ul class="socratic-questions">
+        <li>Why does iBGP not re-advertise routes between iBGP peers (the split-horizon rule)? What routing problem does this prevent?</li>
+        <li>By default, FortiGate BGP does not advertise any prefixes. What is the architectural reason for this conservative default, and how does this differ from OSPF's behavior?</li>
+      </ul>
+      <div class="answer-area" data-section="bgp-overview">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">iBGP's split-horizon rule prevents routing loops within an AS. If router A learns a route from external BGP peer and advertises it via iBGP to B, and B could re-advertise it to C via iBGP, C might create a loop back through the AS. By prohibiting iBGP-to-iBGP re-advertisement, BGP forces all routers to have direct knowledge of all routes, eliminating that loop vector — but creating the full-mesh requirement that route reflectors solve.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">BGP is a policy-driven protocol designed for inter-AS routing — advertising the wrong prefixes can affect global routing. The conservative default (advertise nothing until explicitly configured) prevents accidental advertisement of internal routes to external peers. OSPF, by contrast, automatically floods topology information within its domain — it's designed to share everything with trusted neighbors in the same area, making the opposite default appropriate.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s1">
+      <div class="section-label">SECTION 01</div>
+      <h2>BGP <em>Overview</em> — eBGP, iBGP &amp; AS Design</h2>
+
+      <div class="section-img-wrap">
+        <img src="images/s1-bgp-overview.png" class="section-img" alt="BGP autonomous system diagram showing eBGP and iBGP"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s1-bgp-overview.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: Three cloud-shaped AS bubbles. Left bubble: "ISP1 / AS 10". Right bubble: "ISP2 / AS 20". Center-bottom bubble: "AS 30" containing Router 1 and Router 2 with a yellow "IBGP" label between them. Red "EBGP" arrows connect AS 30 to both ISP clouds. An internet cloud above. Bold outlines, pastel palette, educational infographic style, no shadows.</div>
+        </div>
+        <p class="img-caption">BGP uses Autonomous Systems as its unit. eBGP connects different ASes; iBGP connects routers within the same AS.</p>
+      </div>
+
+      <p><strong>BGP (Border Gateway Protocol)</strong> is the routing protocol underlying the global internet. It exchanges routing and reachability information between <strong>autonomous systems (AS)</strong> — networks under a single administrative authority identified by an AS number. BGP is a path-vector protocol, not a link-state protocol, and makes decisions based on policy attributes rather than pure shortest-path calculations.</p>
+      <p>Two BGP session types exist: <strong>eBGP (External BGP)</strong> connects routers in different autonomous systems, and <strong>iBGP (Internal BGP)</strong> connects routers within the same AS. iBGP requires a full mesh of peering sessions because iBGP routers do not re-advertise routes learned from one iBGP peer to another — a loop-prevention rule called the iBGP split horizon.</p>
+      <p>FortiGate BGP is configured under <code>config router bgp</code>. The local AS number is set with <code>set as</code>, and a router ID (typically a loopback IP) is set with <code>set router-id</code>. Neighbor sessions are defined per peer under <code>config neighbor</code>.</p>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Basic BGP Neighbor Configuration</div>
+        <pre><code>config router bgp
+    set as 65100
+    set router-id 172.16.1.254
+    config neighbor
+        edit 100.64.1.254
+            set remote-as 200
+        next
+    end
+end</code></pre>
+      </div>
+
+      <div class="callout callout-amber"><strong>Key default:</strong> FortiGate BGP does NOT advertise any prefixes by default. All redistribution is disabled (bgp, connected, isis, rip, static are all "disable 0"). You must explicitly enable redistribution or configure network statements.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">eBGP = different AS. iBGP = same AS. iBGP split-horizon: cannot re-advertise iBGP-learned routes to other iBGP peers — forces full mesh or route reflectors. By default, BGP advertises nothing — all redistribution must be explicitly enabled.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s1" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s1','BGP Overview')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s1" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s1')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SECTION 2 ═══════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · PROTOCOL REDISTRIBUTION &amp; RIB</span>
+      </div>
+      <p class="socratic-insight">The BGP RIB (Routing Information Base) pipeline defines exactly where filtering can occur. Routes enter via RIB-in, pass through an inbound filter to the local RIB, get merged with redistributed routes from the routing table, then exit through an outbound filter to RIB-out before being advertised. Understanding this pipeline tells you exactly which parameter to use for each filtering goal.</p>
+      <ul class="socratic-questions">
+        <li>Looking at the BGP RIB pipeline, what is the difference between filtering with distribute-list-in versus filtering with distribute-list-out? Which one protects your local routing table, and which controls what you advertise to neighbors?</li>
+        <li>BGP route maps can be applied both inbound and outbound (route-map-in / route-map-out). What can a route map do that access lists and prefix lists cannot, specifically in the context of BGP?</li>
+      </ul>
+      <div class="answer-area" data-section="bgp-rib">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">distribute-list-in filters routes entering the local RIB from received BGP updates — it protects your routing table by preventing certain prefixes from being installed. distribute-list-out filters routes leaving your RIB before they're advertised to neighbors — it controls what you share with peers. Think of it as: "in" = what I accept, "out" = what I share.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Route maps can both match and set — in BGP context, they can modify BGP attributes like LOCAL_PREF, MED (metric), AS_PATH prepending, and next-hop. Access lists and prefix lists can only permit or deny based on prefix matching. A route map applied inbound can lower the LOCAL_PREF of specific prefixes to deprioritize them; applied outbound it can prepend the AS path to make routes less preferred by external peers — actions impossible with access or prefix lists alone.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s2">
+      <div class="section-label">SECTION 02</div>
+      <h2>Protocol Redistribution &amp; <em>BGP RIB Pipeline</em></h2>
+
+      <div class="section-img-wrap">
+        <img src="images/s2-bgp-rib.png" class="section-img" alt="BGP RIB pipeline flowchart"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s2-bgp-rib.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: Left-to-right pipeline flow. "BGP RX" arrow → blue box "RIB-in" → blue box "In filter" → blue box "Local RIB" → blue box "BGP info" → blue box "Out filter" → blue box "RIB-out" → "BGP TX" arrow. Below "Local RIB" a downward arrow to "Routing Table" with labels: "Connected/Static routes", "RIP", "OSPF", "IS-IS" feeding in. An orange circle "Redistribute" sits between Routing Table and Local RIB. Bold outlines, pastel blue/orange palette, educational style.</div>
+        </div>
+        <p class="img-caption">The BGP RIB pipeline: routes enter RIB-in, pass inbound filters, merge with redistributed routes, then pass outbound filters before advertisement.</p>
+      </div>
+
+      <p>The <strong>BGP Routing Information Base (RIB)</strong> is a pipeline with distinct stages where filtering can be applied. Understanding this pipeline is essential for knowing which CLI parameter to use:</p>
+      <ul>
+        <li><strong>RIB-in</strong> — raw BGP updates received from peers</li>
+        <li><strong>In filter</strong> — applies distribute-list-in, prefix-list-in, or route-map-in to incoming routes</li>
+        <li><strong>Local RIB</strong> — the BGP routing database after inbound filtering</li>
+        <li><strong>Redistribute</strong> — routes from the routing table (connected, static, OSPF, RIP, IS-IS) injected into BGP</li>
+        <li><strong>Out filter</strong> — applies distribute-list-out, prefix-list-out, or route-map-out to outgoing advertisements</li>
+        <li><strong>RIB-out</strong> — what actually gets advertised to BGP peers</li>
+      </ul>
+
+      <table class="data-table">
+        <thead><tr><th>Filter Method</th><th>Inbound Parameter</th><th>Outbound Parameter</th><th>Can Set Attributes?</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Access Lists</strong></td><td><code>distribute-list-in</code></td><td><code>distribute-list-out</code></td><td>No</td></tr>
+          <tr><td><strong>Prefix Lists</strong></td><td><code>prefix-list-in</code></td><td><code>prefix-list-out</code></td><td>No</td></tr>
+          <tr><td><strong>Route Maps</strong></td><td><code>route-map-in</code></td><td><code>route-map-out</code></td><td>Yes — LOCAL_PREF, MED, AS_PATH, next-hop</td></tr>
+        </tbody>
+      </table>
+
+      <div class="analogy-box">
+        <div class="analogy-label">Analogy</div>
+        <div class="analogy-text">
+          <p class="analogy-summary">The BGP RIB pipeline is like a customs system at a border crossing — with inspection on both entry and exit, and a redistribution "import dock" in the middle.</p>
+          <ul>
+            <li><strong>RIB-in</strong> — the holding area where all arriving shipments (BGP updates) wait for inspection</li>
+            <li><strong>In filter</strong> — customs inspection: decides what gets into the country (local RIB)</li>
+            <li><strong>Redistribute</strong> — the domestic import dock: local goods (connected/static routes) enter the system here</li>
+            <li><strong>Out filter</strong> — export control: decides what the country is allowed to ship out to neighbors</li>
+            <li><strong>Route map</strong> — a customs officer who can both reject goods AND change their declared value (attributes)</li>
+          </ul>
+        </div>
+        <div class="analogy-img" style="margin-top:14px;background:rgba(255,255,255,0.5);border-radius:10px;padding:14px;text-align:center;">
+          <img src="images/a1-bgp-rib-customs.png" alt="BGP RIB pipeline customs analogy"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='block';" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 10px;">
+          <div class="img-missing-msg" style="display:none;font-size:12px;color:#92400e;padding:8px;background:rgba(146,64,14,0.1);border-radius:6px;">📷 <strong>images/a1-bgp-rib-customs.png</strong> — add this image to the folder</div>
+          <button class="prompt-toggle" onclick="togglePrompt(this)" type="button">▾ Show analogy image prompt</button>
+          <div class="prompt-content" hidden>Cartoon flat illustration in pastel style: A two-sided border crossing building. Left side: trucks labeled "BGP Updates" arrive at an "Inspection Booth" (In filter). An "Import Dock" on the side feeds in boxes labeled "Connected/Static Routes". In the middle: a warehouse labeled "Local RIB". Right side: trucks leave through an "Export Control" booth (Out filter) toward a "BGP Neighbor" cloud. A customs officer holds a stamp labeled "Route Map = Permit + Modify". Bold outlines, pastel colors, educational infographic, no shadows.</div>
+        </div>
+      </div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">BGP RIB pipeline: RIB-in → In filter → Local RIB ← Redistribute (routing table) → Out filter → RIB-out → advertise. Access lists / prefix lists = permit/deny only. Route maps = permit/deny AND set attributes (LOCAL_PREF, MED, AS_PATH, next-hop).</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s2" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s2','Protocol Redistribution & RIB')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s2" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s2')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SECTION 3 ═══════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · ECMP &amp; LOOPBACK SOURCE</span>
+      </div>
+      <p class="socratic-insight">BGP ECMP and loopback-sourced sessions both address resilience but at different layers. ECMP allows load-balancing across multiple equal-cost paths to the same BGP next-hop. Loopback-sourced sessions keep the BGP peering alive even when one physical link fails — because loopback interfaces never go down unless the router itself fails.</p>
+      <ul class="socratic-questions">
+        <li>When you configure a BGP session using a loopback interface as the source, why is "ebgp-enforce-multihop enable" mandatory, even if the loopback and the neighbor are logically close?</li>
+        <li>What is the difference between ebgp-multipath and ibgp-multipath — why would you need ibgp-multipath in an SD-WAN design?</li>
+      </ul>
+      <div class="answer-area" data-section="bgp-ecmp">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">eBGP by default enforces a TTL of 1 — it assumes the peer is exactly one hop away. A loopback interface is not directly connected (it requires routing to reach it), so the BGP packets would be dropped because TTL expires before reaching the destination. Multihop explicitly tells FortiGate that the eBGP peer is more than one hop away and relaxes the TTL enforcement, allowing the session to traverse the extra hop to the loopback address.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">ebgp-multipath enables ECMP for routes learned from external BGP peers (different AS), while ibgp-multipath enables ECMP for routes learned from internal BGP peers (same AS). In an SD-WAN design where spokes are iBGP peers of the hub, ibgp-multipath is required to load-balance across overlays through ISP1 and ISP2 — both overlays are in the same AS as the hub, so without ibgp-multipath, only one path would be installed.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s3">
+      <div class="section-label">SECTION 03</div>
+      <h2>BGP <em>ECMP</em> &amp; Loopback Interface Source</h2>
+
+      <div class="section-img-wrap">
+        <img src="images/s3-bgp-ecmp-loopback.png" class="section-img" alt="BGP ECMP and loopback source configuration"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s3-bgp-ecmp-loopback.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: Two-panel layout. Left panel "ECMP": FortiGate (AS 6500) connected to a BGP peer (AS 6510) via two paths through ISP1 and ISP2; green "ECMP Load Balance" arrows on both paths with "ebgp-multipath enable" label. Right panel "Loopback Source": FortiGate with a Loopback Interface bubble (172.16.1.254) connected via dashed line labeled "update-source Loopback" to a BGP peer; a warning badge "multihop required". Bold outlines, pastel colors, educational style, no shadows.</div>
+        </div>
+        <p class="img-caption">Left: ECMP across two ISP paths requires ebgp-multipath enable. Right: Loopback as BGP source requires multihop since the loopback isn't the direct next hop.</p>
+      </div>
+
+      <p><strong>BGP ECMP</strong> allows FortiGate to load-balance across multiple equal-cost paths to the same BGP next-hop. When there are multiple ECMP routes to a BGP peer's next hop, enabling <strong>ebgp-multipath</strong> allows FortiGate to consider all those paths. Similarly, <strong>ibgp-multipath</strong> enables ECMP for iBGP routes, critical in SD-WAN designs where multiple overlays share the same AS.</p>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Enable ECMP Multipath</div>
+        <pre><code>config router bgp
+    set ebgp-multipath enable
+    set ibgp-multipath enable
+end</code></pre>
+      </div>
+
+      <p>Using a <strong>loopback interface as the BGP session source</strong> provides resilience — the loopback stays up as long as the router is alive, even if physical interfaces flap. The BGP session can survive link failures as long as any path to the loopback exists. Two key requirements for loopback-sourced eBGP sessions:</p>
+      <ul>
+        <li><strong>update-source</strong> must be set to the loopback interface in the neighbor configuration</li>
+        <li><strong>ebgp-enforce-multihop enable</strong> is required because the loopback is not the immediate next hop (eBGP defaults to TTL=1)</li>
+      </ul>
+      <p>Additionally, a firewall policy must allow TCP port 179 (BGP) traffic between the loopback and the physical interface, since the BGP session traffic may traverse a physical interface that is separate from the loopback.</p>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Loopback as BGP Source</div>
+        <pre><code>config router bgp
+    set as 65100
+    set router-id 172.16.1.254
+    config neighbor
+        edit 100.64.1.254
+            set remote-as 65101
+            set update-source Loopback_Interface
+            set ebgp-enforce-multihop enable
+        next
+    end
+end</code></pre>
+      </div>
+
+      <div class="callout callout-amber"><strong>Exam tip:</strong> ebgp-enforce-multihop is REQUIRED when the BGP source is a loopback interface. eBGP TTL defaults to 1 (expects directly connected peer). Loopback adds a hop, so without multihop the session never establishes.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">ECMP for eBGP = ebgp-multipath enable. ECMP for iBGP = ibgp-multipath enable. Loopback source requires: (1) set update-source &lt;loopback&gt;, (2) set ebgp-enforce-multihop enable, (3) firewall policy allowing TCP 179 between loopback and physical interface.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s3" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s3','ECMP & Loopback Source')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s3" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s3')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SECTION 4 ═══════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · NEIGHBOR GROUPS</span>
+      </div>
+      <p class="socratic-insight">In a large SD-WAN deployment, a hub may have hundreds of dial-up spoke BGP peers. Configuring each peer individually is impractical. The neighbor-group and neighbor-range commands solve this by applying a common template to all peers that match an IP range — similar to how OSPF network statements apply to interfaces matching a subnet.</p>
+      <ul class="socratic-questions">
+        <li>How does "neighbor-range" work with "neighbor-group" — what is the relationship between these two commands and why does the order matter?</li>
+        <li>In the SD-WAN hub configuration shown in the PDF, ibgp-multipath is enabled along with the neighbor group. Why is ibgp-multipath specifically needed here rather than ebgp-multipath?</li>
+      </ul>
+      <div class="answer-area" data-section="bgp-neighbor-groups">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">neighbor-group defines a named template of BGP settings (interface, remote-as, timers, etc.). neighbor-range then specifies which IP prefixes get automatically assigned to that group — any peer that establishes a session from an IP in the range is dynamically added to the group and inherits its settings. The group must be defined first because neighbor-range references it by name. This enables zero-touch BGP peering for dial-up spokes without individual neighbor statements.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">In the SD-WAN use case, the spokes are in the same AS as the hub (IBGP peers) — the overlay subnets 10.1.0.0/24 and 10.2.0.0/24 are within the same AS 65100. Routes learned from ISP1 and ISP2 overlays are both iBGP routes. ibgp-multipath allows the hub to install both paths and load-balance across them. ebgp-multipath would not apply here because the spokes share the same AS number as the hub.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s4">
+      <div class="section-label">SECTION 04</div>
+      <h2>BGP <em>Neighbor Groups</em> — SD-WAN Scale Deployment</h2>
+
+      <div class="section-img-wrap">
+        <img src="images/s4-bgp-neighbor-group.png" class="section-img" alt="BGP neighbor-group and neighbor-range SD-WAN design"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s4-bgp-neighbor-group.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: Hub router at top center connected to two spoke routers below via ISP1 (red line, 10.1.0.0/24) and ISP2 (blue line, 10.2.0.0/24). Spoke 1 on left, Spoke 2 on right. A callout box near hub shows "neighbor-group: SpokeISP1" applied to ISP1 overlay, "neighbor-range: 10.1.0.0/24 → SpokeISP1". Bold outlines, pastel red/blue palette, educational style, no shadows.</div>
+        </div>
+        <p class="img-caption">In SD-WAN hub-and-spoke BGP, neighbor-groups apply shared settings to all spokes in a subnet range — enabling zero-touch peering as spokes connect.</p>
+      </div>
+
+      <p>The <strong>neighbor-group</strong> command allows common BGP settings to be applied to multiple peers simultaneously. In a standard SD-WAN design, spokes are dial-up clients acting as iBGP speakers. By defining a neighbor group for each overlay (one per ISP underlay), the hub can apply consistent BGP parameters to all spokes connecting through that overlay.</p>
+      <p>The <strong>neighbor-range</strong> command defines which IP prefix characterizes the group. Peers whose IP falls within the specified range are automatically assigned to the corresponding neighbor group and inherit all its settings.</p>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Hub BGP with Neighbor Groups (SD-WAN)</div>
+        <pre><code>config router bgp
+    set as 65100
+    set router-id 172.16.1.254
+    set ibgp-multipath enable
+    config neighbor-group
+        edit SpokeISP1
+            set interface ISP1
+            set remote-as 65100
+        next
+    end
+    config neighbor-range
+        edit 1
+            set prefix 10.1.0.0 255.255.255.0
+            set neighbor-group SpokeISP1
+        next
+    end
+end</code></pre>
+      </div>
+
+      <p>Because this is an iBGP deployment (all spokes share AS 65100 with the hub), <strong>ibgp-multipath</strong> must be enabled to allow ECMP across routes received from multiple spokes. Peers with IP addresses in the 10.1.0.0/24 range are automatically assigned to the SpokeISP1 group, inheriting the interface and remote-AS settings.</p>
+
+      <div class="callout callout-green"><strong>SD-WAN benefit:</strong> Neighbor groups enable zero-touch BGP peering — as new spokes connect, they are automatically matched to the neighbor range and assigned the group's settings. No individual neighbor configuration is required per spoke.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">neighbor-group = template with shared settings. neighbor-range = IP prefix that assigns peers to the group automatically. SD-WAN use case = iBGP (same AS), so ibgp-multipath is required for ECMP across overlays. neighbor-range uses "set prefix" + "set neighbor-group".</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s4" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s4','BGP Neighbor Groups')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s4" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s4')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SECTION 5 ═══════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · BGP VIA FORTIMANAGER</span>
+      </div>
+      <p class="socratic-insight">FortiManager BGP templates centralize BGP configuration management, enabling one template to be pushed to many devices. Metadata variables make templates dynamic — instead of hard-coding an AS number, a metadata variable like $(AS_Spokes) resolves to a per-device value during installation. The recommended BGP templates include best-practice settings already preconfigured.</p>
+      <ul class="socratic-questions">
+        <li>What is the purpose of FortiManager metadata variables in BGP templates, and what problem do they solve that a static template cannot?</li>
+        <li>The recommended BRANCH_BGP_Recommended template pre-configures ibgp-multipath, graceful-restart, and capability-graceful-restart. What does graceful-restart do during an HA failover, and why is it particularly important for BGP?</li>
+      </ul>
+      <div class="answer-area" data-section="bgp-fortimanager">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Metadata variables allow the same template to be deployed to multiple devices where device-specific values (like AS number or router ID) differ. Without metadata variables, you'd need a separate template per device or manually edit each installation — defeating the purpose of centralized management. The variable like $(AS_Spokes) is mapped to a different value per device in FortiManager, which substitutes it automatically during installation.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">During HA failover, the BGP daemon only runs on the primary unit. When the primary fails, the new primary must re-establish BGP sessions from scratch — which normally causes BGP routes to be withdrawn and re-advertised, creating a traffic interruption. Graceful-restart allows BGP routes to remain in the routing table of the peer while the new primary reconnects. The peer treats the disconnection as a temporary stale-route event rather than an immediate withdrawal, preventing a traffic blackhole during failover.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s5">
+      <div class="section-label">SECTION 05</div>
+      <h2>BGP Configuration via <em>FortiManager</em></h2>
+
+      <div class="section-img-wrap">
+        <img src="images/s5-bgp-fortimanager.png" class="section-img" alt="FortiManager BGP template with metadata variables"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s5-bgp-fortimanager.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: FortiManager GUI mockup. Left panel shows a BGP Template list with "HUB_BGP_Recommended" and "BRANCH_BGP_Recommended". Right panel shows a "Create New BGP Template" form with fields: Name (BGP_Spokes), Local As ($(AS_Spokes) — highlighted in amber as "metadata variable"), Router ID (172.16.1.$(BGP_Number_Spokes) — highlighted). Below shows a Neighbors table with an entry 172.16.2.1, Remote AS 65000. Bold outlines, pastel colors, educational style, no shadows.</div>
+        </div>
+        <p class="img-caption">FortiManager BGP templates use metadata variables to apply device-specific values (AS number, router ID) during installation on each spoke.</p>
+      </div>
+
+      <p><strong>FortiManager BGP templates</strong> allow centralized creation and deployment of BGP configuration to multiple FortiGate devices. Templates are found under <em>Device Manager → Provisioning Templates → BGP Template</em>. Two recommended templates are built-in: <strong>HUB_BGP_Recommended</strong> and <strong>BRANCH_BGP_Recommended</strong>.</p>
+      <p><strong>Metadata Variables</strong> enable templates to be dynamic — device-specific values like AS number or the last octet of the router ID can be parameterized as <code>$(variable_name)</code>. FortiManager substitutes the correct value per device during installation, allowing one template to serve all spokes.</p>
+      <p>The deployment workflow is: (1) Create or import the BGP template, (2) Assign it to a device or device group, (3) Run the Install Wizard to push settings. Metadata variables are resolved automatically during the install. Templates can also be <strong>imported</strong> directly from an existing device or VDOM configuration.</p>
+
+      <p>The <strong>BRANCH_BGP_Recommended</strong> template pre-configures key best-practice settings:</p>
+      <ul>
+        <li><code>ibgp-multipath enable</code> — ECMP across iBGP paths</li>
+        <li><code>graceful-restart enable</code> — prevent BGP session disruption during HA failover</li>
+        <li><code>capability-graceful-restart enable</code> — advertise graceful-restart capability to neighbor</li>
+        <li><code>advertisement-interval 1</code> — faster BGP update convergence</li>
+        <li><code>link-down-failover enable</code> — immediate session teardown on link failure</li>
+        <li><code>soft-reconfiguration enable</code> — store received routes for policy recalculation without resetting sessions</li>
+      </ul>
+
+      <p><strong>Key BGP diagnostic commands:</strong></p>
+      <table class="data-table">
+        <thead><tr><th>Command</th><th>Shows</th></tr></thead>
+        <tbody>
+          <tr><td><code>get router info bgp summary</code></td><td>BGP status, all neighbors, AS numbers, packet counters, uptime</td></tr>
+          <tr><td><code>get router info bgp neighbors</code></td><td>Neighbor detail: peer IP, router ID, remote AS, BGP state, capabilities</td></tr>
+          <tr><td><code>get router info bgp network</code></td><td>BGP database — all known prefixes</td></tr>
+          <tr><td><code>get router info routing-table bgp</code></td><td>BGP routes installed in the routing table</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-amber"><strong>Exam tip:</strong> graceful-restart must be enabled on BOTH connected routers. The cluster advertises it is going offline — peers treat the disconnection as a stale-route event rather than withdrawing routes immediately. This prevents traffic interruption during planned HA failovers and upgrades.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">FortiManager BGP template workflow: Create → Assign to device/group → Install Wizard. Metadata variables like $(AS_Spokes) resolve per-device during install. Recommended templates pre-configure: ibgp-multipath, graceful-restart, capability-graceful-restart, advertisement-interval 1, link-down-failover.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s5" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s5','BGP via FortiManager')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s5" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s5')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">ON THIS PAGE</div>
+      <nav class="ssnav">
+        <a class="ssnav-item" href="#s1">BGP Overview</a>
+        <a class="ssnav-item" href="#s2">Redistribution &amp; RIB</a>
+        <a class="ssnav-item" href="#s3">ECMP &amp; Loopback Source</a>
+        <a class="ssnav-item" href="#s4">Neighbor Groups</a>
+        <a class="ssnav-item" href="#s5">BGP via FortiManager</a>
+      </nav>
+    </div>
+
+    <a class="hub-link" href="index.html">← Chapter 05 Hub</a>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">PROGRESS</div>
+      <div class="checklist" id="checklist">
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s1" onchange="toggleDone(this)">
+          <span class="check-label">BGP Overview</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s2" onchange="toggleDone(this)">
+          <span class="check-label">Redistribution &amp; RIB</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s3" onchange="toggleDone(this)">
+          <span class="check-label">ECMP &amp; Loopback Source</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s4" onchange="toggleDone(this)">
+          <span class="check-label">Neighbor Groups</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s5" onchange="toggleDone(this)">
+          <span class="check-label">BGP via FortiManager</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">QUICK REFERENCE</div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">eBGP</div>
+        <div class="quick-ref-def">External BGP — sessions between routers in different Autonomous Systems. TTL defaults to 1.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">iBGP</div>
+        <div class="quick-ref-def">Internal BGP — sessions within the same AS. Split-horizon rule prevents re-advertising iBGP routes to other iBGP peers.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">RIB-in / RIB-out</div>
+        <div class="quick-ref-def">BGP receives routes into RIB-in; after filtering they enter the Local RIB; after outbound filtering they enter RIB-out for advertisement.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">ebgp-multipath</div>
+        <div class="quick-ref-def">Enables ECMP load-balancing across multiple equal-cost paths to the same eBGP next-hop.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">ibgp-multipath</div>
+        <div class="quick-ref-def">Enables ECMP across multiple iBGP paths — required for SD-WAN hub when multiple overlays use the same AS.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">ebgp-enforce-multihop</div>
+        <div class="quick-ref-def">Relaxes eBGP TTL=1 requirement, required when the BGP session source is a loopback interface (not directly connected).</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">neighbor-group</div>
+        <div class="quick-ref-def">Template of BGP settings applied to multiple peers. neighbor-range assigns peers by IP prefix to a group automatically.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">graceful-restart</div>
+        <div class="quick-ref-def">Keeps BGP routes in peer routing tables during HA failover — prevents traffic blackhole. Must be enabled on both routers.</div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="page-nav">
+  <a class="page-nav-btn page-nav-prev" href="subtopic-01-configure-ospf.html">
+    <span class="page-nav-label">← PREVIOUS</span>
+    <span class="page-nav-title">Configure OSPF</span>
+  </a>
+  <a class="page-nav-btn page-nav-next" href="subtopic-03-route-redistribution.html">
+    <span class="page-nav-label">NEXT →</span>
+    <span class="page-nav-title">Route Redistribution</span>
+  </a>
+</div>
+
+<footer>
+  EF-NSE7<span>.</span> Chapter 05<span>.</span> Subtopic 02<span>.</span> Configure BGP
+</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-ch05-sub02-configure-bgp';
+
+const SECTIONS = {
+  's1': 'BGP Overview',
+  's2': 'Protocol Redistribution & RIB',
+  's3': 'ECMP & Loopback Source',
+  's4': 'BGP Neighbor Groups',
+  's5': 'BGP via FortiManager',
+};
+
+document.querySelectorAll('.socratic-header').forEach(function(h) {
+  h.addEventListener('click', function() { h.closest('.socratic-block').classList.toggle('soc-open'); });
+});
+
+function getQArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-qs') || '[]'); }
+function saveQArr(qs) { localStorage.setItem(PAGE_KEY+'-qs', JSON.stringify(qs)); }
+function addQuestion(key, name) {
+  const ta = document.getElementById('q-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const qs = getQArr(); qs.push({id: Date.now(), section: key, sectionName: name, text});
+  saveQArr(qs); ta.value = ''; renderQPanel();
+  if (!document.getElementById('qpanel-body').classList.contains('open')) toggleQPanel();
+}
+function deleteQ(id) { saveQArr(getQArr().filter(q => q.id !== id)); renderQPanel(); }
+function toggleQPanel() {
+  const body = document.getElementById('qpanel-body');
+  const header = document.getElementById('qpanel-header');
+  const chevron = document.getElementById('qpanel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-qpanel-open', open);
+}
+function renderQPanel() {
+  const qs = getQArr();
+  const count = document.getElementById('qpanel-count');
+  if (count) { count.textContent = qs.length; count.style.display = qs.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.qpanel-hint');
+  if (hint) hint.textContent = qs.length ? `— ${qs.length} question${qs.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('qpanel-body'); if (!body) return;
+  if (!qs.length) { body.innerHTML = '<p class="no-questions">No questions yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  qs.forEach(q => { if (groups[q.section]) groups[q.section].push(q); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(q => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${q.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteQ(${q.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+function getNotesArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-notes') || '[]'); }
+function saveNotesArr(ns) { localStorage.setItem(PAGE_KEY+'-notes', JSON.stringify(ns)); }
+function addNote(key) {
+  const ta = document.getElementById('note-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const ns = getNotesArr(); ns.push({id: Date.now(), section: key, sectionName: SECTIONS[key]||key, text});
+  saveNotesArr(ns); ta.value = ''; renderNotesPanel();
+  if (!document.getElementById('notes-panel-body').classList.contains('open')) toggleNotesPanel();
+}
+function deleteNote(id) { saveNotesArr(getNotesArr().filter(n => n.id !== id)); renderNotesPanel(); }
+function toggleNotesPanel() {
+  const body = document.getElementById('notes-panel-body');
+  const header = document.getElementById('notes-panel-header');
+  const chevron = document.getElementById('notes-panel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-notes-panel-open', open);
+}
+function renderNotesPanel() {
+  const ns = getNotesArr();
+  const count = document.getElementById('notes-panel-count');
+  if (count) { count.textContent = ns.length; count.style.display = ns.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.notes-panel-hint');
+  if (hint) hint.textContent = ns.length ? `— ${ns.length} note${ns.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('notes-panel-body'); if (!body) return;
+  if (!ns.length) { body.innerHTML = '<p class="no-questions">No notes yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  ns.forEach(n => { if (groups[n.section]) groups[n.section].push(n); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(n => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteNote(${n.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+function toggleDone(input) {
+  localStorage.setItem(PAGE_KEY+'-check-'+input.dataset.key, input.checked);
+}
+function initChecks() {
+  document.querySelectorAll('.check-input').forEach(function(inp) {
+    inp.checked = localStorage.getItem(PAGE_KEY+'-check-'+inp.dataset.key) === 'true';
+  });
+}
+function saveSocAnswer(btn) {
+  const area = btn.closest('.answer-area');
+  const ta = area.querySelector('.answer-textarea');
+  if (!ta.value.trim()) { ta.focus(); return; }
+  const key = PAGE_KEY+'-socans-'+area.dataset.section;
+  try { localStorage.setItem(key, ta.value); } catch(e) {}
+  ta.disabled = true; btn.textContent = '✓ Answer saved'; btn.disabled = true;
+  const seeBtn = area.querySelector('.btn-see-answer');
+  seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+}
+function revealSocAnswer(btn) {
+  if (btn.disabled) return;
+  const answers = btn.closest('.answer-area').querySelector('.model-answers');
+  const isHidden = answers.style.display === 'none' || !answers.style.display;
+  answers.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '▲ Hide Model Answer' : '💡 See Model Answer';
+}
+function togglePrompt(btn) {
+  const c = btn.nextElementSibling;
+  const isHidden = c.hasAttribute('hidden');
+  if (isHidden) { c.removeAttribute('hidden'); btn.textContent = '▴ Hide image prompt'; }
+  else { c.setAttribute('hidden', ''); btn.textContent = '▾ Show image prompt'; }
+}
+if (sessionStorage.getItem('pt')) {
+  document.body.style.opacity = '1';
+  sessionStorage.removeItem('pt');
+}
+document.querySelectorAll('a[href]').forEach(function(a) {
+  a.addEventListener('click', function() { sessionStorage.setItem('pt', '1'); });
+});
+document.addEventListener('DOMContentLoaded', function() {
+  renderQPanel(); renderNotesPanel(); initChecks();
+  if (localStorage.getItem(PAGE_KEY+'-qpanel-open') === 'true') toggleQPanel();
+  if (localStorage.getItem(PAGE_KEY+'-notes-panel-open') === 'true') toggleNotesPanel();
+  document.querySelectorAll('.answer-area').forEach(function(area) {
+    const key = PAGE_KEY+'-socans-'+area.dataset.section;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const ta = area.querySelector('.answer-textarea'); ta.value = saved; ta.disabled = true;
+        const addBtn = area.querySelector('.btn-add-answer'); addBtn.textContent = '✓ Answer saved'; addBtn.disabled = true;
+        const seeBtn = area.querySelector('.btn-see-answer'); seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+      }
+    } catch(e) {}
+  });
+  document.querySelectorAll('.analogy-box').forEach(function(box) {
+    if (box.dataset.collapsibleInit) return;
+    box.dataset.collapsibleInit = '1';
+    box.classList.add('expanded');
+    const label = box.querySelector(':scope > .analogy-label');
+    if (label) label.addEventListener('click', () => box.classList.toggle('expanded'));
+  });
+  document.querySelectorAll('.analogy-img img').forEach(function(img) {
+    if (img.dataset.zoomInit) return;
+    img.dataset.zoomInit = '1';
+    img.addEventListener('click', () => img.classList.toggle('zoomed'));
+  });
+  document.querySelectorAll('.section-img').forEach(function(img) {
+    img.addEventListener('click', () => img.classList.toggle('si-expanded'));
+  });
+});
+(function() {
+  var items = document.querySelectorAll('.ssnav-item');
+  if (!items.length) return;
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      var lnk = document.querySelector('.ssnav-item[href="#'+e.target.id+'"]');
+      if (lnk) lnk.classList.toggle('active', e.isIntersecting);
+    });
+  }, { rootMargin: '-10% 0% -70% 0%' });
+  document.querySelectorAll('.section-block[id]').forEach(function(el) { obs.observe(el); });
+})();
+</script>
+</body>
+</html>

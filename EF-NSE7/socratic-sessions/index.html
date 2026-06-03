@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){if(sessionStorage.getItem('pt'))document.documentElement.style.opacity='0';})()</script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>NSE7 Socratic Study Plan · EF-NSE7</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:#0a0101;color:#e8ddd5;line-height:1.6;transition:opacity .25s ease}
+:root{
+  --coral:#e07050;--violet:#c476b8;--sky:#5aa2d2;--green:#5ab288;
+  --gold:#d2a541;--red:#e87070;--indigo:#6a8ad0;--teal:#52b4c4;
+  --purple:#9878c8;--lime:#9aba6a;
+  --bg:#0a0101;--surface:#140808;--border:#2a1515;--muted:#7a6060;
+  --text:#e8ddd5;--text-dim:#b09090
+}
+
+/* ── Header ── */
+header{background:#1a0606;border-bottom:1px solid #2a1515;padding-bottom:2rem}
+.header-inner{max-width:900px;margin:0 auto;padding:1.5rem 2rem 0}
+.breadcrumb{font-size:.8rem;color:var(--muted);margin-bottom:1rem}
+.breadcrumb a{color:var(--muted);text-decoration:none}
+.breadcrumb a:hover{color:var(--coral)}
+.breadcrumb span{margin:0 .4rem;opacity:.5}
+.eyebrow{font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--coral);margin-bottom:.5rem}
+header h1{font-family:'Fraunces',serif;font-size:2.4rem;font-weight:700;color:#fff;line-height:1.15;margin-bottom:.5rem}
+header h1 em{color:var(--coral);font-style:italic}
+header .tagline{color:var(--text-dim);font-size:1rem;max-width:560px}
+.header-meta{display:flex;align-items:center;gap:2rem;margin-top:1.5rem;flex-wrap:wrap}
+.days-badge{background:#2a1010;border:1px solid #3a2020;border-radius:8px;padding:.5rem 1rem;font-size:.85rem;color:var(--coral);font-weight:600}
+.progress-wrap{flex:1;min-width:180px}
+.progress-bar-bg{background:#2a1515;border-radius:4px;height:6px;overflow:hidden;margin-bottom:.35rem}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--coral),var(--gold));border-radius:4px;transition:width .4s ease;width:0%}
+.progress-label{font-size:.78rem;color:var(--muted)}
+
+/* ── Main ── */
+main{max-width:900px;margin:0 auto;padding:2rem}
+
+/* ── Copy block (project instructions) ── */
+.section-title{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:600;color:#fff;margin-bottom:.3rem}
+.section-sub{font-size:.85rem;color:var(--muted);margin-bottom:1rem}
+.copy-block{background:#140808;border:1px solid #2a1515;border-radius:10px;overflow:hidden;margin-bottom:2.5rem}
+.copy-block-header{display:flex;justify-content:space-between;align-items:center;padding:.65rem 1.1rem;background:#1c0c0c;border-bottom:1px solid #2a1515}
+.copy-block-label{font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.copy-btn{background:none;border:1px solid #3a2020;border-radius:5px;color:var(--coral);font-size:.78rem;font-family:'Inter',sans-serif;cursor:pointer;padding:.25rem .75rem;transition:all .15s}
+.copy-btn:hover{background:#2a1010;border-color:var(--coral)}
+.copy-btn.copied{color:var(--green);border-color:var(--green)}
+.copy-block pre{padding:1.2rem 1.4rem;font-size:.79rem;line-height:1.75;color:#d0c0b0;white-space:pre-wrap;word-break:break-word;font-family:'Courier New',monospace}
+
+/* ── How to use ── */
+details.how-to{background:#140808;border:1px solid #2a1515;border-radius:10px;overflow:hidden;margin-bottom:2.5rem}
+details.how-to summary{padding:1rem 1.4rem;cursor:pointer;font-weight:600;font-size:.95rem;color:var(--text);list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none}
+details.how-to summary::-webkit-details-marker{display:none}
+details.how-to summary::after{content:'▾';font-size:.8rem;color:var(--muted);transition:transform .2s}
+details.how-to[open] summary::after{transform:rotate(-180deg)}
+.how-to-body{padding:0 1.4rem 1.4rem}
+.flow-step{display:flex;gap:1rem;margin-bottom:1.1rem;align-items:flex-start}
+.step-num{background:var(--coral);color:#fff;border-radius:50%;width:24px;height:24px;min-width:24px;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;margin-top:.18rem}
+.step-text strong{display:block;font-size:.9rem;margin-bottom:.15rem;color:var(--text)}
+.step-text p{font-size:.82rem;color:var(--text-dim)}
+.flow-box{background:#1c0c0c;border:1px solid #2a1515;border-radius:8px;padding:1rem 1.2rem;margin-top:1.2rem}
+.flow-box h4{font-size:.74rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.7rem}
+.flow-items{display:flex;flex-wrap:wrap;gap:.5rem}
+.flow-chip{background:#2a1515;border-radius:5px;padding:.22rem .6rem;font-size:.74rem;color:var(--text-dim)}
+
+/* ── Divider ── */
+.divider{border:none;border-top:1px solid #2a1515;margin:2.5rem 0}
+
+/* ── Chapter section ── */
+.chapter-section{margin-bottom:2.5rem}
+.chapter-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.2rem;padding-bottom:.7rem;border-bottom:1px solid #2a1515}
+.chapter-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.chapter-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.chapter-name{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:600;color:#fff}
+
+/* ── Session card ── */
+.session-card{background:#140808;border:1px solid #2a1515;border-radius:10px;overflow:hidden;margin-bottom:.75rem;transition:border-color .15s}
+.session-card:hover{border-color:#3a2020}
+.session-card.done{opacity:.55}
+.session-card-top{display:flex;align-items:flex-start;gap:1rem;padding:1rem 1.2rem .7rem}
+.session-num{width:34px;height:34px;min-width:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.71rem;font-weight:700;color:#fff;margin-top:.1rem;font-family:'Courier New',monospace}
+.session-info{flex:1}
+.session-title{font-weight:600;font-size:.97rem;color:var(--text);margin-bottom:.2rem}
+.session-meta{font-size:.75rem;color:var(--muted)}
+.session-status{font-size:.7rem;padding:.18rem .55rem;border-radius:5px;font-weight:600;letter-spacing:.04em;white-space:nowrap;margin-left:auto;align-self:flex-start;margin-top:.1rem}
+.status-none{background:#1c1010;color:var(--muted)}
+.status-started{background:#1a180a;color:var(--gold)}
+.status-done{background:#0a1a0a;color:var(--green)}
+.prereqs{padding:0 1.2rem .6rem 4rem;font-size:.78rem;color:var(--text-dim)}
+.prereqs-label{text-transform:uppercase;letter-spacing:.06em;font-size:.66rem;color:var(--muted);margin-bottom:.25rem;font-weight:600}
+.prereqs ul{list-style:none;padding:0}
+.prereqs li{padding:.1rem 0}
+.prereqs li::before{content:'→ ';color:var(--muted)}
+.session-actions{display:flex;align-items:center;gap:.5rem;padding:.65rem 1.2rem .9rem 4rem;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:.3rem;padding:.32rem .75rem;border-radius:6px;font-size:.78rem;font-family:'Inter',sans-serif;font-weight:500;cursor:pointer;text-decoration:none;transition:all .15s;border:1px solid transparent}
+.btn-prereading{background:#1c0c0c;border-color:#3a2020;color:var(--text)}
+.btn-prereading:hover{background:#2a1010;border-color:var(--coral);color:#fff}
+.btn-sg{background:#1a1010;border-color:#2a1515;color:var(--text-dim)}
+.btn-sg:hover{border-color:#3a2525;color:var(--text)}
+.btn-copy{background:var(--coral);color:#fff;border-color:var(--coral)}
+.btn-copy:hover{filter:brightness(1.1)}
+.btn-copy.copied{background:var(--green);border-color:var(--green)}
+.btn-done-toggle{margin-left:auto;background:none;border:1px solid #2a1515;color:var(--muted);padding:.3rem .7rem;border-radius:6px;font-size:.76rem;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s}
+.btn-done-toggle:hover{border-color:var(--green);color:var(--green)}
+.btn-done-toggle.is-done{border-color:var(--green);color:var(--green);background:#0a1a0a}
+
+/* ── Footer ── */
+footer{text-align:center;padding:2rem;font-size:.78rem;color:var(--muted);border-top:1px solid #2a1515;margin-top:2rem}
+
+@media(max-width:640px){
+  header h1{font-size:1.8rem}
+  .session-card-top{flex-wrap:wrap}
+  .session-actions{padding-left:1.2rem}
+  .prereqs{padding-left:1.2rem}
+}
+</style>
+<style>
+/* ── Light theme override ── */
+body{background:#faf7f5;color:#1a0606}
+header{background:#fff;border-bottom-color:#e8d5cc}
+header h1,h1{color:#1a0606}
+header .tagline,header p.tagline{color:#7a5050}
+.breadcrumb a{color:#9a6060}
+.eyebrow-label{color:#9a6060}
+/* Cards and surfaces */
+.content-section,.sidebar-card,.copy-block,.session-card,
+details.how-to,.how-to,.img-placeholder{background:#fff;border-color:#e8d5cc}
+.copy-block-header{background:#fdf5f0;border-bottom-color:#e8d5cc}
+.copy-block pre{background:#fdf5f0;color:#4a2020}
+.how-to-body{background:#fff}
+.flow-box{background:#fdf5f0;border-color:#e8d5cc}
+.flow-chip{background:#f0e5e0;color:#7a5050}
+/* Sidebar */
+.sidebar-textarea{background:#fdf5f0;border-color:#e8d5cc;color:#3a2020}
+.sidebar-textarea::placeholder{color:#c09090}
+.sidebar-textarea:focus{border-color:var(--session-color)}
+.card-hint,.sidebar-hint{color:#9a6060}
+/* Typography — scoped away from story section */
+.chapter-name,.session-title,.content-section h2,.target-qs h2,
+.overview-block h2,.sidebar-card-title+h2{color:#1a0606}
+.sidebar-card-title,.copy-block-label,.prereqs-label,.img-label,
+.session-meta,.flow-box h4,.chapter-label,.progress-label,.detail-row .dl,
+.eyebrow-label{color:#9a6060}
+.chapter-name{color:#1a0606}
+.prereqs li,.prereq-list li,.detail-row .dv{color:#5a3030}
+.target-intro,.section-sub{color:#9a6060}
+.step-text strong{color:#1a0606}
+.step-text p,.how-to-body p{color:#5a3030}
+.overview-block p,.content-section p{color:#5a3030}
+/* Borders and dividers */
+.chapter-header{border-bottom-color:#e8d5cc}
+.detail-row{border-bottom-color:#f0e0d8}
+.detail-row .dl{color:#9a6060}
+.q-list li{color:#5a3030;border-bottom-color:#f0e0d8}
+.prereq-list li{border-bottom-color:#f0e0d8;color:#5a3030}
+.divider{border-top-color:#e8d5cc}
+/* Page nav */
+.page-nav{border-top-color:#e8d5cc}
+.nav-link{color:#9a6060;border-color:#e8d5cc}
+.nav-link:hover{color:var(--session-color);border-color:var(--session-color)}
+.nav-link.hub{color:#7a5050}
+.nav-disabled{color:#c0a8a0}
+footer{color:#9a7070;border-top-color:#e8d5cc}
+/* Progress and status */
+.days-badge{background:#fff;border-color:#e8d5cc}
+.progress-bar-bg{background:#f0ddd8}
+.status-none{background:#f5ecec;color:#9a7070}
+.status-started{background:#fdf5e0;color:#8a6a20}
+/* Buttons */
+.btn-prereading{background:#fdf5f0;border-color:#e8d5cc;color:#4a2020}
+.btn-prereading:hover{background:#f5e8e0;border-color:var(--session-color);color:#1a0606}
+.btn-sg{background:#faf5f5;border-color:#ede0d8;color:#7a5050}
+.btn-sg:hover{border-color:#c0a098}
+.btn-done-toggle{border-color:#e8d5cc;color:#9a7070}
+.btn-done-toggle:hover{border-color:var(--session-color);color:var(--session-color)}
+.btn-done-toggle.is-done{border-color:var(--green,#5ab288);color:var(--green,#5ab288);background:#f0f8f0}
+.session-card:hover{border-color:#c8a898}
+.session-card.done{opacity:.5}
+/* Image prompt */
+.img-prompt-text{background:#fdf5f0;border-color:#e8d5cc;color:#7a5050}
+.img-placeholder{border-color:#e8d5cc}
+.img-icon{opacity:.25}
+.sg-link{background:#fdf5f0;border-color:#e8d5cc}
+.sg-link:hover{background:#f5e8e0;border-color:var(--session-color)}
+/* Preserve story section darkness */
+.story-section{background:linear-gradient(135deg,#1a0a08,#120606)!important}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <nav class="breadcrumb">
+      <a href="../study-guides/nse7-ef-study-guide-hub.html">EF-NSE7 Hub</a>
+      <span>›</span>
+      Socratic Study Plan
+    </nav>
+    <div class="eyebrow">33 Sessions · NSE7 Enterprise Firewall 7.6 · Exam June 30, 2026</div>
+    <h1>NSE7 Socratic <em>Study Plan</em></h1>
+    <p class="tagline">Story-driven Socratic sessions — one subtopic at a time, from first principles to exam-ready.</p>
+    <div class="header-meta">
+      <div class="days-badge" id="daysBadge">— days until exam</div>
+      <div class="progress-wrap">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+        <div class="progress-label" id="progressLabel">0 / 33 sessions complete</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ══════════════════════════════════════════
+       PROJECT INSTRUCTIONS
+  ══════════════════════════════════════════ -->
+  <div class="section-title" style="margin-bottom:.3rem">Claude Project Instructions</div>
+  <div class="section-sub">Paste this into the Custom Instructions field of your Claude Project — once, and you're set for all 33 sessions.</div>
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <span class="copy-block-label">Custom Instructions · Claude Project</span>
+      <button class="copy-btn" id="projCopyBtn" onclick="copyProject()">Copy</button>
+    </div>
+    <pre id="projectInstructions">PROJECT CONTEXT
+You are my dedicated Socratic tutor for the Fortinet NSE7 Enterprise Firewall exam (EF 7.6).
+My exam is on June 30, 2026. I am working through a structured 33-session Socratic study
+program covering all 10 exam chapters.
+
+MY LEARNING STYLE
+- I learn best through Socratic dialogue — ask me questions before explaining anything
+- Never give me an answer before first asking what I already know or think
+- I have a family at home, so sessions need to feel focused and manageable
+- I like engaging storytelling at the start of each session to prime curiosity
+- Correct me clearly and directly when I'm wrong — do not soften it
+- I want to know when something is exam-critical
+
+SESSION STRUCTURE
+Each session prompt I paste specifies today's topic and flow. Always follow the flow
+in the exact order given:
+  1.  Opening story (real-world incident about the topic)
+  2.  Spaced recall from the previous session (or calibration for session 1)
+  3.  Brief orientation to today's topic
+  4.  Socratic teaching with checkpoints after each concept
+  5.  Misconception correction — always ask me to restate correctly
+  6.  Comparison drills for commonly confused exam concepts
+  7.  NSE7 relevance flagging (use ⚑ NSE7 inline for exam-focus areas)
+  8.  Final 5-question short-answer quiz
+
+EXAM COVERAGE AREAS (NSE7 EF 7.6)
+- FortiManager: ADOMs, policy packages, dynamic objects, scripts, device registration
+- VLANs and VDOMs: 802.1Q tagging, VDOM modes, inter-VDOM links and routing
+- High Availability: FGCP heartbeat/election/failover, FGSP session sync, VRRP
+- Dynamic routing: OSPF areas/LSA types/DR-BDR, BGP attributes/path selection, redistribution
+- Security profiles: SSL/SSH deep inspection, Web Filter, Application Control, IPS signatures
+- IPsec and ADVPN: IKE phases, main vs aggressive mode, PFS, proxy IDs, shortcut tunnels
+- Security Fabric: topology, downstream trust, SDN/cloud connectors, automation stitches
+- Hardware acceleration: NP/CP processors, session offloading, flow vs proxy, performance tools
+
+IMPORTANT RULES
+- Always wait for my answer before giving the correct one — never skip ahead
+- Follow the session flow in the exact order specified in the prompt
+- Use ⚑ NSE7 inline to flag exam-critical concepts as we encounter them
+- For misconceptions: say "Not quite —" then correct clearly, then ask me to restate it
+- For the final quiz: show all 5 questions at once, wait for all answers, then grade and explain each
+- Stay on today's subtopic unless I explicitly ask to go deeper or sideways
+- End every session with a score (X/5) and one sentence on where to focus review</pre>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       HOW TO USE
+  ══════════════════════════════════════════ -->
+  <details class="how-to" style="margin-bottom:2.5rem">
+    <summary>How to Use This Study Plan</summary>
+    <div class="how-to-body">
+      <div style="height:.8rem"></div>
+      <div class="flow-step">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <strong>Set up your Claude Project once</strong>
+          <p>Create a Claude Project (not a regular chat). Copy the block above and paste it into the Project's Custom Instructions. This sets the persistent tutor context — you only do this once.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <strong>Pick a session and do the pre-reading (5–10 min)</strong>
+          <p>Start at Session 01 and work sequentially. Click "Pre-Reading" to open the session's prep page. Read the opening story, skim the topic overview, and review the target questions so you know what you're aiming for. Write down any questions you want to bring to Claude.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <strong>Start the Claude session</strong>
+          <p>Open your Claude Project. Click "Copy Prompt" on the session card below — the prompt is generated fresh with today's day count. Paste it into Claude and send. Claude will open with the story and follow the full session flow.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">4</div>
+        <div class="step-text">
+          <strong>Work through the flow — let Claude lead</strong>
+          <p>Don't skip steps. Let Claude ask the questions. Blurt everything you know in the recall phase. Accept corrections without defending wrong answers. The quiz at the end is honest feedback — treat it as a signal, not a grade.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">5</div>
+        <div class="step-text">
+          <strong>Reflect and mark done</strong>
+          <p>After the quiz, come back here and click "Mark Done". Go back to the pre-reading page and write your post-session notes while they're fresh. Then rest — or go straight to the next session if you have energy.</p>
+        </div>
+      </div>
+      <div class="flow-box">
+        <h4>Session Flow — Claude follows this order every time</h4>
+        <div class="flow-items">
+          <span class="flow-chip">① Story</span>
+          <span class="flow-chip">② Spaced Recall</span>
+          <span class="flow-chip">③ Orientation</span>
+          <span class="flow-chip">④ Socratic Teaching</span>
+          <span class="flow-chip">⑤ Checkpoints</span>
+          <span class="flow-chip">⑥ Misconception Correction</span>
+          <span class="flow-chip">⑦ Comparison Drills</span>
+          <span class="flow-chip">⑧ ⚑ NSE7 Flags</span>
+          <span class="flow-chip">⑨ Stay On Topic</span>
+          <span class="flow-chip">⑩ Final Quiz (5 Q)</span>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <hr class="divider"/>
+
+  <!-- ══════════════════════════════════════════
+       SESSIONS (JS-rendered)
+  ══════════════════════════════════════════ -->
+  <div id="sessionsContainer"></div>
+
+</main>
+
+<footer>EF-NSE7 · Socratic Study Plan · 33 Sessions · Exam June 30, 2026</footer>
+
+<script>
+/* ── Page transitions ── */
+window.addEventListener('load',()=>{
+  document.body.style.opacity='1';
+  if(sessionStorage.getItem('pt')){sessionStorage.removeItem('pt');}
+});
+document.querySelectorAll('a[href]').forEach(a=>{
+  if(!a.getAttribute('href').startsWith('#')){
+    a.addEventListener('click',()=>sessionStorage.setItem('pt','1'));
+  }
+});
+
+/* ── Chapter colors ── */
+const CH_COLORS={
+  '01':'#e07050','02':'#c476b8','03':'#5aa2d2','04':'#5ab288',
+  '05':'#d2a541','06':'#e87070','07':'#6a8ad0','08':'#52b4c4',
+  '09':'#9878c8','10':'#9aba6a'
+};
+
+/* ── Sessions data ── */
+const SESSIONS=[
+  {id:1,ch:'01',chTitle:'Network Security Architecture',
+   title:'Enterprise Firewall Solution',
+   subtopic:'Understand the Enterprise Firewall Solution',
+   prereqs:['Basic FortiGate administration experience','Familiarity with firewall zones and perimeter models','General understanding of firewall policy concepts'],
+   prevTitle:null,
+   sgPath:'../study-guides/Chapter 01 - Network Security Architecture/subtopic-01-enterprise-firewall-solution.html',
+   prPath:'session-01-enterprise-firewall-solution.html'},
+
+  {id:2,ch:'01',chTitle:'Network Security Architecture',
+   title:'Design Secure Networks Using Fortinet',
+   subtopic:'Design Secure Networks Using Fortinet Solutions',
+   prereqs:['Session 01 — Enterprise Firewall Solution'],
+   prevTitle:'Enterprise Firewall Solution (Session 01)',
+   sgPath:'../study-guides/Chapter 01 - Network Security Architecture/subtopic-02-design-secure-networks.html',
+   prPath:'session-02-design-secure-networks.html'},
+
+  {id:3,ch:'02',chTitle:'Central Management',
+   title:'FortiManager Architecture',
+   subtopic:'Examine FortiManager Architecture — ADOMs, device registration, policy packages',
+   prereqs:['Sessions 01–02','Basic awareness of FortiManager as a central management platform'],
+   prevTitle:'Design Secure Networks (Session 02)',
+   sgPath:'../study-guides/Chapter 02 - Central Management/subtopic-01-examine-fortimanager-architecture.html',
+   prPath:'session-03-fortimanager-architecture.html'},
+
+  {id:4,ch:'02',chTitle:'Central Management',
+   title:'Dynamic Objects in FortiManager',
+   subtopic:'Explore Dynamic Objects — dynamic address objects, metadata variables, mapping to devices',
+   prereqs:['Session 03 — FortiManager Architecture'],
+   prevTitle:'FortiManager Architecture (Session 03)',
+   sgPath:'../study-guides/Chapter 02 - Central Management/subtopic-02-explore-dynamic-objects.html',
+   prPath:'session-04-dynamic-objects.html'},
+
+  {id:5,ch:'02',chTitle:'Central Management',
+   title:'Scripts on FortiManager',
+   subtopic:'Use Scripts on FortiManager — CLI scripts, TCL scripts, script groups, run targets',
+   prereqs:['Sessions 03–04','Basic CLI familiarity on FortiGate'],
+   prevTitle:'Dynamic Objects (Session 04)',
+   sgPath:'../study-guides/Chapter 02 - Central Management/subtopic-03-use-scripts.html',
+   prPath:'session-05-scripts-fortimanager.html'},
+
+  {id:6,ch:'03',chTitle:'VLANs and VDOMs',
+   title:'Configure VLANs',
+   subtopic:'Configure VLANs on FortiGate — 802.1Q tagging, VLAN interfaces, aggregate and redundant links',
+   prereqs:['Understanding of 802.1Q VLAN tagging','Basic switch and trunk port concepts'],
+   prevTitle:'Scripts on FortiManager (Session 05)',
+   sgPath:'../study-guides/Chapter 03 - VLANs and VDOMs/subtopic-01-configure-vlans.html',
+   prPath:'session-06-configure-vlans.html'},
+
+  {id:7,ch:'03',chTitle:'VLANs and VDOMs',
+   title:'Configure VDOMs',
+   subtopic:'Configure VDOMs — VDOM modes, management VDOM, per-VDOM administrators and resource limits',
+   prereqs:['Session 06 — VLANs','Understanding of virtual routing and traffic separation concepts'],
+   prevTitle:'Configure VLANs (Session 06)',
+   sgPath:'../study-guides/Chapter 03 - VLANs and VDOMs/subtopic-02-implement-enterprise-vdoms.html',
+   prPath:'session-07-configure-vdoms.html'},
+
+  {id:8,ch:'03',chTitle:'VLANs and VDOMs',
+   title:'Inter-VDOM Routing',
+   subtopic:'Inter-VDOM Routing — VDOM link types, NPU VDOM links, routing and policy between VDOMs',
+   prereqs:['Sessions 06–07','Basic static routing knowledge'],
+   prevTitle:'Configure VDOMs (Session 07)',
+   sgPath:'../study-guides/Chapter 03 - VLANs and VDOMs/subtopic-03-inter-vdom-routing.html',
+   prPath:'session-08-inter-vdom-routing.html'},
+
+  {id:9,ch:'04',chTitle:'High Availability',
+   title:'Configure HA Clusters',
+   subtopic:'Configure HA Clusters — Active/Active vs Active/Passive, HA groups, initial cluster formation',
+   prereqs:['Sessions 01–02 (network architecture)','Basic understanding of redundancy and failover concepts'],
+   prevTitle:'Inter-VDOM Routing (Session 08)',
+   sgPath:'../study-guides/Chapter 04 - High Availability/subtopic-01-configure-ha-clusters.html',
+   prPath:'session-09-ha-clusters.html'},
+
+  {id:10,ch:'04',chTitle:'High Availability',
+   title:'FGCP — The HA Protocol',
+   subtopic:'FGCP — heartbeat interfaces, master election, monitored ports, session synchronization, failover triggers',
+   prereqs:['Session 09 — HA cluster modes and initial setup'],
+   prevTitle:'HA Cluster Setup (Session 09)',
+   sgPath:'../study-guides/Chapter 04 - High Availability/subtopic-02-fgcp-and-fgsp.html',
+   prPath:'session-10-fgcp.html'},
+
+  {id:11,ch:'04',chTitle:'High Availability',
+   title:'FGSP — Standalone Session Sync',
+   subtopic:'FGSP — standalone cluster, asymmetric routing scenarios, session sync without FGCP',
+   prereqs:['Session 10 — FGCP protocol details'],
+   prevTitle:'FGCP Protocol (Session 10)',
+   sgPath:'../study-guides/Chapter 04 - High Availability/subtopic-02-fgcp-and-fgsp.html',
+   prPath:'session-11-fgsp.html'},
+
+  {id:12,ch:'04',chTitle:'High Availability',
+   title:'VRRP for FortiGate',
+   subtopic:'VRRP — virtual router redundancy, master/backup election, preemption, FortiGate-specific config',
+   prereqs:['Sessions 09–11 — HA fundamentals','Basic IP routing concepts'],
+   prevTitle:'FGSP (Session 11)',
+   sgPath:'../study-guides/Chapter 04 - High Availability/subtopic-03-vrrp.html',
+   prPath:'session-12-vrrp.html'},
+
+  {id:13,ch:'05',chTitle:'Dynamic Routing Protocols',
+   title:'Configure OSPF',
+   subtopic:'Configure OSPF — areas, LSA types, neighbor adjacency, DR/BDR election, route filtering',
+   prereqs:['Solid understanding of IP routing (subnets, routing tables, administrative distance)','Familiarity with link-state routing concept'],
+   prevTitle:'VRRP (Session 12)',
+   sgPath:'../study-guides/Chapter 05 - Dynamic Routing Protocols/subtopic-01-configure-ospf.html',
+   prPath:'session-13-ospf.html'},
+
+  {id:14,ch:'05',chTitle:'Dynamic Routing Protocols',
+   title:'BGP Fundamentals',
+   subtopic:'Configure BGP — AS numbers, iBGP vs eBGP, peering setup, NLRI advertisement, next-hop self',
+   prereqs:['Session 13 — OSPF (establishes routing foundation)','Understanding of autonomous systems and path-vector concept'],
+   prevTitle:'Configure OSPF (Session 13)',
+   sgPath:'../study-guides/Chapter 05 - Dynamic Routing Protocols/subtopic-02-configure-bgp.html',
+   prPath:'session-14-bgp-fundamentals.html'},
+
+  {id:15,ch:'05',chTitle:'Dynamic Routing Protocols',
+   title:'BGP Advanced — Path Selection & Filtering',
+   subtopic:'BGP path selection — weight, LOCAL_PREF, AS-path, MED, origin; route maps and prefix-list filtering',
+   prereqs:['Session 14 — BGP Fundamentals'],
+   prevTitle:'BGP Fundamentals (Session 14)',
+   sgPath:'../study-guides/Chapter 05 - Dynamic Routing Protocols/subtopic-02-configure-bgp.html',
+   prPath:'session-15-bgp-advanced.html'},
+
+  {id:16,ch:'05',chTitle:'Dynamic Routing Protocols',
+   title:'Route Redistribution',
+   subtopic:'Route Redistribution — OSPF ↔ BGP ↔ connected/static, redistribution maps, metric translation',
+   prereqs:['Sessions 13–15 — OSPF and BGP'],
+   prevTitle:'BGP Advanced (Session 15)',
+   sgPath:'../study-guides/Chapter 05 - Dynamic Routing Protocols/subtopic-03-route-redistribution.html',
+   prPath:'session-16-route-redistribution.html'},
+
+  {id:17,ch:'06',chTitle:'Security Profiles',
+   title:'SSL/SSH Inspection',
+   subtopic:'SSL/SSH Inspection — deep inspection, certificate inspection, CA config, exemptions, SSH proxy',
+   prereqs:['Basic PKI and SSL/TLS concepts','Understanding of certificate chains and CA trust anchors'],
+   prevTitle:'Route Redistribution (Session 16)',
+   sgPath:'../study-guides/Chapter 06 - Security Profiles/subtopic-01-ssl-ssh-inspection.html',
+   prPath:'session-17-ssl-inspection.html'},
+
+  {id:18,ch:'06',chTitle:'Security Profiles',
+   title:'Web Filter & Application Control',
+   subtopic:'Web Filtering and Application Control — FortiGuard categories, application signatures, flow vs proxy mode',
+   prereqs:['Session 17 — SSL Inspection (required for inspecting encrypted traffic)'],
+   prevTitle:'SSL/SSH Inspection (Session 17)',
+   sgPath:'../study-guides/Chapter 06 - Security Profiles/subtopic-02-web-filter-app-control.html',
+   prPath:'session-18-web-filter-app-control.html'},
+
+  {id:19,ch:'06',chTitle:'Security Profiles',
+   title:'IPS Integration',
+   subtopic:'Integrate IPS — signature-based detection, anomaly-based detection, IPS profiles, rate-based IPS',
+   prereqs:['Sessions 17–18','Basic understanding of intrusion detection vs prevention'],
+   prevTitle:'Web Filter & App Control (Session 18)',
+   sgPath:'../study-guides/Chapter 06 - Security Profiles/subtopic-03-integrate-ips.html',
+   prPath:'session-19-ips-integration.html'},
+
+  {id:20,ch:'07',chTitle:'IPsec',
+   title:'Configure IPsec Tunnels',
+   subtopic:'Configure IPsec tunnels — policy-based vs route-based, FortiGate tunnel interface and phase configuration',
+   prereqs:['Basic VPN concepts (encryption, authentication, tunneling)','Familiarity with symmetric and asymmetric encryption'],
+   prevTitle:'IPS Integration (Session 19)',
+   sgPath:'../study-guides/Chapter 07 - IPsec/subtopic-01-configure-ipsec-tunnels.html',
+   prPath:'session-20-ipsec-tunnels.html'},
+
+  {id:21,ch:'07',chTitle:'IPsec',
+   title:'IKE Phase 1 — Authentication & Proposals',
+   subtopic:'IKE Phase 1 — main mode vs aggressive mode, PSK vs certificate auth, DH groups, SA proposal matching',
+   prereqs:['Session 20 — IPsec tunnel types and setup'],
+   prevTitle:'IPsec Tunnel Config (Session 20)',
+   sgPath:'../study-guides/Chapter 07 - IPsec/subtopic-02-ike-and-phase-negotiation.html',
+   prPath:'session-21-ike-phase1.html'},
+
+  {id:22,ch:'07',chTitle:'IPsec',
+   title:'IKE Phase 2 & SA Negotiation',
+   subtopic:'IKE Phase 2 — quick mode, PFS, IPsec SA lifetime, proxy IDs and traffic selectors',
+   prereqs:['Session 21 — IKE Phase 1'],
+   prevTitle:'IKE Phase 1 (Session 21)',
+   sgPath:'../study-guides/Chapter 07 - IPsec/subtopic-02-ike-and-phase-negotiation.html',
+   prPath:'session-22-ike-phase2.html'},
+
+  {id:23,ch:'07',chTitle:'IPsec',
+   title:'IPsec Troubleshooting',
+   subtopic:'IPsec Troubleshooting — debug commands, SA state machine, common failure points, diagnostic logs',
+   prereqs:['Sessions 20–22 — complete IPsec and IKE knowledge'],
+   prevTitle:'IKE Phase 2 (Session 22)',
+   sgPath:'../study-guides/Chapter 07 - IPsec/subtopic-03-ipsec-troubleshooting.html',
+   prPath:'session-23-ipsec-troubleshooting.html'},
+
+  {id:24,ch:'08',chTitle:'Auto-Discovery VPN',
+   title:'Configure ADVPN',
+   subtopic:'Configure ADVPN — hub-and-spoke architecture, spoke registration, shortcut-eligible tunnel setup',
+   prereqs:['Sessions 20–23 — IPsec fundamentals required','Understanding of hub-spoke VPN topology'],
+   prevTitle:'IPsec Troubleshooting (Session 23)',
+   sgPath:'../study-guides/Chapter 08 - Auto-Discovery VPN/subtopic-01-configure-advpn.html',
+   prPath:'session-24-configure-advpn.html'},
+
+  {id:25,ch:'08',chTitle:'Auto-Discovery VPN',
+   title:'ADVPN Shortcut Tunnels',
+   subtopic:'ADVPN Shortcuts — shortcut request/response flow, spoke-to-spoke dynamic tunnel establishment',
+   prereqs:['Session 24 — ADVPN setup and architecture'],
+   prevTitle:'Configure ADVPN (Session 24)',
+   sgPath:'../study-guides/Chapter 08 - Auto-Discovery VPN/subtopic-02-advpn-shortcuts.html',
+   prPath:'session-25-advpn-shortcuts.html'},
+
+  {id:26,ch:'08',chTitle:'Auto-Discovery VPN',
+   title:'ADVPN with BGP — Setup',
+   subtopic:'ADVPN with BGP — why BGP is used, spoke route advertisement via hub, configuration integration',
+   prereqs:['Sessions 14–15 (BGP required) and Sessions 24–25 (ADVPN required)'],
+   prevTitle:'ADVPN Shortcuts (Session 25)',
+   sgPath:'../study-guides/Chapter 08 - Auto-Discovery VPN/subtopic-03-advpn-with-bgp.html',
+   prPath:'session-26-advpn-bgp-setup.html'},
+
+  {id:27,ch:'08',chTitle:'Auto-Discovery VPN',
+   title:'ADVPN with BGP — Route Propagation',
+   subtopic:'ADVPN BGP route propagation — next-hop handling at hub, shortcut route updates, BGP policies over ADVPN',
+   prereqs:['Session 26 — ADVPN BGP setup'],
+   prevTitle:'ADVPN BGP Setup (Session 26)',
+   sgPath:'../study-guides/Chapter 08 - Auto-Discovery VPN/subtopic-03-advpn-with-bgp.html',
+   prPath:'session-27-advpn-bgp-routes.html'},
+
+  {id:28,ch:'09',chTitle:'Security Fabric',
+   title:'Configure Security Fabric',
+   subtopic:'Configure Security Fabric — root FortiGate, downstream devices, fabric topology, trust and certificates',
+   prereqs:['Sessions 01–02 (network architecture foundation)','Basic FortiAnalyzer awareness helpful'],
+   prevTitle:'ADVPN BGP Routes (Session 27)',
+   sgPath:'../study-guides/Chapter 09 - Security Fabric/subtopic-01-configure-security-fabric.html',
+   prPath:'session-28-security-fabric.html'},
+
+  {id:29,ch:'09',chTitle:'Security Fabric',
+   title:'Fabric Connectors',
+   subtopic:'Fabric Connectors — SDN connectors, cloud provider connectors, dynamic address objects from connectors',
+   prereqs:['Session 28 — Security Fabric topology and trust'],
+   prevTitle:'Security Fabric (Session 28)',
+   sgPath:'../study-guides/Chapter 09 - Security Fabric/subtopic-02-fabric-connectors.html',
+   prPath:'session-29-fabric-connectors.html'},
+
+  {id:30,ch:'09',chTitle:'Security Fabric',
+   title:'Automation Stitches',
+   subtopic:'Automation Stitches — event triggers, conditions, actions, and event-driven security response automation',
+   prereqs:['Sessions 28–29'],
+   prevTitle:'Fabric Connectors (Session 29)',
+   sgPath:'../study-guides/Chapter 09 - Security Fabric/subtopic-03-automation-stitches.html',
+   prPath:'session-30-automation-stitches.html'},
+
+  {id:31,ch:'10',chTitle:'Hardware Acceleration',
+   title:'NP and CP Processors',
+   subtopic:'NP and CP Processors — what each offloads, packet flow through hardware, NP6/NP7 architecture',
+   prereqs:['Basic FortiGate hardware architecture awareness','Understanding of software packet processing pipeline'],
+   prevTitle:'Automation Stitches (Session 30)',
+   sgPath:'../study-guides/Chapter 10 - Hardware Acceleration/subtopic-01-np-and-cp-processors.html',
+   prPath:'session-31-np-cp-processors.html'},
+
+  {id:32,ch:'10',chTitle:'Hardware Acceleration',
+   title:'Offloading Configuration',
+   subtopic:'Hardware Offloading Configuration — NP offload settings, session offload, flow vs proxy mode implications',
+   prereqs:['Session 31 — NP/CP Processors'],
+   prevTitle:'NP/CP Processors (Session 31)',
+   sgPath:'../study-guides/Chapter 10 - Hardware Acceleration/subtopic-02-offloading-configuration.html',
+   prPath:'session-32-offloading-config.html'},
+
+  {id:33,ch:'10',chTitle:'Hardware Acceleration',
+   title:'Performance Monitoring',
+   subtopic:'Performance Monitoring — FortiGate performance CLI tools, traffic shaping, bottleneck identification',
+   prereqs:['Sessions 31–32 — Hardware Acceleration'],
+   prevTitle:'Offloading Config (Session 32)',
+   sgPath:'../study-guides/Chapter 10 - Hardware Acceleration/subtopic-03-performance-monitoring.html',
+   prPath:'session-33-performance-monitoring.html'},
+];
+
+/* ── Exam countdown ── */
+const EXAM_DATE=new Date('2026-06-30T00:00:00');
+function daysLeft(){
+  const now=new Date();now.setHours(0,0,0,0);
+  return Math.max(0,Math.ceil((EXAM_DATE-now)/86400000));
+}
+
+/* ── Progress ── */
+function getStatus(id){return localStorage.getItem('soc-s'+id)||'';}
+function setStatus(id,v){localStorage.setItem('soc-s'+id,v);}
+function completedCount(){return SESSIONS.filter(s=>getStatus(s.id)==='done').length;}
+
+function updateProgress(){
+  const done=completedCount();
+  const pct=Math.round(done/33*100);
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressLabel').textContent=done+' / 33 sessions complete';
+  document.getElementById('daysBadge').textContent=daysLeft()+' days until exam';
+}
+
+/* ── Prompt generator ── */
+function generatePrompt(s){
+  const days=daysLeft();
+  const recallBlock=s.prevTitle
+    ?`2. SPACED RECALL\nBefore anything else, ask me: "What do you remember from our last session on ${s.prevTitle}?" Give me time to blurt everything I can recall. Then tell me what I got right, what I missed, and what I had wrong — before we move on to today's topic.`
+    :`2. CALIBRATION (Session 1 — no prior recall)\nInstead of spaced recall, ask me what I already know about FortiGate and enterprise firewall design generally. Gauge my starting level, then calibrate the depth of your explanations accordingly.`;
+
+  return `You are my Socratic tutor for the Fortinet NSE7 Enterprise Firewall exam (EF 7.6).
+My exam is June 30, 2026. I have ${days} day${days===1?'':'s'} left.
+
+━━━ TODAY'S SESSION ━━━
+Session ${s.id} of 33
+Chapter ${s.ch}: ${s.chTitle}
+Topic: ${s.title}
+Subtopic focus: ${s.subtopic}
+
+━━━ SESSION FLOW — follow in this exact order ━━━
+
+1. STORY (2–3 vivid paragraphs)
+Open with a specific, realistic incident story about what went wrong because "${s.subtopic}" was misconfigured, misunderstood, or overlooked. Name a plausible company type (e.g. "a regional bank", "a hospital network"). Describe what broke, who noticed it, and the exact moment the engineer traced the root cause back to this topic. Make it technically accurate — this story should make me want to understand the concept properly so it never happens to me.
+
+${recallBlock}
+
+3. ORIENTATION (2–3 sentences max)
+Give me a concise overview of what we're covering today and exactly why it matters for NSE7 — what exam scenarios or configuration tasks this topic maps to.
+
+4. SOCRATIC TEACHING
+Guide me through the subtopic using Socratic questioning. Before explaining any concept, ask what I already know or think. Build from fundamentals to specifics. Never explain more than one concept without first checking my understanding. Use analogies for abstract or counterintuitive ideas.
+
+5. CHECKPOINTS
+After each major concept, ask me a checkpoint question and wait for my answer before proceeding. If correct, affirm briefly. If wrong, go to step 6.
+
+6. MISCONCEPTION CORRECTION
+When I'm wrong, say "Not quite —" then give the correct explanation clearly. Ask me to restate it in my own words before continuing.
+
+7. COMPARISON DRILLS
+Identify 1–3 concepts in this subtopic that are commonly confused on the NSE7 exam. Run a quick drill for each: "What's the difference between X and Y?" Wait for my answer before responding.
+
+8. NSE7 FOCUS FLAGS
+Use ⚑ NSE7 inline whenever we touch a concept that is a known exam focus area. Don't overuse it — reserve it for genuinely exam-critical items.
+
+9. STAY ON TOPIC
+Do not go beyond today's subtopic unless I explicitly ask. If a tangent comes up, note it and offer to explore it in a future session.
+
+10. FINAL QUIZ
+End with exactly 5 short-answer questions covering today's session. Present all 5 at once. Wait for all of my answers before responding. Then grade each one, explain what was right or wrong, and give me a final score out of 5 with one sentence on what to review.
+
+━━━ BEGIN ━━━
+Start with the story.`;
+}
+
+/* ── Render ── */
+function render(){
+  updateProgress();
+  const container=document.getElementById('sessionsContainer');
+  const chapters=[...new Set(SESSIONS.map(s=>s.ch))];
+
+  chapters.forEach(ch=>{
+    const chSessions=SESSIONS.filter(s=>s.ch===ch);
+    const color=CH_COLORS[ch]||'#888';
+
+    const sec=document.createElement('div');
+    sec.className='chapter-section';
+    sec.innerHTML=`<div class="chapter-header">
+      <div class="chapter-dot" style="background:${color}"></div>
+      <div>
+        <div class="chapter-label">Chapter ${ch}</div>
+        <div class="chapter-name">${chSessions[0].chTitle}</div>
+      </div>
+    </div>`;
+
+    chSessions.forEach(s=>{
+      const status=getStatus(s.id);
+      const card=document.createElement('div');
+      card.className='session-card'+(status==='done'?' done':'');
+      card.id='session-'+s.id;
+
+      const sLabel=status==='done'?'Done':status==='started'?'In Progress':'Not Started';
+      const sClass=status==='done'?'status-done':status==='started'?'status-started':'status-none';
+      const prereqsHtml=s.prereqs.map(p=>`<li>${p}</li>`).join('');
+      const doneClass=status==='done'?' is-done':'';
+      const doneText=status==='done'?'✓ Done':'Mark Done';
+
+      card.innerHTML=`
+        <div class="session-card-top">
+          <div class="session-num" style="background:${color}">${String(s.id).padStart(2,'0')}</div>
+          <div class="session-info">
+            <div class="session-title">${s.title}</div>
+            <div class="session-meta">Session ${s.id} &nbsp;·&nbsp; Ch ${s.ch}</div>
+          </div>
+          <div class="session-status ${sClass}">${sLabel}</div>
+        </div>
+        <div class="prereqs">
+          <div class="prereqs-label">Prerequisites</div>
+          <ul>${prereqsHtml}</ul>
+        </div>
+        <div class="session-actions">
+          <a class="btn btn-prereading" href="${s.prPath}">📖 Pre-Reading</a>
+          <button class="btn btn-copy" onclick="copyPrompt(this,${s.id})">⎘ Copy Prompt</button>
+          <a class="btn btn-sg" href="${s.sgPath}">📚 Study Guide</a>
+          <button class="btn-done-toggle${doneClass}" onclick="toggleDone(${s.id},this)">${doneText}</button>
+        </div>`;
+      sec.appendChild(card);
+    });
+    container.appendChild(sec);
+  });
+}
+
+function copyPrompt(btn,id){
+  const s=SESSIONS.find(x=>x.id===id);
+  navigator.clipboard.writeText(generatePrompt(s)).then(()=>{
+    const orig=btn.innerHTML;
+    btn.innerHTML='✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(()=>{btn.innerHTML=orig;btn.classList.remove('copied');},2200);
+  });
+}
+
+function copyProject(){
+  const text=document.getElementById('projectInstructions').textContent;
+  const btn=document.getElementById('projCopyBtn');
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent='✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2200);
+  });
+}
+
+function toggleDone(id,btn){
+  const current=getStatus(id);
+  const card=document.getElementById('session-'+id);
+  const statusEl=card.querySelector('.session-status');
+  if(current==='done'){
+    setStatus(id,'');
+    btn.textContent='Mark Done';
+    btn.classList.remove('is-done');
+    card.classList.remove('done');
+    statusEl.textContent='Not Started';
+    statusEl.className='session-status status-none';
+  } else {
+    setStatus(id,'done');
+    btn.textContent='✓ Done';
+    btn.classList.add('is-done');
+    card.classList.add('done');
+    statusEl.textContent='Done';
+    statusEl.className='session-status status-done';
+  }
+  updateProgress();
+}
+
+render();
+</script>
+</body>
+</html>

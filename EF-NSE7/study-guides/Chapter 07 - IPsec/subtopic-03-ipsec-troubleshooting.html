@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPsec Troubleshooting — EF-NSE7 Ch07</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#fff5f5;--surface:#ffffff;--surface-2:#fef2f2;--border:#f0c8c8;--border-dim:#fde8e8;
+  --text:#1a0606;--text-soft:#4a1212;--text-muted:#8a3a3a;
+  --red:#c0392b;--red-vivid:#e03e2d;--red-glow:rgba(192,57,43,0.07);--red-dim:#f8b4b4;
+  --red-deep:#7f1d1d;--red-light:#fef2f2;--red-border:#f8b4b4;
+  --green:#1a7c4a;--green-light:#d4f0e0;--green-border:#a7e0c0;
+  --amber:#b45309;--amber-light:#fef9c3;--amber-border:#fde68a;
+}
+html{scroll-behavior:smooth;}
+html.pt-init body{opacity:0;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+header{padding:48px 60px 36px;background:#1a0606;display:flex;align-items:flex-end;gap:32px;}
+.header-left{flex:1;}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);letter-spacing:0.08em;margin-bottom:12px;flex-wrap:wrap;}
+.breadcrumb a{color:#e87070;text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.breadcrumb-sep{color:rgba(232,112,112,0.35);}
+.header-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(232,112,112,0.1);border:1px solid rgba(232,112,112,0.25);padding:5px 14px;border-radius:20px;font-size:11px;color:#e87070;letter-spacing:0.08em;margin-bottom:14px;}
+.dot-live{width:6px;height:6px;background:#e87070;border-radius:50%;display:inline-block;animation:blink 2.4s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+header h1{font-family:'Fraunces',serif;font-size:44px;font-weight:700;line-height:1.0;color:#fff;margin-bottom:10px;}
+header h1 em{font-style:italic;font-weight:400;color:#e87070;}
+header p{font-size:13px;color:rgba(255,255,255,0.42);margin-top:10px;line-height:1.7;}
+
+.motivation-banner{padding:20px 60px;min-height:84px;display:flex;flex-direction:column;justify-content:center;border-bottom:1px solid var(--border);background:var(--surface);}
+.motivation-text{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--text);}
+.motivation-text em{font-style:italic;color:var(--red);}
+.motivation-sub{font-size:12px;color:var(--text-muted);line-height:1.7;margin-top:4px;}
+
+.top-panels{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+.top-panels .qpanel{border-bottom:none;border-right:1px solid var(--border);}
+.top-panels .qpanel-header{padding-left:32px;padding-right:32px;}
+.top-panels .qpanel-body{padding-left:32px;padding-right:32px;}
+.qpanel{background:var(--surface);}
+.qpanel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 20px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.qpanel-header:hover,.qpanel-header.open{background:var(--surface-2);}
+.qpanel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.qpanel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.qpanel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.qpanel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.qpanel-body{display:none;padding:0 20px 22px;}
+.qpanel-body.open{display:block;}
+.notes-panel{background:var(--surface);}
+.notes-panel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 32px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.notes-panel-header:hover,.notes-panel-header.open{background:var(--surface-2);}
+.notes-panel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.notes-panel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.notes-panel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.notes-panel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.notes-panel-body{display:none;padding:0 32px 22px;}
+.notes-panel-body.open{display:block;}
+.q-group{margin-bottom:16px;}
+.q-group-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+.q-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-dim);}
+.q-item:last-child{border-bottom:none;}
+.q-num{font-size:10px;font-weight:700;color:var(--red);min-width:16px;margin-top:2px;}
+.q-text{font-size:12px;color:var(--text-soft);line-height:1.5;flex:1;}
+.q-del{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 4px;margin-top:1px;}
+.q-del:hover{color:var(--red);}
+.no-questions{font-size:12px;color:var(--text-muted);padding:8px 0;}
+.btn-add-q{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-q:hover{opacity:0.85;}
+
+.section-nav{position:sticky;top:0;z-index:90;display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);padding:0 32px;overflow-x:auto;}
+.nav-tab{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:12px 18px;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--red);border-bottom-color:var(--red);}
+
+main{display:grid;grid-template-columns:1fr 320px;gap:0;align-items:start;max-width:1200px;margin:0 auto;padding:0;}
+.main-content{padding:36px 40px 60px 60px;}
+.sidebar{padding:32px 24px 60px 20px;position:sticky;top:57px;max-height:calc(100vh - 57px);overflow-y:auto;}
+
+.section-block{margin-bottom:48px;}
+.section-label{font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.section-block h2{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1.15;margin-bottom:16px;padding-left:16px;border-left:3px solid var(--red);}
+.section-block h2 em{font-style:italic;font-weight:400;color:var(--red);}
+.section-block p{font-size:14px;line-height:1.8;color:var(--text-soft);margin-bottom:14px;}
+.section-block p strong{color:var(--text);font-weight:600;}
+.section-block p em{color:var(--red);font-style:italic;}
+.section-block ul,.section-block ol{padding-left:22px;margin-bottom:14px;}
+.section-block li{font-size:14px;line-height:1.75;color:var(--text-soft);margin-bottom:4px;}
+.section-block li strong{color:var(--text);font-weight:600;}
+
+.callout{border-left:3px solid var(--red-border);background:var(--red-light);border-radius:0 10px 10px 0;padding:12px 18px;margin:16px 0;font-size:13.5px;line-height:1.65;color:var(--text-soft);}
+.callout strong{color:var(--text);}
+.callout-warn{border-left-color:var(--amber-border);background:var(--amber-light);}
+.callout-info{border-left-color:var(--green-border);background:var(--green-light);}
+
+.section-img-wrap{margin:0 0 20px;display:flex;flex-direction:column;align-items:center;}
+.section-img{width:260px;max-width:100%;border-radius:12px;cursor:zoom-in;transition:width 0.3s ease;border:1px solid var(--border);display:block;}
+.section-img.si-expanded{width:100%;cursor:zoom-out;border-radius:16px;}
+.si-placeholder{display:none;width:260px;max-width:100%;border:2px dashed var(--border);border-radius:12px;background:var(--surface-2);padding:14px 16px;flex-direction:column;align-items:flex-start;gap:8px;}
+.si-placeholder.si-show{display:flex;}
+.si-filename{font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+
+.code-block{background:#1a0606;border-radius:12px;padding:20px 24px;margin:16px 0;overflow-x:auto;}
+.code-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#e87070;margin-bottom:10px;}
+.code-block pre{margin:0;}
+.code-block code{font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:rgba(255,255,255,0.82);}
+
+.socratic-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:16px;border-top:3px solid var(--red);}
+.socratic-header{display:flex;align-items:center;gap:8px;margin-bottom:0;cursor:pointer;user-select:none;}
+.socratic-header::after{content:'▸ Expand';margin-left:auto;font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'Inter',sans-serif;}
+.socratic-block.soc-open .socratic-header{margin-bottom:10px;}
+.socratic-block.soc-open .socratic-header::after{content:'▾ Collapse';}
+.socratic-block:not(.soc-open) .socratic-insight,
+.socratic-block:not(.soc-open) .socratic-questions,
+.socratic-block:not(.soc-open) .answer-area{display:none;}
+.socratic-icon{font-size:17px;flex-shrink:0;}
+.socratic-label{font-size:9px;font-weight:700;letter-spacing:0.18em;color:var(--text-muted);}
+.socratic-insight{font-size:13px;color:var(--text-soft);line-height:1.75;margin-bottom:12px;border-left:3px solid var(--border);padding-left:12px;font-style:italic;}
+.socratic-questions{list-style:none;padding:0;margin:0;}
+.socratic-questions li{font-size:12.5px;color:var(--text);padding:7px 0 7px 22px;position:relative;border-bottom:1px solid var(--border-dim);line-height:1.6;}
+.socratic-questions li:last-child{border-bottom:none;}
+.socratic-questions li::before{content:'?';position:absolute;left:0;font-weight:700;font-size:12px;top:8px;color:var(--red);}
+.answer-area{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.answer-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.answer-textarea:focus{border-color:var(--text);}
+.answer-textarea:disabled{opacity:0.7;background:var(--surface-2);cursor:default;}
+.answer-buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.btn-add-answer{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-answer:hover:not(:disabled){opacity:0.85;}
+.btn-add-answer:disabled{opacity:0.5;cursor:default;}
+.btn-see-answer{background:var(--surface);color:var(--text-muted);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-see-answer:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-see-answer:not(:disabled){color:var(--red);border-color:var(--red);}
+.btn-see-answer:hover:not(:disabled){background:var(--red-glow);}
+.model-answers{margin-top:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.model-answer-item{padding:10px 0;border-bottom:1px solid var(--border-dim);}
+.model-answer-item:first-child{padding-top:0;}
+.model-answer-item:last-child{border-bottom:none;padding-bottom:0;}
+.model-answer-q{font-size:9px;font-weight:700;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:4px;}
+.model-answer-text{font-size:13px;color:var(--text-soft);line-height:1.7;}
+
+.mental-note-block{border-radius:10px;padding:12px 16px;margin:16px 0;display:flex;gap:10px;align-items:flex-start;background:rgba(192,57,43,0.07);border:1px solid var(--border);}
+.mental-note-block-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.mental-note-block-inner{flex:1;}
+.mental-note-block-label{font-size:9px;font-weight:700;letter-spacing:0.16em;color:var(--red);margin-bottom:3px;}
+.mental-note-block-text{font-size:13px;font-weight:600;line-height:1.55;color:var(--text);}
+
+.analogy-box{background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #b45309;border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0;}
+.analogy-label{display:flex;align-items:center;gap:6px;user-select:none;cursor:pointer;font-size:9px;font-weight:700;letter-spacing:0.16em;color:#b45309;margin-bottom:4px;}
+.analogy-label::after{content:'▾  Reveal illustration';margin-left:auto;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:none;opacity:0.75;}
+.analogy-label:hover::after{opacity:1;}
+.analogy-box.expanded > .analogy-label::after{content:'▴  Hide illustration';}
+.analogy-text{font-size:13px;color:#78350f;line-height:1.65;font-style:italic;}
+.analogy-box > .analogy-img{display:none;}
+.analogy-box.expanded > .analogy-img{display:block;}
+.analogy-img img{max-width:360px;width:100%;cursor:zoom-in;transition:max-width 0.25s ease;border-radius:8px;margin-top:10px;}
+.analogy-img img.zoomed{max-width:100%;cursor:zoom-out;}
+.prompt-toggle{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:10px;font-weight:600;letter-spacing:0.08em;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;text-transform:uppercase;}
+.prompt-toggle:hover{color:var(--text);border-color:var(--text);}
+.prompt-content{margin-top:10px;padding:10px 14px;background:rgba(0,0,0,0.04);border-radius:8px;font-size:11.5px;color:var(--text-muted);font-style:italic;line-height:1.65;text-align:left;}
+.prompt-content[hidden]{display:none;}
+
+.lesson-tools{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:40px;}
+.lesson-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.tool-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.tool-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.tool-textarea:focus{border-color:var(--red);}
+.tool-row{margin-top:8px;display:flex;gap:8px;}
+
+.sidebar-section{margin-bottom:28px;}
+.sidebar-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;}
+.ssnav{display:flex;flex-direction:column;gap:2px;margin-top:4px;}
+.ssnav-item{font-size:12px;color:var(--text-soft);padding:6px 10px;border-radius:6px;text-decoration:none;line-height:1.4;display:block;transition:background 0.15s,color 0.15s;}
+.ssnav-item:hover,.ssnav-item.active{background:var(--red-glow);color:var(--red);}
+.hub-link{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);margin-bottom:16px;transition:color 0.15s,border-color 0.15s,background 0.15s;}
+.hub-link:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);}
+.check-item{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;}
+.check-input{accent-color:var(--red);width:14px;height:14px;flex-shrink:0;cursor:pointer;}
+.check-label{font-size:12px;color:var(--text-soft);line-height:1.4;}
+.check-item:has(.check-input:checked) .check-label{color:var(--text-muted);text-decoration:line-through;}
+.quick-ref{background:#1a0606;border-radius:10px;padding:12px 16px;margin-bottom:8px;}
+.quick-ref-term{font-size:10px;font-weight:700;letter-spacing:0.12em;color:#e87070;margin-bottom:3px;text-transform:uppercase;}
+.quick-ref-def{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;}
+
+.page-nav{display:flex;border-top:2px solid var(--border);background:var(--surface);}
+.page-nav-btn{flex:1;display:flex;flex-direction:column;gap:4px;padding:16px 28px;text-decoration:none;transition:background 0.15s;cursor:pointer;}
+.page-nav-btn:hover:not(.page-nav-disabled){background:var(--surface-2);}
+.page-nav-prev{border-right:1px solid var(--border);}
+.page-nav-next{text-align:right;}
+.page-nav-disabled{opacity:0.3;pointer-events:none;}
+.page-nav-label{font-size:10px;font-weight:600;letter-spacing:0.14em;color:var(--text-muted);display:block;}
+.page-nav-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;color:var(--red);display:block;}
+
+footer{font-size:11px;letter-spacing:0.12em;color:var(--text-muted);text-transform:uppercase;padding:20px 60px;border-top:1px solid var(--border);}
+footer span{color:var(--red);}
+
+.img-caption{font-size:11px;color:var(--text-muted);text-align:center;margin-top:6px;line-height:1.4;font-style:italic;}
+.analogy-summary{font-style:normal;font-weight:600;color:#92400e;margin-bottom:10px;}
+.analogy-text ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;}
+.analogy-text li{padding-left:18px;position:relative;}
+.analogy-text li::before{content:'•';position:absolute;left:0;font-weight:700;color:#b45309;}
+.data-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;}
+.data-table th{background:#1a0606;color:#e87070;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:10px 14px;text-align:left;}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-soft);line-height:1.55;vertical-align:top;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:nth-child(even) td{background:var(--surface-2);}
+.data-table td strong{color:var(--text);font-weight:600;}
+
+@media(max-width:1000px){main{grid-template-columns:1fr;}.sidebar{position:static;max-height:none;padding:0 40px 40px;}}
+@media(max-width:720px){header{padding:28px 24px 24px;}header h1{font-size:32px;}.motivation-banner{padding:16px 24px;}.main-content{padding:24px 24px 40px;}.section-nav{padding:0 16px;}.top-panels{grid-template-columns:1fr;}.top-panels .qpanel{border-right:none;border-bottom:1px solid var(--border);}.lesson-tools-grid{grid-template-columns:1fr;}footer{padding:16px 24px;}}
+</style>
+</head>
+<body>
+<div id="page-transition" style="position:fixed;inset:0;background:#1a0606;opacity:0;pointer-events:none;z-index:999;transition:opacity 0.25s;"></div>
+
+<header>
+  <div class="header-left">
+    <div class="breadcrumb">
+      <a href="../nse7-ef-study-guide-hub.html">EF-NSE7</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="index.html">Chapter 07 — IPsec</a>
+      <span class="breadcrumb-sep">›</span>
+      Subtopic 03
+    </div>
+    <div class="header-eyebrow"><span class="dot-live"></span> Study Guide · EF-NSE7</div>
+    <h1>IPsec <em>Troubleshooting</em></h1>
+    <p>Diagnose and fix the most common IPsec failure modes — MTU fragmentation, IP flag behavior, PMTUD black holes, FEC for lossy links, and TCP MSS clamping — using FortiGate CLI tools.</p>
+  </div>
+</header>
+
+<div class="motivation-banner">
+  <div class="motivation-text">Most IPsec "tunnel down" calls are actually <em>MTU and fragmentation</em> problems in disguise.</div>
+  <p class="motivation-sub">This subtopic covers the packet-layer issues that silently break IPsec after Phase 2 completes — and the FortiOS tools that diagnose and fix them.</p>
+</div>
+
+<div class="top-panels">
+  <div class="qpanel" id="qpanel">
+    <button class="qpanel-header" onclick="toggleQPanel()" id="qpanel-header">
+      <span class="qpanel-title">MY QUESTIONS</span>
+      <span class="qpanel-count" id="qpanel-count">0</span>
+      <span class="qpanel-hint">— click to expand</span>
+      <span class="qpanel-chevron" id="qpanel-chevron">▾</span>
+    </button>
+    <div class="qpanel-body" id="qpanel-body"></div>
+  </div>
+  <div class="notes-panel" id="notes-panel">
+    <button class="notes-panel-header" onclick="toggleNotesPanel()" id="notes-panel-header">
+      <span class="notes-panel-title">MY NOTES</span>
+      <span class="notes-panel-count" id="notes-panel-count">0</span>
+      <span class="notes-panel-hint">— click to expand</span>
+      <span class="notes-panel-chevron" id="notes-panel-chevron">▾</span>
+    </button>
+    <div class="notes-panel-body" id="notes-panel-body"></div>
+  </div>
+</div>
+
+<nav class="section-nav" id="section-nav">
+  <a class="nav-tab active" href="#s1">IP Fragmentation &amp; MTU</a>
+  <a class="nav-tab" href="#s2">IP Flags &amp; DF Bit</a>
+  <a class="nav-tab" href="#s3">PMTUD &amp; MTU Sizing</a>
+  <a class="nav-tab" href="#s4">TCP MSS &amp; FEC</a>
+</nav>
+
+<main>
+  <div class="main-content">
+
+    <!-- SECTION 1 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · IP FRAGMENTATION &amp; MTU</span>
+      </div>
+      <p class="socratic-insight">IPsec adds overhead to every packet — at minimum an IP header (20 bytes) plus ESP or AH headers. If the original packet plus this overhead exceeds the outgoing interface MTU, the packet must either be fragmented or dropped. Which one happens depends on a single bit in the IP header.</p>
+      <ul class="socratic-questions">
+        <li>Why does adding IPsec encapsulation to an already-1500-byte packet create a fragmentation problem, and why can't the sending host simply "not send packets that large"?</li>
+        <li>Fragmentation reassembly happens at the destination — not along the path. What happens if a fragment is lost in transit, and what does this mean for UDP vs TCP flows?</li>
+      </ul>
+      <div class="answer-area" data-section="fragmentation-mtu">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">The sending host negotiates its TCP MSS with the server based on local interface MTU — it has no visibility into the IPsec encapsulation that will be added downstream. From the host's perspective, a 1460-byte TCP payload with a 40-byte IP+TCP header = 1500 bytes, fitting perfectly in Ethernet MTU. But when FortiGate wraps it in ESP, the total exceeds 1500 bytes, causing a problem the host couldn't have predicted.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">If any fragment is lost, the entire original packet must be retransmitted — there is no way to request only the missing fragment. TCP handles this with its retransmission mechanism (at the cost of latency). UDP has no retransmission at the transport layer — a lost fragment means permanently lost data, which can corrupt application-layer payloads like RADIUS, DNS, or RTP streams silently.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s1">
+      <div class="section-label">SECTION 01</div>
+      <h2>IP Fragmentation and <em>MTU Overhead</em></h2>
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s1-fragmentation-mtu.png" alt="Host sends 1500B packet, FortiGate fragments to 1400B and 100B" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg" style="display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;">📷 <strong>images/s1-fragmentation-mtu.png</strong></div>
+        <p class="img-caption">1500B TCP packet fragmented at FortiGate (MTU=1400) into 1400B + 100B fragments.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration showing a left-to-right packet flow: Host sends a large blue packet labeled "TCP 1500B" through port1 into a FortiGate box; inside the FortiGate an MTU label reads "1400 bytes"; two smaller packets emerge from port2 — one labeled "1400B" and one labeled "100B" — traveling to a Server on the right. Below the FortiGate, a TCP acknowledgement arrow returns from Server to Host. Pastel blue and orange palette, bold outlines, clear size labels, educational infographic feel.</div>
+      </div>
+      <p><strong>IP fragmentation</strong> occurs when a packet exceeds the network's <strong>Maximum Transmission Unit (MTU)</strong> — the largest packet size an interface can transmit. The default Ethernet MTU is <strong>1500 bytes</strong>.</p>
+      <p>When FortiGate receives a packet larger than the outgoing interface MTU, it must fragment the packet — splitting it into multiple smaller packets, each with its own IP header. The destination host reassembles them. This process reduces throughput, adds latency, and risks data loss if any fragment is dropped.</p>
+      <p>IPsec adds encapsulation overhead to every packet — ESP headers, an outer IP header, and optionally NAT-T UDP headers. This overhead pushes previously acceptable packet sizes over the MTU threshold, triggering unexpected fragmentation even when the original endpoints thought they were sending correctly-sized packets.</p>
+
+      <table class="data-table">
+        <thead><tr><th>Protocol</th><th>Overhead Added</th><th>Layer</th></tr></thead>
+        <tbody>
+          <tr><td><strong>GRE (RFC 2784)</strong></td><td>24 bytes</td><td>Layer 3</td></tr>
+          <tr><td><strong>VXLAN</strong></td><td>50 bytes</td><td>Layer 4</td></tr>
+          <tr><td><strong>NVGRE</strong></td><td>42 bytes</td><td>Layer 4</td></tr>
+          <tr><td><strong>6in4 (RFC 4213)</strong></td><td>20 bytes</td><td>Layer 3</td></tr>
+          <tr><td><strong>4in6 (RFC 6333)</strong></td><td>40 bytes</td><td>Layer 3</td></tr>
+          <tr><td><strong>MPLS</strong></td><td>4 bytes per label</td><td>Layer 2</td></tr>
+          <tr><td><strong>PPPoE</strong></td><td>8 bytes</td><td>Layer 2</td></tr>
+        </tbody>
+      </table>
+
+      <p>When encapsulation protocols are in use, you have three options to resolve fragmentation: increase the MTU on the interface, adjust the TCP MSS in the firewall policy, or set the fragmentation MTU in IPsec Phase 1.</p>
+      <div class="callout callout-warn"><strong>Exam warning:</strong> IPsec encapsulation overhead pushes packets over MTU even when the original host sends correctly-sized frames. The host cannot know about downstream encapsulation — FortiGate must compensate at the policy or interface level.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Standard Ethernet MTU = 1500 bytes. IPsec adds 20–60+ bytes of overhead depending on ESP, outer IP, NAT-T. Fragmentation splits oversized packets; lost fragments = retransmit (TCP) or data loss (UDP). Fix via MTU increase, TCP MSS clamp, or IPsec Phase 1 fragmentation MTU.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s1" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s1','IP Fragmentation & MTU')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s1" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s1')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · IP FLAGS &amp; DF BIT</span>
+      </div>
+      <p class="socratic-insight">The IP header contains a 3-bit flags field that controls fragmentation behavior. The "Don't Fragment" (DF) bit is the key troubleshooting signal — when it's set and the packet is too large, the router must drop the packet and send back an ICMP "fragmentation needed" message. If that ICMP is blocked by a firewall, the sender never learns the packet was dropped — creating a "black hole."</p>
+      <ul class="socratic-questions">
+        <li>FortiOS honors the DF bit by default — meaning it drops oversized packets that have DF set rather than fragmenting them. Why is this the correct behavior, and when would you override it?</li>
+        <li>What is an "ICMP black hole" in the context of PMTUD, and why do misconfigured firewalls cause it?</li>
+      </ul>
+      <div class="answer-area" data-section="ip-flags-df">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Honoring DF respects the sender's intent — the application or OS has decided that fragmenting this packet would cause problems (e.g., certain real-time protocols break across fragments). If FortiGate silently fragments a DF-set packet, the receiving end may reassemble it incorrectly or not at all. The correct behavior is to drop and send ICMP "fragmentation needed" so the sender can reduce packet size. Override (honor-df disable) only when a legacy endpoint misbehaves.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">PMTUD relies on ICMP Type 3, Code 4 ("fragmentation needed, DF set") messages traveling back to the sender. If any firewall in the path blocks ICMP, the sender never receives this feedback, so it keeps sending large packets that are silently dropped. The TCP connection appears to establish but then hangs when larger data packets are sent — classic PMTUD black hole behavior.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s2">
+      <div class="section-label">SECTION 02</div>
+      <h2>IP Flags — <em>DF Bit</em> and Fragmentation Control</h2>
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s2-df-bit-flags.png" alt="Wireshark packet showing IP flags: Reserved=0, DF Not Set, MF Set" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg" style="display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;">📷 <strong>images/s2-df-bit-flags.png</strong></div>
+        <p class="img-caption">IP flags 3-bit field: bit 0 reserved (always 0), bit 1 = DF (don't fragment), bit 2 = MF (more fragments).</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration of the 3-bit IP flags field: three boxes in a row labeled bit 0 (Reserved, always 0, gray), bit 1 (DF - Don't Fragment, blue, with an X over a broken packet), bit 2 (MF - More Fragments, orange, with a packet chain icon). Below the bit field, two rows: first row "DF=1 MF=0" shows a single intact packet being blocked at a router with a drop icon and ICMP arrow going back; second row "DF=0 MF=1" shows a packet being split into multiple fragments with arrows continuing to destination. Pastel palette, bold outlines, educational infographic feel.</div>
+      </div>
+      <p>The IP header contains a <strong>3-bit flags field</strong> that controls fragmentation behavior:</p>
+      <ul>
+        <li><strong>Bit 0 (Reserved):</strong> Always set to 0.</li>
+        <li><strong>Bit 1 — DF (Don't Fragment):</strong> When set (1), the packet must not be fragmented. If the packet is too large, the router drops it and returns an ICMP "fragmentation needed" message.</li>
+        <li><strong>Bit 2 — MF (More Fragments):</strong> Set on all fragments except the last one. When MF=1, the receiver knows more fragments are coming.</li>
+      </ul>
+      <p>You can identify fragmented packets in Wireshark or PCAP using the display filter: <code>ip.flags.mf == 1</code></p>
+      <p>Fragmentation occurs when a packet's size exceeds the MTU along its path. <strong>FortiOS defaults to honoring the DF bit</strong> — meaning FortiGate will drop rather than fragment a packet with DF=1 that exceeds the interface MTU. For example, a 1600-byte packet on a 1500-byte MTU interface with DF set will be dropped, not fragmented.</p>
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Honor DF Bit</div>
+        <pre><code>config system global
+    set honor-df enable
+end</code></pre>
+      </div>
+      <div class="callout callout-warn"><strong>Exam tip:</strong> FortiOS honors DF by default. A 1600-byte packet on a 1500-byte MTU interface with DF=1 will be <em>dropped</em>, not fragmented. Use <code>ip.flags.mf == 1</code> in Wireshark/PCAP to filter fragmented packets.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">3 IP flags: Bit0=Reserved(0), Bit1=DF(don't fragment), Bit2=MF(more fragments). FortiOS: honor-df enable by default → drops oversized DF packets, returns ICMP. PCAP filter: ip.flags.mf == 1 shows fragmented packets. MF=1 on all fragments except the last.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s2" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s2','IP Flags & DF Bit')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s2" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s2')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · PMTUD &amp; MTU SIZING</span>
+      </div>
+      <p class="socratic-insight">Path MTU Discovery (PMTUD) dynamically finds the largest packet size that can traverse the entire path without fragmentation. It works by setting DF=1 on test packets and progressively reducing size when ICMP "fragmentation needed" messages come back. The problem: if those ICMP messages are blocked anywhere in the path, PMTUD fails silently.</p>
+      <ul class="socratic-questions">
+        <li>A payload of 1472 bytes succeeds in a FortiGate PMTUD test but 1500 bytes fails. What does this tell you about the effective path MTU, and how do you calculate the actual MTU from these results?</li>
+        <li>Why is modifying MTU on internet-facing interfaces "nearly impossible," and what does this mean for how you should resolve MTU issues on an IPsec tunnel?</li>
+      </ul>
+      <div class="answer-area" data-section="pmtud-mtu">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">A 1472-byte payload plus the 28-byte IP+ICMP header = 1500 bytes total — exactly the standard Ethernet MTU. A 1500-byte payload plus 28-byte headers = 1528 bytes, which exceeds 1500 and gets dropped. This confirms the path MTU is 1500 bytes. The formula is: payload + 28 (IP header 20 + ICMP header 8) = effective packet size. If that equals or exceeds the MTU, it fails.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Internet-facing interfaces traverse ISP infrastructure you don't control — you cannot change the MTU at every hop between you and the destination. For IPsec tunnels, the solution is to configure MTU on the FortiGate's IPsec VPN interface directly (range 68–1700, default 1420) or to set TCP MSS clamping in the firewall policy to reduce segment size before encapsulation adds its overhead.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s3">
+      <div class="section-label">SECTION 03</div>
+      <h2>PMTUD and <em>MTU Size Adjustments</em></h2>
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s3-pmtud-mtu-sizing.png" alt="PMTUD test: 1472B payload succeeds, 1500B payload fails" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg" style="display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;">📷 <strong>images/s3-pmtud-mtu-sizing.png</strong></div>
+        <p class="img-caption">Path MTU Discovery: progressively test payload sizes until packets stop being dropped to find the effective path MTU.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration in two panels: left panel shows a FortiGate pinging with DF bit set and a 1472-byte payload — green check and reply arrives; right panel shows same FortiGate pinging with 1500-byte payload — red X and "sendmsg failed" error appears. Below each panel, packet size breakdowns: "1472 data + 28 header = 1500 total — fits MTU" and "1500 data + 28 header = 1528 total — exceeds MTU". An MTU bar diagram sits between panels showing the 1500-byte limit line. Pastel green and red palette, bold outlines, educational infographic feel.</div>
+      </div>
+      <p><strong>Path MTU Discovery (PMTUD)</strong> determines the largest packet size that can traverse the complete network path without fragmentation. It works by sending packets with DF=1 set and listening for ICMP "fragmentation needed" responses.</p>
+      <p>On FortiGate, use the CLI to run PMTUD tests:</p>
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — PMTUD Test</div>
+        <pre><code>execute ping-options df-bit yes
+execute ping-options data-size 1472
+execute ping google.com
+
+execute ping-options df-bit yes
+execute ping-options data-size 1500
+execute ping google.com</code></pre>
+      </div>
+      <p>A 1472-byte payload succeeds (1472 + 28 header bytes = 1500 total = exact Ethernet MTU). A 1500-byte payload fails (1500 + 28 = 1528 — exceeds MTU). This confirms the path MTU is 1500 bytes.</p>
+      <p>To adjust MTU on a FortiGate interface:</p>
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Interface MTU</div>
+        <pre><code>config system interface
+    edit "wan2"
+        set vdom "root"
+        set mtu-override enable
+        set mtu 1700
+    next
+end
+
+diagnose hardware deviceinfo nic &lt;interface&gt;</code></pre>
+      </div>
+      <p>MTU configuration ranges: <strong>physical interface</strong> — 68 to 65535 bytes (default 1500). <strong>IPsec VPN interface</strong> — 68 to 1700 bytes (default 1420). Changing MTU on internet-facing interfaces is impractical because you cannot control intermediate ISP hops.</p>
+      <div class="callout callout-info"><strong>Note:</strong> The IPsec VPN interface default MTU is 1420 bytes — accounting for IPsec encapsulation overhead within a standard 1500-byte Ethernet path. If your underlay uses jumbo frames, you can increase this value.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">PMTUD: sends DF=1 packets, reduces size until ICMP "frag needed" stops. Formula: payload + 28 = total packet size. Physical interface MTU: 68–65535 (default 1500). IPsec interface MTU: 68–1700 (default 1420). Diagnose MTU: <code>diagnose hardware deviceinfo nic &lt;intf&gt;</code>.</div>
+        </div>
+      </div>
+
+      <div class="analogy-box">
+        <div class="analogy-label">Analogy</div>
+        <div class="analogy-text">
+          <p class="analogy-summary">PMTUD is like a truck driver testing which roads can handle their load before the delivery — driving increasingly smaller trucks until one fits under every bridge.</p>
+          <ul>
+            <li><strong>Packet payload size</strong> — the truck's cargo height; bigger cargo = taller truck</li>
+            <li><strong>MTU on each network hop</strong> — the clearance height of bridges along the route; the lowest bridge sets the limit</li>
+            <li><strong>DF=1 (Don't Fragment)</strong> — the driver refuses to unload and reload cargo at every bridge; if the truck doesn't fit, turn back</li>
+            <li><strong>ICMP "fragmentation needed"</strong> — a bridge officer sends a radio message: "your truck is too tall, try a shorter one"</li>
+            <li><strong>ICMP black hole</strong> — the bridge officer is silenced (firewall blocks ICMP), the driver keeps sending the oversized truck and wonders why deliveries never arrive</li>
+          </ul>
+        </div>
+        <div class="analogy-img" style="margin-top:14px;background:rgba(255,255,255,0.5);border-radius:10px;padding:14px;text-align:center;">
+          <img src="images/a1-pmtud-truck-bridges.png" alt="Truck and bridge analogy for PMTUD path MTU discovery" onerror="this.style.display='none';this.nextElementSibling.style.display='block';" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 10px;">
+          <div class="img-missing-msg" style="display:none;font-size:12px;color:#92400e;padding:8px;background:rgba(146,64,14,0.1);border-radius:6px;">📷 <strong>images/a1-pmtud-truck-bridges.png</strong> — add this image to the folder</div>
+          <button class="prompt-toggle" onclick="togglePrompt(this)" type="button">▾ Show analogy image prompt</button>
+          <div class="prompt-content" hidden>Cartoon flat illustration of a road with three bridges at different heights. A truck is driving from left to right: at bridge 1 (tall clearance, labeled "Hop 1 MTU 9000") the truck passes easily; at bridge 2 (medium clearance, labeled "Hop 2 MTU 1500") the truck just fits; at bridge 3 (low clearance, labeled "Hop 3 MTU 1200") the truck is too tall and a red X appears. A bridge officer in a small booth holds a radio labeled "ICMP". An inset shows a second scenario where the officer's radio is crossed out (labeled "Firewall blocks ICMP") and an endless queue of oversized trucks labeled "PMTUD Black Hole". Pastel orange and teal palette, bold outlines, short labels, educational infographic feel.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s3" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s3','PMTUD & MTU Sizing')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s3" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s3')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · TCP MSS &amp; FEC</span>
+      </div>
+      <p class="socratic-insight">TCP MSS clamping and Forward Error Correction (FEC) solve two distinct problems. MSS clamping prevents oversized TCP segments from being generated in the first place — fixing fragmentation before it happens. FEC adds redundant data to recover from packets that are lost in transit — fixing the consequences of bad WAN links without requiring retransmission.</p>
+      <ul class="socratic-questions">
+        <li>TCP MSS does not include TCP or IP headers — only the payload. Why does lowering the MSS increase the total number of packets, and when does this trade-off become harmful?</li>
+        <li>FEC increases bandwidth usage. Under what WAN conditions is this overhead worthwhile, and what applications benefit most?</li>
+      </ul>
+      <div class="answer-area" data-section="tcp-mss-fec">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Lowering MSS means each TCP segment carries less application payload — so the same amount of data requires more segments, each with its own 40-byte IP+TCP header. This increases header overhead as a percentage of total bytes sent, reducing effective throughput. It becomes harmful on high-bandwidth links where the per-packet processing cost multiplied by many more packets creates measurable CPU load and latency.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">FEC overhead is worthwhile on lossy or noisy WAN links — satellite, LTE, or microwave radio — where retransmission costs are high (due to high latency or jitter). Real-time applications like VoIP and video conferencing benefit most because they cannot tolerate the latency of TCP retransmission — they need immediate reconstruction of lost packets at the receiver, which FEC enables without requesting a resend.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s4">
+      <div class="section-label">SECTION 04</div>
+      <h2>TCP MSS Clamping and <em>Forward Error Correction</em></h2>
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s4-mss-fec.png" alt="TCP MSS payload position in frame, and FEC redundant packet reconstruction" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg" style="display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;">📷 <strong>images/s4-mss-fec.png</strong></div>
+        <p class="img-caption">TCP MSS = payload only (not headers). FEC adds redundant packets to reconstruct lost data at the receiver.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration in two panels: left panel shows a packet frame breakdown: Ethernet header (14B), IP header (20B), TCP header (20B), Payload labeled "TCP MSS" with a double-headed arrow; right panel shows FEC flow: sending FortiGate generates packets A, B, C, D plus a redundant green packet; receiving FortiGate receives A, X (lost/corrupted), C, D and the redundant packet; arrow shows reconstruction to A, B, C, D. Labels: "Lost in transit" over X, "Reconstructed" over recovered B. Pastel blue and green palette, bold outlines, educational infographic feel.</div>
+      </div>
+      <p>The <strong>TCP Maximum Segment Size (MSS)</strong> specifies the maximum amount of TCP payload data — not including TCP or IP headers — in a single segment. It is configured in firewall policies and affects the largest payload a device can send in one TCP segment.</p>
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — TCP MSS in Firewall Policy</div>
+        <pre><code>config firewall policy
+    edit &lt;policy id&gt;
+        set tcp-mss-sender &lt;mss value&gt;
+        set tcp-mss-receiver &lt;mss value&gt;
+    next
+end</code></pre>
+      </div>
+      <p>Lowering MSS reduces TCP segment payload size, which increases packet count. More packets mean more processing overhead and reduced effective throughput. The trade-off: properly sized MSS prevents fragmentation without requiring MTU changes, but incorrect MSS settings cause mismatches and flow problems. Typical IPsec MSS value = 1460 − IPsec overhead ≈ 1360–1400 bytes.</p>
+      <p><strong>Forward Error Correction (FEC)</strong> is a Phase 1 IPsec setting that adds redundant packets to the tunnel. The receiving FortiGate uses the redundant information to reconstruct any lost or corrupted packets without requiring retransmission from the sender.</p>
+      <ul>
+        <li>FEC increases bandwidth usage (redundant packets use extra capacity).</li>
+        <li>FEC improves reliability on lossy WAN links — satellite, LTE, microwave radio.</li>
+        <li>FEC is critical for voice and video services where retransmission latency is unacceptable.</li>
+      </ul>
+      <div class="callout callout-info"><strong>Note:</strong> FEC is configured in Phase 1 tunnel settings. It is not a default-on feature — enable it only on tunnels over WAN links with known packet loss or jitter. On clean fiber WAN links, FEC overhead provides no benefit.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">TCP MSS = payload only, configured per firewall policy (tcp-mss-sender / tcp-mss-receiver). Lower MSS = more packets = more overhead. FEC = Phase 1 setting, adds redundant packets, reconstructs lost data without retransmit. FEC best for lossy WAN (satellite, LTE), voice/video. Not needed on clean links.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s4" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s4','TCP MSS & FEC')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s4" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s4')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">ON THIS PAGE</div>
+      <nav class="ssnav">
+        <a class="ssnav-item" href="#s1">IP Fragmentation &amp; MTU</a>
+        <a class="ssnav-item" href="#s2">IP Flags &amp; DF Bit</a>
+        <a class="ssnav-item" href="#s3">PMTUD &amp; MTU Sizing</a>
+        <a class="ssnav-item" href="#s4">TCP MSS &amp; FEC</a>
+      </nav>
+    </div>
+
+    <a class="hub-link" href="index.html">← Chapter 07 Hub</a>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">PROGRESS</div>
+      <div class="checklist" id="checklist">
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s1" onchange="toggleDone(this)">
+          <span class="check-label">IP Fragmentation &amp; MTU</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s2" onchange="toggleDone(this)">
+          <span class="check-label">IP Flags &amp; DF Bit</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s3" onchange="toggleDone(this)">
+          <span class="check-label">PMTUD &amp; MTU Sizing</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s4" onchange="toggleDone(this)">
+          <span class="check-label">TCP MSS &amp; FEC</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">QUICK REFERENCE</div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">MTU</div>
+        <div class="quick-ref-def">Maximum Transmission Unit. Largest packet an interface can send. Default Ethernet = 1500 bytes. IPsec VPN interface default = 1420 bytes.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">DF Bit</div>
+        <div class="quick-ref-def">Don't Fragment. IP flags bit 1. When set, oversized packets must be dropped (not fragmented). FortiOS honors DF by default.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">MF Bit</div>
+        <div class="quick-ref-def">More Fragments. IP flags bit 2. Set on all fragments except the last. PCAP filter: ip.flags.mf == 1.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">PMTUD</div>
+        <div class="quick-ref-def">Path MTU Discovery. Sends DF=1 probes, reduces payload until ICMP "frag needed" stops. Fails if ICMP is blocked (black hole).</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">TCP MSS</div>
+        <div class="quick-ref-def">Max Segment Size. TCP payload only — no headers. Configured per firewall policy with tcp-mss-sender/receiver. Lower MSS = more packets.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">FEC</div>
+        <div class="quick-ref-def">Forward Error Correction. Phase 1 IPsec setting. Adds redundant packets to tunnel. Receiver reconstructs lost data without retransmission. Best on lossy WAN.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">ICMP Black Hole</div>
+        <div class="quick-ref-def">PMTUD failure mode. Firewall blocks ICMP "frag needed" messages, so sender never reduces packet size. TCP session hangs on large data transfers.</div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="page-nav">
+  <a class="page-nav-btn page-nav-prev" href="subtopic-02-ike-and-phase-negotiation.html">
+    <span class="page-nav-label">← PREVIOUS</span>
+    <span class="page-nav-title">IKE and Phase Negotiation</span>
+  </a>
+  <a class="page-nav-btn page-nav-next" href="index.html">
+    <span class="page-nav-label">BACK TO HUB →</span>
+    <span class="page-nav-title">Chapter 07 Hub</span>
+  </a>
+</div>
+
+<footer>
+  EF-NSE7<span>.</span> Chapter 07<span>.</span> Subtopic 03<span>.</span> IPsec Troubleshooting
+</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-ch07-sub03-ipsec-troubleshooting';
+
+const SECTIONS = {
+  's1': 'IP Fragmentation & MTU',
+  's2': 'IP Flags & DF Bit',
+  's3': 'PMTUD & MTU Sizing',
+  's4': 'TCP MSS & FEC',
+};
+
+document.querySelectorAll('.socratic-header').forEach(function(h) {
+  h.addEventListener('click', function() { h.closest('.socratic-block').classList.toggle('soc-open'); });
+});
+
+function getQArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-qs') || '[]'); }
+function saveQArr(qs) { localStorage.setItem(PAGE_KEY+'-qs', JSON.stringify(qs)); }
+function addQuestion(key, name) {
+  const ta = document.getElementById('q-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const qs = getQArr(); qs.push({id: Date.now(), section: key, sectionName: name, text});
+  saveQArr(qs); ta.value = ''; renderQPanel();
+  if (!document.getElementById('qpanel-body').classList.contains('open')) toggleQPanel();
+}
+function deleteQ(id) { saveQArr(getQArr().filter(q => q.id !== id)); renderQPanel(); }
+function toggleQPanel() {
+  const body = document.getElementById('qpanel-body');
+  const header = document.getElementById('qpanel-header');
+  const chevron = document.getElementById('qpanel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-qpanel-open', open);
+}
+function renderQPanel() {
+  const qs = getQArr();
+  const count = document.getElementById('qpanel-count');
+  if (count) { count.textContent = qs.length; count.style.display = qs.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.qpanel-hint');
+  if (hint) hint.textContent = qs.length ? `— ${qs.length} question${qs.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('qpanel-body'); if (!body) return;
+  if (!qs.length) { body.innerHTML = '<p class="no-questions">No questions yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  qs.forEach(q => { if (groups[q.section]) groups[q.section].push(q); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(q => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${q.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteQ(${q.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function getNotesArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-notes') || '[]'); }
+function saveNotesArr(ns) { localStorage.setItem(PAGE_KEY+'-notes', JSON.stringify(ns)); }
+function addNote(key) {
+  const ta = document.getElementById('note-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const ns = getNotesArr(); ns.push({id: Date.now(), section: key, sectionName: SECTIONS[key]||key, text});
+  saveNotesArr(ns); ta.value = ''; renderNotesPanel();
+  if (!document.getElementById('notes-panel-body').classList.contains('open')) toggleNotesPanel();
+}
+function deleteNote(id) { saveNotesArr(getNotesArr().filter(n => n.id !== id)); renderNotesPanel(); }
+function toggleNotesPanel() {
+  const body = document.getElementById('notes-panel-body');
+  const header = document.getElementById('notes-panel-header');
+  const chevron = document.getElementById('notes-panel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-notes-panel-open', open);
+}
+function renderNotesPanel() {
+  const ns = getNotesArr();
+  const count = document.getElementById('notes-panel-count');
+  if (count) { count.textContent = ns.length; count.style.display = ns.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.notes-panel-hint');
+  if (hint) hint.textContent = ns.length ? `— ${ns.length} note${ns.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('notes-panel-body'); if (!body) return;
+  if (!ns.length) { body.innerHTML = '<p class="no-questions">No notes yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  ns.forEach(n => { if (groups[n.section]) groups[n.section].push(n); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(n => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteNote(${n.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function toggleDone(input) { localStorage.setItem(PAGE_KEY+'-check-'+input.dataset.key, input.checked); }
+function initChecks() {
+  document.querySelectorAll('.check-input').forEach(function(inp) {
+    inp.checked = localStorage.getItem(PAGE_KEY+'-check-'+inp.dataset.key) === 'true';
+  });
+}
+
+function saveSocAnswer(btn) {
+  const area = btn.closest('.answer-area');
+  const ta = area.querySelector('.answer-textarea');
+  if (!ta.value.trim()) { ta.focus(); return; }
+  const key = PAGE_KEY+'-socans-'+area.dataset.section;
+  try { localStorage.setItem(key, ta.value); } catch(e) {}
+  ta.disabled = true; btn.textContent = '✓ Answer saved'; btn.disabled = true;
+  const seeBtn = area.querySelector('.btn-see-answer');
+  seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+}
+function revealSocAnswer(btn) {
+  if (btn.disabled) return;
+  const answers = btn.closest('.answer-area').querySelector('.model-answers');
+  const isHidden = answers.style.display === 'none' || !answers.style.display;
+  answers.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '▲ Hide Model Answer' : '💡 See Model Answer';
+}
+
+function togglePrompt(btn) {
+  const c = btn.nextElementSibling;
+  const isHidden = c.hasAttribute('hidden');
+  if (isHidden) { c.removeAttribute('hidden'); btn.textContent = '▴ Hide image prompt'; }
+  else { c.setAttribute('hidden', ''); btn.textContent = '▾ Show image prompt'; }
+}
+
+if (sessionStorage.getItem('pt')) {
+  document.body.style.opacity = '1';
+  sessionStorage.removeItem('pt');
+}
+document.querySelectorAll('a[href]').forEach(function(a) {
+  a.addEventListener('click', function() { sessionStorage.setItem('pt', '1'); });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderQPanel(); renderNotesPanel(); initChecks();
+  if (localStorage.getItem(PAGE_KEY+'-qpanel-open') === 'true') toggleQPanel();
+  if (localStorage.getItem(PAGE_KEY+'-notes-panel-open') === 'true') toggleNotesPanel();
+  document.querySelectorAll('.answer-area').forEach(function(area) {
+    const key = PAGE_KEY+'-socans-'+area.dataset.section;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const ta = area.querySelector('.answer-textarea'); ta.value = saved; ta.disabled = true;
+        const addBtn = area.querySelector('.btn-add-answer'); addBtn.textContent = '✓ Answer saved'; addBtn.disabled = true;
+        const seeBtn = area.querySelector('.btn-see-answer'); seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+      }
+    } catch(e) {}
+  });
+  document.querySelectorAll('.analogy-box').forEach(function(box) {
+    if (box.dataset.collapsibleInit) return;
+    box.dataset.collapsibleInit = '1';
+    box.classList.add('expanded');
+    const label = box.querySelector(':scope > .analogy-label');
+    if (label) label.addEventListener('click', () => box.classList.toggle('expanded'));
+  });
+  document.querySelectorAll('.analogy-img img').forEach(function(img) {
+    if (img.dataset.zoomInit) return;
+    img.dataset.zoomInit = '1';
+    img.addEventListener('click', () => img.classList.toggle('zoomed'));
+  });
+  document.querySelectorAll('.section-img').forEach(function(img) {
+    img.addEventListener('click', () => img.classList.toggle('si-expanded'));
+  });
+});
+
+(function() {
+  var items = document.querySelectorAll('.ssnav-item');
+  if (!items.length) return;
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      var lnk = document.querySelector('.ssnav-item[href="#'+e.target.id+'"]');
+      if (lnk) lnk.classList.toggle('active', e.isIntersecting);
+    });
+  }, { rootMargin: '-10% 0% -70% 0%' });
+  document.querySelectorAll('.section-block[id]').forEach(function(el) { obs.observe(el); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subtopic 01 — Examine FortiManager Architecture · EF-NSE7 Ch02</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Epilogue:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff5f5;--surface:#ffffff;--surface-2:#fef2f2;--border:#f0c8c8;--border-dim:#fde8e8;
+  --text:#1a0606;--text-soft:#4a1212;--text-muted:#8a3a3a;
+  --red:#c0392b;--red-vivid:#e03e2d;--red-glow:rgba(192,57,43,0.07);--red-dim:#f8b4b4;
+  --red-deep:#7f1d1d;--red-light:#fef2f2;--red-border:#f8b4b4;
+  --green:#1a7c4a;--green-light:#d4f0e0;--green-border:#a7e0c0;
+  --amber:#b45309;--amber-light:#fef9c3;--amber-border:#fde68a;
+}
+html{scroll-behavior:smooth;}
+html.pt-init body{opacity:0;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Epilogue',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+header{padding:48px 60px 36px;background:#1a0606;display:flex;align-items:flex-end;gap:32px;}
+.header-left{flex:1;}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);letter-spacing:0.08em;margin-bottom:12px;flex-wrap:wrap;}
+.breadcrumb a{color:#e87070;text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.breadcrumb-sep{color:rgba(232,112,112,0.35);}
+.header-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(232,112,112,0.1);border:1px solid rgba(232,112,112,0.25);padding:5px 14px;border-radius:20px;font-size:11px;color:#e87070;letter-spacing:0.08em;margin-bottom:14px;}
+.dot-live{width:6px;height:6px;background:#e87070;border-radius:50%;display:inline-block;animation:blink 2.4s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+header h1{font-family:'Fraunces',serif;font-size:44px;font-weight:700;line-height:1.0;color:#fff;margin-bottom:10px;}
+header h1 em{font-style:italic;font-weight:400;color:#e87070;}
+header p{font-size:13px;color:rgba(255,255,255,0.42);margin-top:10px;line-height:1.7;}
+.motivation-banner{padding:20px 60px;min-height:84px;display:flex;flex-direction:column;justify-content:center;border-bottom:1px solid var(--border);background:var(--surface);}
+.motivation-text{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--text);}
+.motivation-text em{font-style:italic;color:var(--red);}
+.motivation-sub{font-size:12px;color:var(--text-muted);line-height:1.7;margin-top:4px;}
+.top-panels{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+.top-panels .qpanel{border-bottom:none;border-right:1px solid var(--border);}
+.top-panels .qpanel-header{padding-left:32px;padding-right:32px;}
+.top-panels .qpanel-body{padding-left:32px;padding-right:32px;}
+.qpanel{background:var(--surface);}
+.qpanel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 20px;cursor:pointer;background:var(--surface);border:none;font-family:'Epilogue',sans-serif;text-align:left;}
+.qpanel-header:hover,.qpanel-header.open{background:var(--surface-2);}
+.qpanel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.qpanel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.qpanel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.qpanel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.qpanel-body{display:none;padding:0 20px 22px;}
+.qpanel-body.open{display:block;}
+.notes-panel{background:var(--surface);}
+.notes-panel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 32px;cursor:pointer;background:var(--surface);border:none;font-family:'Epilogue',sans-serif;text-align:left;}
+.notes-panel-header:hover,.notes-panel-header.open{background:var(--surface-2);}
+.notes-panel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.notes-panel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.notes-panel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.notes-panel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.notes-panel-body{display:none;padding:0 32px 22px;}
+.notes-panel-body.open{display:block;}
+.q-group{margin-bottom:16px;}
+.q-group-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+.q-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-dim);}
+.q-item:last-child{border-bottom:none;}
+.q-num{font-size:10px;font-weight:700;color:var(--red);min-width:16px;margin-top:2px;}
+.q-text{font-size:12px;color:var(--text-soft);line-height:1.5;flex:1;}
+.q-del{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 4px;margin-top:1px;}
+.q-del:hover{color:var(--red);}
+.no-questions{font-size:12px;color:var(--text-muted);padding:8px 0;}
+.btn-add-q{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Epilogue',sans-serif;}
+.btn-add-q:hover{opacity:0.85;}
+.section-nav{position:sticky;top:0;z-index:90;display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);padding:0 32px;overflow-x:auto;}
+.nav-tab{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:12px 18px;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--red);border-bottom-color:var(--red);}
+main{display:grid;grid-template-columns:1fr 320px;gap:0;align-items:start;max-width:1200px;margin:0 auto;padding:0;}
+.main-content{padding:36px 40px 60px 60px;}
+.sidebar{padding:32px 24px 60px 20px;position:sticky;top:57px;max-height:calc(100vh - 57px);overflow-y:auto;}
+.section-block{margin-bottom:48px;}
+.section-label{font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.section-block h2{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1.15;margin-bottom:16px;padding-left:16px;border-left:3px solid var(--red);}
+.section-block h2 em{font-style:italic;font-weight:400;color:var(--red);}
+.section-block p{font-size:14px;line-height:1.8;color:var(--text-soft);margin-bottom:14px;}
+.section-block p strong{color:var(--text);font-weight:600;}
+.section-block p em{color:var(--red);font-style:italic;}
+.section-block ul,.section-block ol{padding-left:22px;margin-bottom:14px;}
+.section-block li{font-size:14px;line-height:1.75;color:var(--text-soft);margin-bottom:4px;}
+.section-block li strong{color:var(--text);font-weight:600;}
+.callout{border-left:3px solid var(--red-border);background:var(--red-light);border-radius:0 10px 10px 0;padding:12px 18px;margin:16px 0;font-size:13.5px;line-height:1.65;color:var(--text-soft);}
+.callout strong{color:var(--text);}
+.callout-green{border-left-color:var(--green-border);background:var(--green-light);}
+.callout-amber{border-left-color:var(--amber-border);background:var(--amber-light);}
+.section-img-wrap{margin:0 0 20px;display:flex;flex-direction:column;align-items:center;}
+.section-img{width:260px;max-width:100%;border-radius:12px;cursor:zoom-in;transition:width 0.3s ease;border:1px solid var(--border);display:block;}
+.section-img.si-expanded{width:100%;cursor:zoom-out;border-radius:16px;}
+.si-placeholder{display:none;width:260px;max-width:100%;border:2px dashed var(--border);border-radius:12px;background:var(--surface-2);padding:14px 16px;flex-direction:column;align-items:flex-start;gap:8px;}
+.si-placeholder.si-show{display:flex;}
+.si-filename{font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'SF Mono','Fira Code',monospace;}
+.img-caption{font-size:11px;color:var(--text-muted);text-align:center;margin-top:6px;line-height:1.4;font-style:italic;}
+.data-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;}
+.data-table th{background:#1a0606;color:#e87070;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:10px 14px;text-align:left;}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-soft);line-height:1.55;vertical-align:top;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:nth-child(even) td{background:var(--surface-2);}
+.data-table td strong{color:var(--text);font-weight:600;}
+.code-block{background:#1a0606;border-radius:12px;padding:20px 24px;margin:16px 0;overflow-x:auto;}
+.code-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#e87070;margin-bottom:10px;}
+.code-block pre{margin:0;}
+.code-block code{font-family:'SF Mono','Fira Code',monospace;font-size:12.5px;line-height:1.7;color:rgba(255,255,255,0.82);}
+.socratic-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:16px;border-top:3px solid var(--red);}
+.socratic-header{display:flex;align-items:center;gap:8px;margin-bottom:0;cursor:pointer;user-select:none;}
+.socratic-header::after{content:'▸ Expand';margin-left:auto;font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'Epilogue',sans-serif;}
+.socratic-block.soc-open .socratic-header{margin-bottom:10px;}
+.socratic-block.soc-open .socratic-header::after{content:'▾ Collapse';}
+.socratic-block:not(.soc-open) .socratic-insight,.socratic-block:not(.soc-open) .socratic-questions,.socratic-block:not(.soc-open) .answer-area{display:none;}
+.socratic-icon{font-size:17px;flex-shrink:0;}
+.socratic-label{font-size:9px;font-weight:700;letter-spacing:0.18em;color:var(--text-muted);}
+.socratic-insight{font-size:13px;color:var(--text-soft);line-height:1.75;margin-bottom:12px;border-left:3px solid var(--border);padding-left:12px;font-style:italic;}
+.socratic-questions{list-style:none;padding:0;margin:0;}
+.socratic-questions li{font-size:12.5px;color:var(--text);padding:7px 0 7px 22px;position:relative;border-bottom:1px solid var(--border-dim);line-height:1.6;}
+.socratic-questions li:last-child{border-bottom:none;}
+.socratic-questions li::before{content:'?';position:absolute;left:0;font-weight:700;font-size:12px;top:8px;color:var(--red);}
+.answer-area{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.answer-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Epilogue',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.answer-textarea:focus{border-color:var(--text);}
+.answer-textarea:disabled{opacity:0.7;background:var(--surface-2);cursor:default;}
+.answer-buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.btn-add-answer{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Epilogue',sans-serif;}
+.btn-add-answer:hover:not(:disabled){opacity:0.85;}
+.btn-add-answer:disabled{opacity:0.5;cursor:default;}
+.btn-see-answer{background:var(--surface);color:var(--text-muted);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Epilogue',sans-serif;}
+.btn-see-answer:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-see-answer:not(:disabled){color:var(--red);border-color:var(--red);}
+.btn-see-answer:hover:not(:disabled){background:var(--red-glow);}
+.model-answers{margin-top:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.model-answer-item{padding:10px 0;border-bottom:1px solid var(--border-dim);}
+.model-answer-item:first-child{padding-top:0;}
+.model-answer-item:last-child{border-bottom:none;padding-bottom:0;}
+.model-answer-q{font-size:9px;font-weight:700;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:4px;}
+.model-answer-text{font-size:13px;color:var(--text-soft);line-height:1.7;}
+.mental-note-block{border-radius:10px;padding:12px 16px;margin:16px 0;display:flex;gap:10px;align-items:flex-start;background:rgba(192,57,43,0.07);border:1px solid var(--border);}
+.mental-note-block-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.mental-note-block-inner{flex:1;}
+.mental-note-block-label{font-size:9px;font-weight:700;letter-spacing:0.16em;color:var(--red);margin-bottom:3px;}
+.mental-note-block-text{font-size:13px;font-weight:600;line-height:1.55;color:var(--text);}
+.analogy-box{background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #b45309;border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0;}
+.analogy-label{display:flex;align-items:center;gap:6px;user-select:none;cursor:pointer;font-size:9px;font-weight:700;letter-spacing:0.16em;color:#b45309;margin-bottom:4px;}
+.analogy-label::after{content:'▾  Reveal illustration';margin-left:auto;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:none;opacity:0.75;}
+.analogy-label:hover::after{opacity:1;}
+.analogy-box.expanded>.analogy-label::after{content:'▴  Hide illustration';}
+.analogy-text{font-size:13px;color:#78350f;line-height:1.65;font-style:italic;}
+.analogy-summary{font-style:normal;font-weight:600;color:#92400e;margin-bottom:10px;}
+.analogy-text ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;}
+.analogy-text li{padding-left:18px;position:relative;}
+.analogy-text li::before{content:'•';position:absolute;left:0;font-weight:700;color:#b45309;}
+.analogy-box>.analogy-img{display:none;}
+.analogy-box.expanded>.analogy-img{display:block;}
+.analogy-img img{max-width:360px;width:100%;cursor:zoom-in;transition:max-width 0.25s ease;border-radius:8px;margin-top:10px;}
+.analogy-img img.zoomed{max-width:100%;cursor:zoom-out;}
+.analogy-img .img-missing-msg{display:none!important;}
+.prompt-toggle{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:10px;font-weight:600;letter-spacing:0.08em;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'Epilogue',sans-serif;text-transform:uppercase;}
+.prompt-toggle:hover{color:var(--text);border-color:var(--text);}
+.prompt-content{margin-top:10px;padding:10px 14px;background:rgba(0,0,0,0.04);border-radius:8px;font-size:11.5px;color:var(--text-muted);font-style:italic;line-height:1.65;text-align:left;}
+.prompt-content[hidden]{display:none;}
+.lesson-tools{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:40px;}
+.lesson-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.tool-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.tool-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Epilogue',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.tool-textarea:focus{border-color:var(--red);}
+.tool-row{margin-top:8px;display:flex;gap:8px;}
+.sidebar-section{margin-bottom:28px;}
+.sidebar-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;}
+.ssnav{display:flex;flex-direction:column;gap:2px;margin-top:4px;}
+.ssnav-item{font-size:12px;color:var(--text-soft);padding:6px 10px;border-radius:6px;text-decoration:none;line-height:1.4;display:block;transition:background 0.15s,color 0.15s;}
+.ssnav-item:hover,.ssnav-item.active{background:var(--red-glow);color:var(--red);}
+.hub-link{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);margin-bottom:16px;transition:color 0.15s,border-color 0.15s,background 0.15s;}
+.hub-link:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);}
+.check-item{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;}
+.check-input{accent-color:var(--red);width:14px;height:14px;flex-shrink:0;cursor:pointer;}
+.check-label{font-size:12px;color:var(--text-soft);line-height:1.4;}
+.check-item:has(.check-input:checked) .check-label{color:var(--text-muted);text-decoration:line-through;}
+.quick-ref{background:#1a0606;border-radius:10px;padding:12px 16px;margin-bottom:8px;}
+.quick-ref-term{font-size:10px;font-weight:700;letter-spacing:0.12em;color:#e87070;margin-bottom:3px;text-transform:uppercase;}
+.quick-ref-def{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;}
+.page-nav{display:flex;border-top:2px solid var(--border);background:var(--surface);}
+.page-nav-btn{flex:1;display:flex;flex-direction:column;gap:4px;padding:16px 28px;text-decoration:none;transition:background 0.15s;}
+.page-nav-btn:hover:not(.page-nav-disabled){background:var(--surface-2);}
+.page-nav-prev{border-right:1px solid var(--border);}
+.page-nav-next{text-align:right;}
+.page-nav-disabled{opacity:0.3;pointer-events:none;}
+.page-nav-label{font-size:10px;font-weight:600;letter-spacing:0.14em;color:var(--text-muted);display:block;}
+.page-nav-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;color:var(--red);display:block;}
+footer{font-size:11px;letter-spacing:0.12em;color:var(--text-muted);text-transform:uppercase;padding:20px 60px;border-top:1px solid var(--border);}
+footer span{color:var(--red);}
+@media(max-width:1000px){main{grid-template-columns:1fr;}.sidebar{position:static;max-height:none;padding:0 40px 40px;}}
+@media(max-width:720px){header{padding:28px 24px 24px;}header h1{font-size:32px;}.motivation-banner{padding:16px 24px;}.main-content{padding:24px 24px 40px;}.section-nav{padding:0 16px;}.top-panels{grid-template-columns:1fr;}.top-panels .qpanel{border-right:none;border-bottom:1px solid var(--border);}.lesson-tools-grid{grid-template-columns:1fr;}footer{padding:16px 24px;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="breadcrumb">
+      <a href="../nse7-ef-study-guide-hub.html">EF-NSE7</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="index.html">Chapter 02 — Central Management</a>
+      <span class="breadcrumb-sep">›</span>
+      Subtopic 01
+    </div>
+    <div class="header-eyebrow"><span class="dot-live"></span> Study Guide · EF-NSE7</div>
+    <h1>Examine <em>FortiManager Architecture</em></h1>
+    <p>ADOMs, device and policy layers, configuration operations, and global provisioning — the structural backbone of every enterprise FortiManager deployment.</p>
+  </div>
+</header>
+
+<div class="motivation-banner">
+  <div class="motivation-text">Every FortiGate change flows through <em>two layers</em> — understanding which layer to use prevents policy drift and silent data loss.</div>
+  <p class="motivation-sub">The exam tests both conceptual knowledge (ADOM structure, global DB compatibility) and operational judgment (retrieve vs. import, quick install vs. reinstall policy).</p>
+</div>
+
+<div class="top-panels">
+  <div class="qpanel" id="qpanel">
+    <button class="qpanel-header" onclick="toggleQPanel()" id="qpanel-header">
+      <span class="qpanel-title">MY QUESTIONS</span>
+      <span class="qpanel-count" id="qpanel-count">0</span>
+      <span class="qpanel-hint">— click to expand</span>
+      <span class="qpanel-chevron" id="qpanel-chevron">▾</span>
+    </button>
+    <div class="qpanel-body" id="qpanel-body"></div>
+  </div>
+  <div class="notes-panel" id="notes-panel">
+    <button class="notes-panel-header" onclick="toggleNotesPanel()" id="notes-panel-header">
+      <span class="notes-panel-title">MY NOTES</span>
+      <span class="notes-panel-count" id="notes-panel-count">0</span>
+      <span class="notes-panel-hint">— click to expand</span>
+      <span class="notes-panel-chevron" id="notes-panel-chevron">▾</span>
+    </button>
+    <div class="notes-panel-body" id="notes-panel-body"></div>
+  </div>
+</div>
+
+<nav class="section-nav" id="section-nav">
+  <a class="nav-tab active" href="#section-core-functions">Core Functions</a>
+  <a class="nav-tab" href="#section-device-policy-layers">Device &amp; Policy Layers</a>
+  <a class="nav-tab" href="#section-config-operations">Config Operations</a>
+  <a class="nav-tab" href="#section-global-provisioning">Global Provisioning</a>
+</nav>
+
+<main>
+  <div class="main-content">
+
+    <!-- SECTION 1 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · CORE FUNCTIONS</span>
+      </div>
+      <p class="socratic-insight">FortiManager organizes managed devices into virtual containers that each carry their own policy sets, provisioning templates, and manager modules. Before reading, consider why an enterprise would need multiple separate containers rather than one flat device list.</p>
+      <ul class="socratic-questions">
+        <li>What is the purpose of an ADOM, and what two databases does every ADOM contain?</li>
+        <li>Why does the global ADOM exist as a separate special container, and what is the significance of the "g" prefix?</li>
+      </ul>
+      <div class="answer-area" data-section="core-functions">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">An ADOM (Administrative Domain) is a virtual partition on FortiManager that isolates device management for a group of FortiGate devices. Every ADOM contains two databases: the device layer (device-specific settings and revision history per FortiGate) and the policy layer (centrally managed firewall objects and policy packages). Even with ADOMs disabled, you still operate inside the default ADOM named "root."</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">The global ADOM provides a single source of truth for policies and objects that must be identical across multiple local ADOMs. It distributes global policies downward into per-ADOM policy packages. Objects in the global ADOM use the reserved prefix "g" (e.g., g.none, g.wildcard.google.com) — you cannot create custom objects with this prefix, preventing naming collisions between global and local objects.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="section-core-functions">
+      <div class="section-label">SECTION 01</div>
+      <h2>FortiManager <em>Core Functions</em></h2>
+      <div class="section-img-wrap">
+        <img src="images/s1-core-functions.png" class="section-img" alt="FortiManager architecture showing ADOMs with device and policy layers, global ADOM, and FortiGuard database"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s1-core-functions.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat illustration, pastel palette, bold outlines, no shadows. Bird's-eye node graph. Center: FortiManager appliance icon. Left: multiple FortiGate icons connecting into a blue rectangle labeled "Device Layer." Right: purple rectangle labeled "Policy Layer" containing stacked policy-package icons. Above both: yellow rectangle labeled "Global ADOM" with downward arrows into each ADOM. Top-right: teal cloud labeled "FortiGuard" with arrows to all ADOMs. Clean short labels, educational infographic style.</div>
+        </div>
+        <p class="img-caption">FortiManager architecture — each ADOM contains a device layer and policy layer; the global ADOM distributes shared policies to all local ADOMs.</p>
+      </div>
+
+      <p><strong>FortiManager</strong> is Fortinet's centralized network management solution. It lets administrators manage multiple FortiGate firewalls from a single interface, centralizing policy creation, firmware management, device provisioning, and optional FortiAnalyzer log capability.</p>
+
+      <p>The primary organizational unit is the <strong>ADOM (Administrative Domain)</strong> — a virtual partition that isolates management of a group of FortiGate devices. When ADOMs are disabled, FortiManager still operates through a default ADOM named <em>root</em>. Each ADOM contains two core databases: the <strong>device layer</strong> (per-device settings and revision history) and the <strong>policy layer</strong> (centrally managed firewall objects and policy packages).</p>
+
+      <p>Each ADOM also includes its own set of functions: scripts (CLI and Tcl), provisioning templates, SD-WAN Manager, VPN Manager, AP Manager, FortiSwitch Manager, Extender Manager, Fabric View, and FortiAnalyzer capability. The <strong>FortiGuard database</strong> serves all ADOMs simultaneously, providing threat intelligence and firmware metadata.</p>
+
+      <p>A special <strong>Global ADOM</strong> sits above all regular ADOMs. It stores objects and policies prefixed with the reserved letter <em>g</em> and distributes identical global policies downward to multiple local ADOMs. Global-to-local compatibility spans the same version and two versions earlier: a global ADOM at 7.6 supports local ADOMs at 7.6, 7.4, and 7.2.</p>
+
+      <div class="callout"><strong>Key fact:</strong> The prefix <strong>g</strong> is reserved system-wide — you cannot create custom objects using this prefix. This prevents naming collisions between global and local ADOM objects.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Every ADOM = device layer + policy layer. Global ADOM supports same version ± 2 (e.g., 7.6 global supports 7.4 and 7.2 locals). "g" prefix is reserved — custom objects cannot use it. FortiGuard serves all ADOMs globally.</div>
+        </div>
+      </div>
+
+      <div class="analogy-box">
+        <div class="analogy-label">Analogy</div>
+        <div class="analogy-text">
+          <p class="analogy-summary">FortiManager's ADOM structure works like a franchise restaurant chain — corporate HQ sets the brand standards, and regional offices manage their own kitchens independently.</p>
+          <ul>
+            <li><strong>Corporate HQ (Global ADOM)</strong> — defines the core menu (global policies) every location must follow; changes propagate downward to all regions automatically</li>
+            <li><strong>Regional Office (ADOM)</strong> — manages its own group of restaurants (FortiGates), applying both corporate-mandated and local policies</li>
+            <li><strong>Back-of-house records (Device Layer)</strong> — each restaurant's own equipment config and service history, tracked per location</li>
+            <li><strong>Recipe book (Policy Layer)</strong> — the policy packages defining what each kitchen serves; changes only go live after management approval and an explicit install step</li>
+            <li><strong>Supplier network (FortiGuard)</strong> — delivers fresh ingredients (signatures, updates) to every region simultaneously</li>
+          </ul>
+        </div>
+        <div class="analogy-img" style="margin-top:14px;background:rgba(255,255,255,0.5);border-radius:10px;padding:14px;text-align:center;">
+          <img src="images/a1-fortimanager-layers-analogy.png" alt="Franchise restaurant analogy for FortiManager ADOM architecture"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='block';" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 10px;">
+          <div class="img-missing-msg" style="display:none;padding:24px 12px;background:rgba(0,0,0,0.03);border:1px dashed #fde68a;border-radius:8px;color:#78350f;font-size:12px;margin-bottom:10px;">📷 <strong>images/a1-fortimanager-layers-analogy.png</strong> — add this image to the folder</div>
+          <button class="prompt-toggle" onclick="togglePrompt(this)" type="button">▾ Show analogy image prompt</button>
+          <div class="prompt-content" hidden>Flat cartoon, pastel palette, bold outlines, no shadows. Three-tier vertical layout. TOP: pastel-green "Corporate HQ" building with globe icon, labeled "Global ADOM — sets brand standards (global policies)." MIDDLE ROW: two pastel-blue "Regional Office" buildings side by side, each labeled "ADOM Site A" and "ADOM Site B", each containing a small purple folder stack (Policy Layer) and a blue filing cabinet (Device Layer). BOTTOM ROW: row of small restaurant/FortiGate icons connecting up to each regional office with arrows. Far-right: teal delivery truck labeled "FortiGuard — updates to all." Short bold labels on every element, educational infographic feel.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-section-core-functions" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('section-core-functions','Core Functions')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-section-core-functions" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('section-core-functions')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · DEVICE &amp; POLICY LAYERS</span>
+      </div>
+      <p class="socratic-insight">FortiManager splits configuration into two layers, but changes to each behave very differently. One updates FortiGate directly when installed; the other only applies after an explicit policy deployment approval.</p>
+      <ul class="socratic-questions">
+        <li>Why is it not recommended to configure firewall policies in the device layer, even though it is technically possible?</li>
+        <li>What is the revision history, and which layer tracks it per device?</li>
+      </ul>
+      <div class="answer-area" data-section="device-policy-layers">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Policies configured in the device layer are not part of a policy package and can't be centrally versioned or deployed consistently across devices. More critically, policy layer assignments overwrite the selected revision history ID in the device database — so the next time a policy package is installed, it silently overwrites any policies you wrote in the device layer. You lose that work with no warning.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">The revision history is a per-device log of every configuration snapshot saved in the device layer. Each FortiGate has its own revision counter that increments on every retrieve, auto-retrieve, or install operation. The device layer stores and tracks this history — not the policy layer.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="section-device-policy-layers">
+      <div class="section-label">SECTION 02</div>
+      <h2>Device Layer <em>and Policy Layer</em></h2>
+      <div class="section-img-wrap">
+        <img src="images/s2-device-policy-layers.png" class="section-img" alt="Two-panel comparison of device layer (settings, revision history) vs policy layer (policy packages, deferred install)"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s2-device-policy-layers.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat two-panel illustration, pastel palette, bold outlines. LEFT PANEL "Device Layer" (pastel blue): icons for Network, VPN, System, Log settings, plus a stacked filing cabinet labeled "Revision History (per device)." FortiGate icon on left connects here. RIGHT PANEL "Policy Layer" (pastel purple): stacked policy-package icons, checkmark for "Firewall Objects," warning triangle "Requires install to apply." Arrow from Device Layer → FortiGate is solid (direct effect). Arrow from Policy Layer → Device Layer → FortiGate is dashed with "Install required" label. Both panels inside an "ADOM" border. No shadows, clean labels.</div>
+        </div>
+        <p class="img-caption">Device layer changes install directly to FortiGate; policy layer changes require an explicit install or reinstall operation before reaching the firewall.</p>
+      </div>
+
+      <p>The <strong>device layer</strong> stores per-device settings and tracks each FortiGate's <strong>revision history</strong>. Administrators use it to configure device-specific settings: <strong>Network</strong> interfaces, <strong>VPN</strong> settings, <strong>System</strong> configuration, and <strong>Log &amp; Report</strong> options. Changes installed from the device layer take direct effect on FortiGate. Each FortiGate added to FortiManager gets its own device database, and every retrieve, auto-retrieve, or install operation creates a new revision entry.</p>
+
+      <p>The <strong>policy layer</strong> is where all firewall policy objects are configured centrally — addresses, services, schedules, VIPs, security profiles, policy packages, and more. It is organized into: Policy, Policy Block, Normalized Interfaces, Firewall Objects, Security Profiles, User &amp; Authentication, Security Fabric, and Advanced sections.</p>
+
+      <p>A critical distinction: <em>changes in the policy layer take effect only after policy deployment and installation approval.</em> The policy layer assignment overwrites the selected revision history ID in the device database. Even though you can configure policies in the device layer, the next policy package install will overwrite those settings — best practice is to restrict device layer use to device-specific (non-policy) settings only.</p>
+
+      <div class="callout callout-amber"><strong>Gotcha:</strong> Device layer changes affect FortiGate directly when installed. Policy layer changes are deferred — they only apply after policy package install or reinstall. Never configure firewall policies in the device layer; the next policy install will silently overwrite them.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Device layer = device settings + revision history; changes push directly to FortiGate. Policy layer = policy packages + firewall objects; changes are deferred — require install or reinstall. Configure policies only in the policy layer.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-section-device-policy-layers" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('section-device-policy-layers','Device &amp; Policy Layers')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-section-device-policy-layers" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('section-device-policy-layers')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · CONFIG OPERATIONS</span>
+      </div>
+      <p class="socratic-insight">FortiManager provides eight distinct operations for synchronizing configuration between the device layer, policy layer, and FortiGate. Each moves data in a specific direction and has specific side effects on revision history and policy package status. Choosing the wrong one can cause unexpected sync state changes in production.</p>
+      <ul class="socratic-questions">
+        <li>What is the key difference between Retrieve and Auto-retrieve — and why does neither update the policy package?</li>
+        <li>When would you choose Quick Install over Install Device Settings, and what is the tradeoff?</li>
+      </ul>
+      <div class="answer-area" data-section="config-operations">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Retrieve is manually triggered and captures the current FortiGate config as a new revision. Auto-retrieve fires automatically whenever a FortiGate is added to the device layer. Both are strictly read operations (FortiGate → device layer) — they do not update the policy package because retrieving only captures state; an explicit Import operation is required to move a retrieved revision into a policy package.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Quick Install applies the device layer config to FortiGate immediately without showing an installation preview. Install Device Settings shows you the diff first so you can review and cancel. Use Quick Install for ZTP/automation or when you're confident about the changes — the tradeoff is losing the review checkpoint that Install Device Settings provides.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="section-config-operations">
+      <div class="section-label">SECTION 03</div>
+      <h2>Configuration <em>Operations</em></h2>
+      <div class="section-img-wrap">
+        <img src="images/s3-config-operations.png" class="section-img" alt="Flow diagram of 8 config operations between FortiGate, device layer, and policy layer"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s3-config-operations.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat left-to-right pipeline illustration, pastel palette, bold outlines. Three columns: FortiGate (orange, left), Device Layer (blue, center), Policy Layer (purple, right). Eight labeled arrows between columns: Retrieve and Auto-Retrieve (solid and dashed arrows FortiGate→Device Layer), Install Device Settings (Device Layer→FortiGate with "preview" badge), Quick Install (same, "no preview" badge), Revert (Device Layer internal loop), Import (Device Layer→Policy Layer), Install Policy Package (Policy Layer→Device Layer+FortiGate with wizard badge), Reinstall Policy (Policy Layer→FortiGate direct with preview badge). Each arrow has a short label. No shadows, clean educational infographic.</div>
+        </div>
+        <p class="img-caption">Eight configuration operations — each moves data in a specific direction between FortiGate, the device layer, and the policy layer.</p>
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr><th>Operation</th><th>Direction</th><th>Key Behaviour</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Retrieve</strong></td>
+            <td>FortiGate → Device Layer</td>
+            <td>Manually captures current FortiGate config as a new revision. Does <strong>not</strong> update the policy package.</td>
+          </tr>
+          <tr>
+            <td><strong>Auto-Retrieve</strong></td>
+            <td>FortiGate → Device Layer</td>
+            <td>Triggered automatically when a FortiGate is added. Captures changes from the firewall into revision history. Does <strong>not</strong> update the policy package — Import is required for that.</td>
+          </tr>
+          <tr>
+            <td><strong>Install Device Settings</strong></td>
+            <td>Device Layer → FortiGate</td>
+            <td>Applies device layer config to FortiGate. Offers an <strong>installation preview</strong> to review changes before committing.</td>
+          </tr>
+          <tr>
+            <td><strong>Quick Install</strong></td>
+            <td>Device Layer → FortiGate</td>
+            <td>Same as Install Device Settings but <strong>without a preview</strong>. Applies immediately. Ideal for ZTP or trusted changes.</td>
+          </tr>
+          <tr>
+            <td><strong>Revert</strong></td>
+            <td>Revision History (internal)</td>
+            <td>Selects an earlier revision for potential import or installation. Synchronizing device and policy layers afterward requires a subsequent Import.</td>
+          </tr>
+          <tr>
+            <td><strong>Import</strong></td>
+            <td>Device Layer → Policy Layer</td>
+            <td>Moves policies from a selected revision into the policy package. Care needed to avoid importing objects that already exist with the same name in the policy layer.</td>
+          </tr>
+          <tr>
+            <td><strong>Install Policy Package</strong></td>
+            <td>Policy Layer → Device Layer + FortiGate</td>
+            <td>Transfers the policy package from policy layer to both the device layer and FortiGate. Displays a step-by-step <strong>wizard with installation preview</strong> and cancel option.</td>
+          </tr>
+          <tr>
+            <td><strong>Reinstall Policy</strong></td>
+            <td>Policy Layer → FortiGate</td>
+            <td>Bypasses the wizard (device and policy package already selected). Offers installation preview. Also applies any direct modifications in the device database, not just policy package settings.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-amber"><strong>Import conflict trap:</strong> If an object with the same name already exists in the policy layer, FortiManager must choose between the FortiGate value and its own — causing a conflict. Always audit for duplicate object names before importing.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Retrieve/Auto-retrieve: FortiGate → Device Layer only (no policy package update). Install/Quick Install: Device Layer → FortiGate (Quick = no preview). Import: Device Layer → Policy Layer. Install Policy Package: full wizard + preview. Reinstall Policy: no wizard, has preview, also applies device DB modifications.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-section-config-operations" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('section-config-operations','Config Operations')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-section-config-operations" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('section-config-operations')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · GLOBAL PROVISIONING</span>
+      </div>
+      <p class="socratic-insight">The global ADOM can push the same policy to every ADOM in two different ways — one requires no further steps, while the other puts the policy into a "modified" state requiring admin action. Provisioning templates work differently again, overriding device layer settings automatically on assignment.</p>
+      <ul class="socratic-questions">
+        <li>What is the difference between "Automatically Install Policies to ADOM Devices" and "Assign" for global policy distribution?</li>
+        <li>Why do provisioning templates take precedence over other device layer settings — and why is that significant?</li>
+      </ul>
+      <div class="answer-area" data-section="global-provisioning">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">"Automatically Install Policies to ADOM Devices" pushes the global policy package directly to the policy layer, device layer, and FortiGate in one step with no additional admin action — but it bypasses the installation preview. "Assign" only updates the policy layer, marking the package as Modified; an admin must then manually install or reinstall the policy to complete the push to FortiGate. Assign gives you a review checkpoint; Auto-Install does not.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Provisioning templates have precedence over other device layer settings, meaning they can overwrite values already in the device database when assigned. This is significant because it means assigning a template to an existing device can silently change configurations you already have — for example, overwriting interface IPs. Always plan template assignments deliberately and preview before assigning in production.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="section-global-provisioning">
+      <div class="section-label">SECTION 04</div>
+      <h2>Global Policy Package <em>and Provisioning</em></h2>
+      <div class="section-img-wrap">
+        <img src="images/s4-global-provisioning.png" class="section-img" alt="Diagram showing global ADOM distributing policies to multiple ADOMs via Auto-Install and Assign paths"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s4-global-provisioning.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat two-path illustration, pastel palette, bold outlines. TOP: yellow "Global ADOM" rectangle containing "Global Policy Package" icon. Two arrows diverge downward. LEFT PATH labeled "Auto-Install": single solid arrow straight to "ADOM Policy Layer + Device Layer + FortiGate" with "No Preview" badge. RIGHT PATH labeled "Assign": dashed arrow to "Policy Layer (Modified)" then second dashed arrow requiring admin action to "Device Layer + FortiGate." Bottom: multiple ADOM-n boxes receive policies from both paths. Side block: "Provisioning Templates" (blue) with upward "Override Precedence" badge. Clean labels, no shadows.</div>
+        </div>
+        <p class="img-caption">Global policy packages reach local ADOMs via Auto-Install (immediate, no preview) or Assign (Modified status, requires manual install to complete).</p>
+      </div>
+
+      <p>The <strong>Global Policy Package</strong> is managed in the global ADOM and distributed to multiple local ADOMs to enforce consistent security baselines. Two distribution methods exist:</p>
+
+      <ul>
+        <li><strong>Automatically Install Policies to ADOM Devices:</strong> The global ADOM directly installs the assigned policy package to the policy layer, device database, and FortiGate simultaneously. No additional admin steps required, but the installation preview is bypassed.</li>
+        <li><strong>Assign:</strong> Updates the policy layer only, marking status as <em>Modified</em>. Admins must then install or reinstall the policy package to push to the device layer and FortiGate. This provides a review checkpoint before production impact.</li>
+      </ul>
+
+      <p>The same global ADOM can distribute identical global policies to different local ADOMs simultaneously.</p>
+
+      <p><strong>Device layer ADOM capabilities</strong> include <strong>provisioning templates</strong>, Fabric View, and Extender Manager. Provisioning templates have <em>precedence</em> over standard device layer settings — when assigned, they automatically overwrite the device layer database for each FortiGate. They are applied using Install Device Settings or Quick Install.</p>
+
+      <p><strong>Policy layer ADOM capabilities</strong> include <strong>VPN Manager</strong>, <strong>AP Manager</strong>, and <strong>FortiSwitch Manager</strong>. These set up normalized interfaces such as zones, VLANs, and SSIDs. After configuring these features, changes require a policy package install or reinstall to reach FortiGate.</p>
+
+      <div class="callout callout-green"><strong>Best practice:</strong> Use <strong>Assign</strong> (not Auto-Install) for global policy rollouts in production — the installation preview gives you a final safety checkpoint before changes touch the firewalls.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Auto-Install = immediate to all layers, no preview. Assign = Modified status only, manual install required. Provisioning templates override device layer (deploy via device install). VPN/AP/FortiSwitch Manager are policy-layer features — require policy package install to apply.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-section-global-provisioning" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('section-global-provisioning','Global Provisioning')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-section-global-provisioning" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('section-global-provisioning')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">ON THIS PAGE</div>
+      <nav class="ssnav">
+        <a class="ssnav-item" href="#section-core-functions">Core Functions &amp; ADOMs</a>
+        <a class="ssnav-item" href="#section-device-policy-layers">Device &amp; Policy Layers</a>
+        <a class="ssnav-item" href="#section-config-operations">Configuration Operations</a>
+        <a class="ssnav-item" href="#section-global-provisioning">Global Policy &amp; Provisioning</a>
+      </nav>
+    </div>
+
+    <a class="hub-link" href="index.html">← Chapter 02 Hub</a>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">PROGRESS</div>
+      <div class="checklist" id="checklist">
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="section-core-functions" onchange="toggleDone(this)">
+          <span class="check-label">Core Functions &amp; ADOMs</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="section-device-policy-layers" onchange="toggleDone(this)">
+          <span class="check-label">Device &amp; Policy Layers</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="section-config-operations" onchange="toggleDone(this)">
+          <span class="check-label">Configuration Operations</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="section-global-provisioning" onchange="toggleDone(this)">
+          <span class="check-label">Global Policy &amp; Provisioning</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">QUICK REFERENCE</div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">ADOM</div>
+        <div class="quick-ref-def">Administrative Domain — virtual partition in FortiManager containing a device layer and policy layer for a group of FortiGates.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Device Layer</div>
+        <div class="quick-ref-def">Stores per-device settings (Network, VPN, System, Log) and per-device revision history. Changes install directly to FortiGate.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Policy Layer</div>
+        <div class="quick-ref-def">Central store for firewall objects and policy packages. Changes only apply to FortiGate after a policy package install or reinstall.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Global ADOM</div>
+        <div class="quick-ref-def">Distributes shared g-prefixed policies to all local ADOMs. Compatible with local ADOMs at same version and two versions earlier.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Retrieve / Auto-Retrieve</div>
+        <div class="quick-ref-def">Read FortiGate config into device layer revision history. Neither updates the policy package — use Import for that.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Quick Install</div>
+        <div class="quick-ref-def">Applies device layer config to FortiGate immediately, no preview. Used for ZTP or when confident about changes.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Reinstall Policy</div>
+        <div class="quick-ref-def">Skips the selection wizard; offers preview; applies policy package settings plus device DB modifications to FortiGate.</div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="page-nav">
+  <a class="page-nav-btn page-nav-prev" href="index.html">
+    <span class="page-nav-label">← BACK TO HUB</span>
+    <span class="page-nav-title">Chapter 02 Hub</span>
+  </a>
+  <a class="page-nav-btn page-nav-next" href="subtopic-02-explore-dynamic-objects.html">
+    <span class="page-nav-label">NEXT →</span>
+    <span class="page-nav-title">Explore Dynamic Objects</span>
+  </a>
+</div>
+
+<footer>
+  EF-NSE7<span>.</span> Chapter 02<span>.</span> Subtopic 01<span>.</span> Examine FortiManager Architecture
+</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-ch02-sub01-fortimanager-architecture';
+const SECTIONS = {
+  'section-core-functions': 'Core Functions',
+  'section-device-policy-layers': 'Device & Policy Layers',
+  'section-config-operations': 'Config Operations',
+  'section-global-provisioning': 'Global Provisioning',
+};
+document.querySelectorAll('.socratic-header').forEach(function(h) {
+  h.addEventListener('click', function() { h.closest('.socratic-block').classList.toggle('soc-open'); });
+});
+function getQArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-qs') || '[]'); }
+function saveQArr(qs) { localStorage.setItem(PAGE_KEY+'-qs', JSON.stringify(qs)); }
+function addQuestion(key, name) {
+  const ta = document.getElementById('q-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const qs = getQArr(); qs.push({id: Date.now(), section: key, sectionName: name, text});
+  saveQArr(qs); ta.value = ''; renderQPanel();
+  if (!document.getElementById('qpanel-body').classList.contains('open')) toggleQPanel();
+}
+function deleteQ(id) { saveQArr(getQArr().filter(q => q.id !== id)); renderQPanel(); }
+function toggleQPanel() {
+  const body = document.getElementById('qpanel-body'), header = document.getElementById('qpanel-header'), chevron = document.getElementById('qpanel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-qpanel-open', open);
+}
+function renderQPanel() {
+  const qs = getQArr();
+  const count = document.getElementById('qpanel-count');
+  if (count) { count.textContent = qs.length; count.style.display = qs.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.qpanel-hint');
+  if (hint) hint.textContent = qs.length ? `— ${qs.length} question${qs.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('qpanel-body'); if (!body) return;
+  if (!qs.length) { body.innerHTML = '<p class="no-questions">No questions yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  qs.forEach(q => { if (groups[q.section]) groups[q.section].push(q); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(q => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${q.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteQ(${q.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+function getNotesArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-notes') || '[]'); }
+function saveNotesArr(ns) { localStorage.setItem(PAGE_KEY+'-notes', JSON.stringify(ns)); }
+function addNote(key) {
+  const ta = document.getElementById('note-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const ns = getNotesArr(); ns.push({id: Date.now(), section: key, sectionName: SECTIONS[key]||key, text});
+  saveNotesArr(ns); ta.value = ''; renderNotesPanel();
+  if (!document.getElementById('notes-panel-body').classList.contains('open')) toggleNotesPanel();
+}
+function deleteNote(id) { saveNotesArr(getNotesArr().filter(n => n.id !== id)); renderNotesPanel(); }
+function toggleNotesPanel() {
+  const body = document.getElementById('notes-panel-body'), header = document.getElementById('notes-panel-header'), chevron = document.getElementById('notes-panel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-notes-panel-open', open);
+}
+function renderNotesPanel() {
+  const ns = getNotesArr();
+  const count = document.getElementById('notes-panel-count');
+  if (count) { count.textContent = ns.length; count.style.display = ns.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.notes-panel-hint');
+  if (hint) hint.textContent = ns.length ? `— ${ns.length} note${ns.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('notes-panel-body'); if (!body) return;
+  if (!ns.length) { body.innerHTML = '<p class="no-questions">No notes yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  ns.forEach(n => { if (groups[n.section]) groups[n.section].push(n); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(n => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteNote(${n.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+function toggleDone(input) { localStorage.setItem(PAGE_KEY+'-check-'+input.dataset.key, input.checked); }
+function initChecks() {
+  document.querySelectorAll('.check-input').forEach(function(inp) {
+    inp.checked = localStorage.getItem(PAGE_KEY+'-check-'+inp.dataset.key) === 'true';
+  });
+}
+function saveSocAnswer(btn) {
+  const area = btn.closest('.answer-area'), ta = area.querySelector('.answer-textarea');
+  if (!ta.value.trim()) { ta.focus(); return; }
+  try { localStorage.setItem(PAGE_KEY+'-socans-'+area.dataset.section, ta.value); } catch(e) {}
+  ta.disabled = true; btn.textContent = '✓ Answer saved'; btn.disabled = true;
+  const seeBtn = area.querySelector('.btn-see-answer'); seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+}
+function revealSocAnswer(btn) {
+  if (btn.disabled) return;
+  const answers = btn.closest('.answer-area').querySelector('.model-answers');
+  const isHidden = answers.style.display === 'none' || !answers.style.display;
+  answers.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '▲ Hide Model Answer' : '💡 See Model Answer';
+}
+function togglePrompt(btn) {
+  const c = btn.nextElementSibling;
+  if (c.hasAttribute('hidden')) { c.removeAttribute('hidden'); btn.textContent = '▴ Hide image prompt'; }
+  else { c.setAttribute('hidden', ''); btn.textContent = '▾ Show image prompt'; }
+}
+if (sessionStorage.getItem('pt')) { document.body.style.opacity = '1'; sessionStorage.removeItem('pt'); }
+document.querySelectorAll('a[href]').forEach(function(a) { a.addEventListener('click', function() { sessionStorage.setItem('pt', '1'); }); });
+document.addEventListener('DOMContentLoaded', function() {
+  renderQPanel(); renderNotesPanel(); initChecks();
+  if (localStorage.getItem(PAGE_KEY+'-qpanel-open') === 'true') toggleQPanel();
+  if (localStorage.getItem(PAGE_KEY+'-notes-panel-open') === 'true') toggleNotesPanel();
+  document.querySelectorAll('.answer-area').forEach(function(area) {
+    try {
+      const saved = localStorage.getItem(PAGE_KEY+'-socans-'+area.dataset.section);
+      if (saved) {
+        const ta = area.querySelector('.answer-textarea'); ta.value = saved; ta.disabled = true;
+        const addBtn = area.querySelector('.btn-add-answer'); addBtn.textContent = '✓ Answer saved'; addBtn.disabled = true;
+        const seeBtn = area.querySelector('.btn-see-answer'); seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+      }
+    } catch(e) {}
+  });
+  document.querySelectorAll('.analogy-box').forEach(function(box) {
+    if (box.dataset.collapsibleInit) return;
+    box.dataset.collapsibleInit = '1'; box.classList.add('expanded');
+    const label = box.querySelector(':scope > .analogy-label');
+    if (label) label.addEventListener('click', () => box.classList.toggle('expanded'));
+  });
+  document.querySelectorAll('.analogy-img img').forEach(function(img) {
+    if (img.dataset.zoomInit) return; img.dataset.zoomInit = '1';
+    img.addEventListener('click', () => img.classList.toggle('zoomed'));
+  });
+  document.querySelectorAll('.section-img').forEach(function(img) {
+    img.addEventListener('click', () => img.classList.toggle('si-expanded'));
+  });
+});
+(function() {
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      var lnk = document.querySelector('.ssnav-item[href="#'+e.target.id+'"]');
+      if (lnk) lnk.classList.toggle('active', e.isIntersecting);
+    });
+  }, { rootMargin: '-10% 0% -70% 0%' });
+  document.querySelectorAll('.section-block[id]').forEach(function(el) { obs.observe(el); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){if(sessionStorage.getItem('pt'))document.documentElement.style.opacity='0';})()</script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Session 29 — Fabric Connectors · EF-NSE7</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:#0a0101;color:#e8ddd5;line-height:1.6;transition:opacity .25s ease;opacity:1}
+:root{
+  --session-color:#9878c8;
+  --bg:#0a0101;--surface:#140808;--border:#2a1515;
+  --text:#e8ddd5;--text-dim:#b09090;--muted:#7a6060
+}
+
+a{color:var(--session-color);text-decoration:none}
+a:hover{text-decoration:underline}
+p{margin-bottom:1rem}
+p:last-child{margin-bottom:0}
+
+header{background:#1a0606;border-bottom:1px solid #2a1515;padding-bottom:2rem}
+.header-inner{max-width:1100px;margin:0 auto;padding:1.5rem 2rem 0}
+.breadcrumb{font-size:.8rem;color:var(--muted);margin-bottom:1rem}
+.breadcrumb a{color:var(--muted);text-decoration:none;transition:color .15s}
+.breadcrumb a:hover{color:var(--session-color)}
+.breadcrumb span{margin:0 .4rem;opacity:.5}
+.eyebrow{display:inline-flex;align-items:center;gap:.5rem;font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--session-color);margin-bottom:.6rem}
+.session-chip{background:rgba(152,120,200,.15);border:1px solid rgba(152,120,200,.3);border-radius:20px;padding:.2rem .7rem;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--session-color)}
+header h1{font-family:'Fraunces',serif;font-size:2.6rem;font-weight:700;color:#fff;line-height:1.15;margin-bottom:.6rem}
+header h1 em{color:var(--session-color);font-style:italic}
+header .tagline{color:var(--text-dim);font-size:1.05rem;max-width:600px;line-height:1.5}
+
+.story-section{background:linear-gradient(135deg,#0e0814,#080610);border-top:3px solid var(--session-color);border-bottom:1px solid #2a1515;padding:3rem 0}
+.story-inner{max-width:1100px;margin:0 auto;padding:0 2rem}
+.story-label{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--session-color);margin-bottom:.75rem;opacity:.9}
+.story-section h2{font-family:'Fraunces',serif;font-size:1.9rem;font-weight:700;color:#fff;line-height:1.2;margin-bottom:1.5rem}
+.story-section p{color:#c8bab0;font-size:.97rem;line-height:1.75;max-width:820px}
+.story-section p+p{margin-top:1rem}
+
+main{max-width:1100px;margin:0 auto;padding:2.5rem 2rem}
+.pr-grid{display:grid;grid-template-columns:1fr 300px;gap:2rem;align-items:start}
+@media(max-width:820px){.pr-grid{grid-template-columns:1fr}}
+
+.left-col{}
+.section-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.5rem;margin-bottom:1.5rem}
+.section-block h3{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:600;color:#fff;margin-bottom:.9rem;padding-bottom:.6rem;border-bottom:1px solid var(--border)}
+.section-block p{font-size:.93rem;color:var(--text-dim);line-height:1.7}
+.section-block p+p{margin-top:.75rem}
+
+.img-placeholder{background:#0e0404;border:2px dashed #2a1515;border-radius:10px;min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;padding:2rem;margin-bottom:1.5rem;text-align:center}
+.img-placeholder .img-icon{font-size:2rem;opacity:.4}
+.img-placeholder .img-label{font-size:.8rem;color:var(--muted);max-width:380px;line-height:1.5}
+.img-placeholder .img-prompt{font-size:.75rem;color:#5a4040;font-style:italic;max-width:420px;line-height:1.5;margin-top:.25rem}
+
+.questions-list{list-style:none;padding:0;margin:0}
+.questions-list li{display:flex;gap:.75rem;padding:.75rem 0;border-bottom:1px solid #1e0e0e;font-size:.92rem;color:var(--text-dim);line-height:1.6}
+.questions-list li:last-child{border-bottom:none}
+.q-num{flex-shrink:0;width:1.6rem;height:1.6rem;background:rgba(152,120,200,.12);border:1px solid rgba(152,120,200,.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:var(--session-color);margin-top:.1rem}
+
+.sidebar{}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin-bottom:1.25rem}
+.card h4{font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;padding-bottom:.6rem;border-bottom:1px solid var(--border)}
+.detail-row{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;padding:.35rem 0;border-bottom:1px solid #1a0a0a;font-size:.85rem}
+.detail-row:last-child{border-bottom:none}
+.detail-key{color:var(--muted);font-size:.8rem}
+.detail-val{color:var(--text);font-weight:500;text-align:right;font-size:.83rem}
+.detail-val a{color:var(--session-color);font-size:.8rem}
+
+.prereq-list{list-style:none;padding:0;margin:0}
+.prereq-list li{display:flex;align-items:flex-start;gap:.5rem;padding:.4rem 0;font-size:.85rem;color:var(--text-dim);border-bottom:1px solid #1a0a0a}
+.prereq-list li:last-child{border-bottom:none}
+.prereq-list li::before{content:'·';color:var(--session-color);font-weight:700;margin-top:.05rem;flex-shrink:0}
+
+.notes-label{font-size:.78rem;color:var(--muted);margin-bottom:.4rem;display:block;font-weight:600;letter-spacing:.05em}
+textarea.notes-area{width:100%;background:#0e0606;border:1px solid #2a1515;border-radius:6px;color:var(--text);font-family:'Inter',sans-serif;font-size:.83rem;line-height:1.55;padding:.65rem .75rem;resize:vertical;min-height:90px;outline:none;transition:border-color .15s}
+textarea.notes-area::placeholder{color:#4a3030}
+textarea.notes-area:focus{border-color:rgba(152,120,200,.4)}
+.notes-gap{height:.85rem}
+
+.page-nav{border-top:1px solid #2a1515;margin-top:2rem;padding:1.25rem 2rem;max-width:1100px;margin-left:auto;margin-right:auto;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
+.nav-link{display:flex;flex-direction:column;gap:.2rem;text-decoration:none;padding:.6rem .9rem;border:1px solid var(--border);border-radius:8px;background:var(--surface);transition:all .15s;max-width:200px}
+.nav-link:hover{border-color:var(--session-color);background:#1a0808}
+.nav-direction{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+.nav-title{font-size:.85rem;color:var(--text);font-weight:500}
+.nav-link.hub{align-items:center;text-align:center}
+.nav-link.hub .nav-title{color:var(--session-color)}
+
+footer{text-align:center;padding:2rem;font-size:.78rem;color:var(--muted);border-top:1px solid #1a0808;margin-top:1rem}
+</style>
+<style>
+/* ── Light theme override ── */
+body{background:#faf7f5;color:#1a0606}
+header{background:#fff;border-bottom-color:#e8d5cc}
+header h1,h1{color:#1a0606}
+header .tagline,header p.tagline{color:#7a5050}
+.breadcrumb a{color:#9a6060}
+.eyebrow-label{color:#9a6060}
+/* Cards and surfaces */
+.content-section,.sidebar-card,.copy-block,.session-card,
+details.how-to,.how-to,.img-placeholder{background:#fff;border-color:#e8d5cc}
+.copy-block-header{background:#fdf5f0;border-bottom-color:#e8d5cc}
+.copy-block pre{background:#fdf5f0;color:#4a2020}
+.how-to-body{background:#fff}
+.flow-box{background:#fdf5f0;border-color:#e8d5cc}
+.flow-chip{background:#f0e5e0;color:#7a5050}
+/* Sidebar */
+.sidebar-textarea{background:#fdf5f0;border-color:#e8d5cc;color:#3a2020}
+.sidebar-textarea::placeholder{color:#c09090}
+.sidebar-textarea:focus{border-color:var(--session-color)}
+.card-hint,.sidebar-hint{color:#9a6060}
+/* Typography — scoped away from story section */
+.chapter-name,.session-title,.content-section h2,.target-qs h2,
+.overview-block h2,.sidebar-card-title+h2{color:#1a0606}
+.sidebar-card-title,.copy-block-label,.prereqs-label,.img-label,
+.session-meta,.flow-box h4,.chapter-label,.progress-label,.detail-row .dl,
+.eyebrow-label{color:#9a6060}
+.chapter-name{color:#1a0606}
+.prereqs li,.prereq-list li,.detail-row .dv{color:#5a3030}
+.target-intro,.section-sub{color:#9a6060}
+.step-text strong{color:#1a0606}
+.step-text p,.how-to-body p{color:#5a3030}
+.overview-block p,.content-section p{color:#5a3030}
+/* Borders and dividers */
+.chapter-header{border-bottom-color:#e8d5cc}
+.detail-row{border-bottom-color:#f0e0d8}
+.detail-row .dl{color:#9a6060}
+.q-list li{color:#5a3030;border-bottom-color:#f0e0d8}
+.prereq-list li{border-bottom-color:#f0e0d8;color:#5a3030}
+.divider{border-top-color:#e8d5cc}
+/* Page nav */
+.page-nav{border-top-color:#e8d5cc}
+.nav-link{color:#9a6060;border-color:#e8d5cc}
+.nav-link:hover{color:var(--session-color);border-color:var(--session-color)}
+.nav-link.hub{color:#7a5050}
+.nav-disabled{color:#c0a8a0}
+footer{color:#9a7070;border-top-color:#e8d5cc}
+/* Progress and status */
+.days-badge{background:#fff;border-color:#e8d5cc}
+.progress-bar-bg{background:#f0ddd8}
+.status-none{background:#f5ecec;color:#9a7070}
+.status-started{background:#fdf5e0;color:#8a6a20}
+/* Buttons */
+.btn-prereading{background:#fdf5f0;border-color:#e8d5cc;color:#4a2020}
+.btn-prereading:hover{background:#f5e8e0;border-color:var(--session-color);color:#1a0606}
+.btn-sg{background:#faf5f5;border-color:#ede0d8;color:#7a5050}
+.btn-sg:hover{border-color:#c0a098}
+.btn-done-toggle{border-color:#e8d5cc;color:#9a7070}
+.btn-done-toggle:hover{border-color:var(--session-color);color:var(--session-color)}
+.btn-done-toggle.is-done{border-color:var(--green,#5ab288);color:var(--green,#5ab288);background:#f0f8f0}
+.session-card:hover{border-color:#c8a898}
+.session-card.done{opacity:.5}
+/* Image prompt */
+.img-prompt-text{background:#fdf5f0;border-color:#e8d5cc;color:#7a5050}
+.img-placeholder{border-color:#e8d5cc}
+.img-icon{opacity:.25}
+.sg-link{background:#fdf5f0;border-color:#e8d5cc}
+.sg-link:hover{background:#f5e8e0;border-color:var(--session-color)}
+/* Preserve story section darkness */
+.story-section{background:linear-gradient(135deg,#1a0a08,#120606)!important}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <nav class="breadcrumb">
+      <a href="../study-guides/nse7-ef-study-guide-hub.html">EF-NSE7 Hub</a>
+      <span>›</span>
+      <a href="index.html">Socratic Plan</a>
+      <span>›</span>
+      <span>Session 29</span>
+    </nav>
+    <div class="eyebrow">
+      <span class="session-chip">Session 29</span>
+      Chapter 09 — Security Fabric
+    </div>
+    <h1>Fabric <em>Connectors</em></h1>
+    <p class="tagline">SDN and cloud connectors that make firewall policies dynamically aware of your infrastructure.</p>
+  </div>
+</header>
+
+<section class="story-section">
+  <div class="story-inner">
+    <div class="story-label">Before You Begin · Real-World Scenario</div>
+    <h2>The Migration That Made Every Policy Wrong</h2>
+    <p>A SaaS company running a mid-market HR platform had spent 18 months building out what they considered a mature firewall posture. Forty application servers — web tiers, API gateways, database clusters, and background job workers — each had a named IP address object in FortiGate. Firewall policies were built around these objects with real intention: the payment processing cluster could talk to the database cluster on specific ports, the API gateway could reach the web tier, the job workers had no direct internet access. The team was proud of the policy structure. It had taken a security engineer most of a quarter to clean it up from the original flat-network mess, and it was finally documented and sensible. Then the CTO approved a weekend AWS migration.</p>
+    <p>The migration completed at 2:47 AM on a Sunday. By 6 AM, the DevOps team was getting paged. Marketing servers couldn't reach the database — the policy still referenced the old RFC 1918 address that no longer existed. The payment processing cluster was blocked because its new AWS VPC DHCP address fell into a different subnet than the static object the policy expected. The job workers were stuck because a dependency they needed was at a completely different IP inside the VPC. The on-call engineer logged into FortiGate and found 200 address objects, each containing a static IP that was now wrong. Every policy that had been carefully scoped and documented was referencing addresses that no longer existed in the network. Marketing started calling when their dashboard wouldn't load at 9 AM. Finance escalated when invoicing couldn't process at 10 AM. The firewall team worked through Sunday and into Monday morning manually correcting address objects one at a time.</p>
+    <p>The post-migration review was uncomfortable for everyone who had spent months on the firewall posture. The fundamental problem was that static IP address objects are brittle by design — they encode a snapshot of infrastructure state that becomes wrong the moment the infrastructure changes. The engineer who had built the address objects had been meticulous, but meticulousness couldn't survive a cloud migration where DHCP hands out addresses from a pool. A Fabric Connector pointed at the AWS API would have resolved this entire class of problem: dynamic address objects keyed to instance tags, autoscaling group membership, or VPC subnet would have updated automatically as each server came online in AWS. The migration would have been transparent to the firewall. Three days of manual remediation work — and the customer-facing outage — could have been avoided entirely.</p>
+  </div>
+</section>
+
+<main>
+  <div class="pr-grid">
+
+    <!-- LEFT COLUMN -->
+    <div class="left-col">
+
+      <div class="section-block">
+        <h3>Overview</h3>
+        <p>Fabric Connectors are integration points that allow FortiGate to pull live data from external systems — cloud platforms, SDN controllers, and threat intelligence feeds — and use that data to dynamically build firewall policy objects. The most common application is dynamic address objects: instead of a static IP address object that an administrator manually maintains, a dynamic address object is keyed to a filter — a tag value, an instance attribute, a security group name — and FortiGate continuously polls the connected platform to resolve which current IP addresses match that filter. When infrastructure changes, the address object updates automatically.</p>
+        <p>The two major categories of Fabric Connectors are cloud connectors (AWS, Azure, Google Cloud, Oracle Cloud) and SDN connectors (VMware NSX, OpenStack, Nuage). Cloud connectors authenticate to the cloud provider's API using credentials or IAM roles and query resource metadata. An AWS connector, for example, can filter by tag key/value pairs, VPC ID, or instance state. An Azure connector can filter by resource group or tag. The connector polls on a configurable interval and rebuilds the address object's IP list whenever the result changes. Policies referencing these dynamic objects enforce the current state of the infrastructure automatically, with no manual intervention required.</p>
+        <p>Understanding what happens when a connector loses API access — and how long polling intervals affect responsiveness — is important for operational reliability. A long polling interval means a newly provisioned server might not be reachable through the firewall for several minutes after launch. An unreachable API endpoint raises questions about how existing sessions are handled. These edge cases are part of what the NSE7 exam tests: not just the happy path of connector configuration, but what happens at the boundaries and failure modes.</p>
+      </div>
+
+      <div class="img-placeholder">
+        <img src="images/session-29-fabric-connectors.png" alt="Session 29 concept illustration" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 1rem;object-fit:cover;" onerror="this.style.display='none'">
+
+        <div class="img-icon">🖼</div>
+        <div class="img-label"><strong>Image Placeholder — Session 29</strong><br/>Fabric Connectors architecture diagram</div>
+        <div class="img-prompt">Flat illustration of Fabric Connectors: FortiGate in center with labeled connector arrows pointing to three cloud/SDN platforms (AWS logo box, Azure logo box, VMware NSX box). Dynamic address object shown updating automatically as VMs spin up and down (green VM appearing, IP auto-populating in address object). Real-time polling clock icon. Pastel purple/blue palette.</div>
+      </div>
+
+      <div class="section-block">
+        <h3>Target Questions</h3>
+        <p style="font-size:.83rem;color:var(--muted);margin-bottom:1rem;">These are the questions your Socratic session will explore. Read them before you start — they tell you what understanding to look for while reviewing the study guide.</p>
+        <ul class="questions-list">
+          <li><span class="q-num">1</span>What is a Fabric Connector and what does it integrate with — give the general categories?</li>
+          <li><span class="q-num">2</span>What is an SDN connector — name two supported SDN platforms?</li>
+          <li><span class="q-num">3</span>How does a cloud connector dynamically create address objects — what data source does it poll?</li>
+          <li><span class="q-num">4</span>What is the polling interval for Fabric Connectors and what are the implications of a long interval?</li>
+          <li><span class="q-num">5</span>What happens to policies using a dynamic address object when the connector cannot reach the cloud API?</li>
+          <li><span class="q-num">6</span>What is a "filter" in the context of an SDN connector address object?</li>
+          <li><span class="q-num">7</span>What types of cloud resource metadata can be used as filters for dynamic address objects?</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- RIGHT SIDEBAR -->
+    <aside class="sidebar">
+
+      <div class="card">
+        <h4>Session Details</h4>
+        <div class="detail-row"><span class="detail-key">Session</span><span class="detail-val">29 of 33</span></div>
+        <div class="detail-row"><span class="detail-key">Chapter</span><span class="detail-val">09 — Security Fabric</span></div>
+        <div class="detail-row"><span class="detail-key">Format</span><span class="detail-val">Socratic (Claude-led)</span></div>
+        <div class="detail-row"><span class="detail-key">Est. time</span><span class="detail-val">25–35 min</span></div>
+        <div class="detail-row"><span class="detail-key">Study guide</span><span class="detail-val"><a href="../study-guides/Chapter 09 - Security Fabric/subtopic-02-fabric-connectors.html">Open →</a></span></div>
+      </div>
+
+      <div class="card">
+        <h4>Prerequisites</h4>
+        <ul class="prereq-list">
+          <li>Session 28 — Security Fabric topology</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h4>My Questions</h4>
+        <label class="notes-label" for="myQs">Questions I want to ask Claude</label>
+        <textarea id="myQs" class="notes-area" placeholder="e.g. How do SDN connectors differ from cloud connectors?&#10;What exactly does 'filter by tag' mean for AWS..."></textarea>
+      </div>
+
+      <div class="card">
+        <h4>My Notes</h4>
+        <label class="notes-label" for="myNotes">Notes from the study guide</label>
+        <textarea id="myNotes" class="notes-area" placeholder="Key concepts, terms, things to remember..."></textarea>
+      </div>
+
+    </aside>
+  </div>
+</main>
+
+<nav class="page-nav">
+  <a href="session-28-security-fabric.html" class="nav-link">
+    <span class="nav-direction">← Previous</span>
+    <span class="nav-title">Session 28</span>
+  </a>
+  <a href="index.html" class="nav-link hub">
+    <span class="nav-direction">Study Plan</span>
+    <span class="nav-title">Hub →</span>
+  </a>
+  <a href="session-30-automation-stitches.html" class="nav-link">
+    <span class="nav-direction">Next →</span>
+    <span class="nav-title">Session 30</span>
+  </a>
+</nav>
+
+<footer>EF-NSE7 · Socratic Plan · Session 29 — Fabric Connectors</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-pr-s29';
+['myQs','myNotes'].forEach(id=>{
+  const el=document.getElementById(id); if(!el)return;
+  const saved=localStorage.getItem(PAGE_KEY+'-'+id);
+  if(saved)el.value=saved;
+  el.addEventListener('input',()=>localStorage.setItem(PAGE_KEY+'-'+id,el.value));
+});
+window.addEventListener('load',()=>{document.body.style.opacity='1';if(sessionStorage.getItem('pt'))sessionStorage.removeItem('pt');});
+document.querySelectorAll('a[href]').forEach(a=>{
+  if(!a.getAttribute('href').startsWith('#'))a.addEventListener('click',()=>sessionStorage.setItem('pt','1'));
+});
+</script>
+</body>
+</html>

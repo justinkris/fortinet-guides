@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configure HA Clusters — EF-NSE7 Ch04 Sub01</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff5f5;--surface:#ffffff;--surface-2:#fef2f2;--border:#f0c8c8;--border-dim:#fde8e8;--text:#1a0606;--text-soft:#4a1212;--text-muted:#8a3a3a;--red:#c0392b;--red-vivid:#e03e2d;--red-glow:rgba(192,57,43,0.07);--red-dim:#f8b4b4;--red-deep:#7f1d1d;--red-light:#fef2f2;--red-border:#f8b4b4;--green:#1a7c4a;--green-light:#d4f0e0;--green-border:#a7e0c0;--amber:#b45309;--amber-light:#fef9c3;--amber-border:#fde68a;}
+html{scroll-behavior:smooth;}
+html.pt-init body{opacity:0;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+/* ── HEADER ── */
+header{padding:48px 60px 36px;background:#1a0606;display:flex;align-items:flex-end;gap:32px;}
+.header-left{flex:1;}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);letter-spacing:0.08em;margin-bottom:12px;flex-wrap:wrap;}
+.breadcrumb a{color:#e87070;text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.breadcrumb-sep{color:rgba(232,112,112,0.35);}
+.header-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(232,112,112,0.1);border:1px solid rgba(232,112,112,0.25);padding:5px 14px;border-radius:20px;font-size:11px;color:#e87070;letter-spacing:0.08em;margin-bottom:14px;}
+.dot-live{width:6px;height:6px;background:#e87070;border-radius:50%;display:inline-block;animation:blink 2.4s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+header h1{font-family:'Fraunces',serif;font-size:44px;font-weight:700;line-height:1.0;color:#fff;margin-bottom:10px;}
+header h1 em{font-style:italic;font-weight:400;color:#e87070;}
+header p{font-size:13px;color:rgba(255,255,255,0.42);margin-top:10px;line-height:1.7;}
+/* ── MOTIVATION BANNER ── */
+.motivation-banner{padding:20px 60px;min-height:84px;display:flex;flex-direction:column;justify-content:center;border-bottom:1px solid var(--border);background:var(--surface);}
+.motivation-text{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--text);}
+.motivation-text em{font-style:italic;color:var(--red);}
+.motivation-sub{font-size:12px;color:var(--text-muted);line-height:1.7;margin-top:4px;}
+/* ── TOP PANELS ── */
+.top-panels{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+.top-panels .qpanel{border-bottom:none;border-right:1px solid var(--border);}
+.top-panels .qpanel-header{padding-left:32px;padding-right:32px;}
+.top-panels .qpanel-body{padding-left:32px;padding-right:32px;}
+.qpanel{background:var(--surface);}
+.qpanel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 20px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.qpanel-header:hover,.qpanel-header.open{background:var(--surface-2);}
+.qpanel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.qpanel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.qpanel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.qpanel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.qpanel-body{display:none;padding:0 20px 22px;}
+.qpanel-body.open{display:block;}
+.notes-panel{background:var(--surface);}
+.notes-panel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 32px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.notes-panel-header:hover,.notes-panel-header.open{background:var(--surface-2);}
+.notes-panel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.notes-panel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.notes-panel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.notes-panel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.notes-panel-body{display:none;padding:0 32px 22px;}
+.notes-panel-body.open{display:block;}
+.q-group{margin-bottom:16px;}
+.q-group-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+.q-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-dim);}
+.q-item:last-child{border-bottom:none;}
+.q-num{font-size:10px;font-weight:700;color:var(--red);min-width:16px;margin-top:2px;}
+.q-text{font-size:12px;color:var(--text-soft);line-height:1.5;flex:1;}
+.q-del{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 4px;margin-top:1px;}
+.q-del:hover{color:var(--red);}
+.no-questions{font-size:12px;color:var(--text-muted);padding:8px 0;}
+.btn-add-q{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-q:hover{opacity:0.85;}
+/* ── STICKY SECTION NAV ── */
+.section-nav{position:sticky;top:0;z-index:90;display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);padding:0 32px;overflow-x:auto;}
+.nav-tab{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:12px 18px;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--red);border-bottom-color:var(--red);}
+/* ── MAIN GRID ── */
+main{display:grid;grid-template-columns:1fr 320px;gap:0;align-items:start;max-width:1200px;margin:0 auto;padding:0;}
+.main-content{padding:36px 40px 60px 60px;}
+.sidebar{padding:32px 24px 60px 20px;position:sticky;top:57px;max-height:calc(100vh - 57px);overflow-y:auto;}
+/* ── SECTION BLOCK ── */
+.section-block{margin-bottom:48px;}
+.section-label{font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.section-block h2{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1.15;margin-bottom:16px;padding-left:16px;border-left:3px solid var(--red);}
+.section-block h2 em{font-style:italic;font-weight:400;color:var(--red);}
+.section-block p{font-size:14px;line-height:1.8;color:var(--text-soft);margin-bottom:14px;}
+.section-block p strong{color:var(--text);font-weight:600;}
+.section-block p em{color:var(--red);font-style:italic;}
+.section-block ul,.section-block ol{padding-left:22px;margin-bottom:14px;}
+.section-block li{font-size:14px;line-height:1.75;color:var(--text-soft);margin-bottom:4px;}
+.section-block li strong{color:var(--text);font-weight:600;}
+/* ── CALLOUTS ── */
+.callout{border-left:3px solid var(--red-border);background:var(--red-light);border-radius:0 10px 10px 0;padding:12px 18px;margin:16px 0;font-size:13.5px;line-height:1.65;color:var(--text-soft);}
+.callout strong{color:var(--text);}
+.callout-green{border-left-color:var(--green-border);background:var(--green-light);}
+.callout-amber{border-left-color:var(--amber-border);background:var(--amber-light);}
+/* ── SECTION IMAGE ── */
+.section-img-wrap{margin:0 0 20px;display:flex;flex-direction:column;align-items:center;}
+.section-img{width:260px;max-width:100%;border-radius:12px;cursor:zoom-in;transition:width 0.3s ease;border:1px solid var(--border);display:block;}
+.section-img.si-expanded{width:100%;cursor:zoom-out;border-radius:16px;}
+.si-placeholder{display:none;width:260px;max-width:100%;border:2px dashed var(--border);border-radius:12px;background:var(--surface-2);padding:14px 16px;flex-direction:column;align-items:flex-start;gap:8px;}
+.si-placeholder.si-show{display:flex;}
+.si-filename{font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+/* ── CODE BLOCK ── */
+.code-block{background:#1a0606;border-radius:12px;padding:20px 24px;margin:16px 0;overflow-x:auto;}
+.code-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#e87070;margin-bottom:10px;}
+.code-block pre{margin:0;}
+.code-block code{font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:rgba(255,255,255,0.82);}
+/* ── SOCRATIC THINK-FIRST ── */
+.socratic-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:16px;border-top:3px solid var(--red);}
+.socratic-header{display:flex;align-items:center;gap:8px;margin-bottom:0;cursor:pointer;user-select:none;}
+.socratic-header::after{content:'▸ Expand';margin-left:auto;font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'Inter',sans-serif;}
+.socratic-block.soc-open .socratic-header{margin-bottom:10px;}
+.socratic-block.soc-open .socratic-header::after{content:'▾ Collapse';}
+.socratic-block:not(.soc-open) .socratic-insight,.socratic-block:not(.soc-open) .socratic-questions,.socratic-block:not(.soc-open) .answer-area{display:none;}
+.socratic-icon{font-size:17px;flex-shrink:0;}
+.socratic-label{font-size:9px;font-weight:700;letter-spacing:0.18em;color:var(--text-muted);}
+.socratic-insight{font-size:13px;color:var(--text-soft);line-height:1.75;margin-bottom:12px;border-left:3px solid var(--border);padding-left:12px;font-style:italic;}
+.socratic-questions{list-style:none;padding:0;margin:0;}
+.socratic-questions li{font-size:12.5px;color:var(--text);padding:7px 0 7px 22px;position:relative;border-bottom:1px solid var(--border-dim);line-height:1.6;}
+.socratic-questions li:last-child{border-bottom:none;}
+.socratic-questions li::before{content:'?';position:absolute;left:0;font-weight:700;font-size:12px;top:8px;color:var(--red);}
+.answer-area{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.answer-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.answer-textarea:focus{border-color:var(--text);}
+.answer-textarea:disabled{opacity:0.7;background:var(--surface-2);cursor:default;}
+.answer-buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.btn-add-answer{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-answer:hover:not(:disabled){opacity:0.85;}
+.btn-add-answer:disabled{opacity:0.5;cursor:default;}
+.btn-see-answer{background:var(--surface);color:var(--text-muted);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-see-answer:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-see-answer:not(:disabled){color:var(--red);border-color:var(--red);}
+.btn-see-answer:hover:not(:disabled){background:var(--red-glow);}
+.model-answers{margin-top:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.model-answer-item{padding:10px 0;border-bottom:1px solid var(--border-dim);}
+.model-answer-item:first-child{padding-top:0;}
+.model-answer-item:last-child{border-bottom:none;padding-bottom:0;}
+.model-answer-q{font-size:9px;font-weight:700;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:4px;}
+.model-answer-text{font-size:13px;color:var(--text-soft);line-height:1.7;}
+/* ── MENTAL NOTE ── */
+.mental-note-block{border-radius:10px;padding:12px 16px;margin:16px 0;display:flex;gap:10px;align-items:flex-start;background:rgba(192,57,43,0.07);border:1px solid var(--border);}
+.mental-note-block-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.mental-note-block-inner{flex:1;}
+.mental-note-block-label{font-size:9px;font-weight:700;letter-spacing:0.16em;color:var(--red);margin-bottom:3px;}
+.mental-note-block-text{font-size:13px;font-weight:600;line-height:1.55;color:var(--text);}
+/* ── ANALOGY BOX ── */
+.analogy-box{background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #b45309;border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0;}
+.analogy-label{display:flex;align-items:center;gap:6px;user-select:none;cursor:pointer;font-size:9px;font-weight:700;letter-spacing:0.16em;color:#b45309;margin-bottom:4px;}
+.analogy-label::after{content:'▾  Reveal illustration';margin-left:auto;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:none;opacity:0.75;}
+.analogy-label:hover::after{opacity:1;}
+.analogy-box.expanded>.analogy-label::after{content:'▴  Hide illustration';}
+.analogy-text{font-size:13px;color:#78350f;line-height:1.65;font-style:italic;}
+.analogy-box>.analogy-img{display:none;}
+.analogy-box.expanded>.analogy-img{display:block;}
+.analogy-img img{max-width:360px;width:100%;cursor:zoom-in;transition:max-width 0.25s ease;border-radius:8px;margin-top:10px;}
+.analogy-img img.zoomed{max-width:100%;cursor:zoom-out;}
+.prompt-toggle{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:10px;font-weight:600;letter-spacing:0.08em;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;text-transform:uppercase;}
+.prompt-toggle:hover{color:var(--text);border-color:var(--text);}
+.prompt-content{margin-top:10px;padding:10px 14px;background:rgba(0,0,0,0.04);border-radius:8px;font-size:11.5px;color:var(--text-muted);font-style:italic;line-height:1.65;text-align:left;}
+.prompt-content[hidden]{display:none;}
+/* ── LESSON TOOLS ── */
+.lesson-tools{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:40px;}
+.lesson-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.tool-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.tool-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.tool-textarea:focus{border-color:var(--red);}
+.tool-row{margin-top:8px;display:flex;gap:8px;}
+/* ── SIDEBAR ── */
+.sidebar-section{margin-bottom:28px;}
+.sidebar-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;}
+.ssnav{display:flex;flex-direction:column;gap:2px;margin-top:4px;}
+.ssnav-item{font-size:12px;color:var(--text-soft);padding:6px 10px;border-radius:6px;text-decoration:none;line-height:1.4;display:block;transition:background 0.15s,color 0.15s;}
+.ssnav-item:hover,.ssnav-item.active{background:var(--red-glow);color:var(--red);}
+.hub-link{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);margin-bottom:16px;transition:color 0.15s,border-color 0.15s,background 0.15s;}
+.hub-link:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);}
+.check-item{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;}
+.check-input{accent-color:var(--red);width:14px;height:14px;flex-shrink:0;cursor:pointer;}
+.check-label{font-size:12px;color:var(--text-soft);line-height:1.4;}
+.check-item:has(.check-input:checked) .check-label{color:var(--text-muted);text-decoration:line-through;}
+.quick-ref{background:#1a0606;border-radius:10px;padding:12px 16px;margin-bottom:8px;}
+.quick-ref-term{font-size:10px;font-weight:700;letter-spacing:0.12em;color:#e87070;margin-bottom:3px;text-transform:uppercase;}
+.quick-ref-def{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;}
+/* ── PAGE NAV ── */
+.page-nav{display:flex;border-top:2px solid var(--border);background:var(--surface);}
+.page-nav-btn{flex:1;display:flex;flex-direction:column;gap:4px;padding:16px 28px;text-decoration:none;transition:background 0.15s;cursor:pointer;}
+.page-nav-btn:hover:not(.page-nav-disabled){background:var(--surface-2);}
+.page-nav-prev{border-right:1px solid var(--border);}
+.page-nav-next{text-align:right;}
+.page-nav-disabled{opacity:0.3;pointer-events:none;}
+.page-nav-label{font-size:10px;font-weight:600;letter-spacing:0.14em;color:var(--text-muted);display:block;}
+.page-nav-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;color:var(--red);display:block;}
+/* ── FOOTER ── */
+footer{font-size:11px;letter-spacing:0.12em;color:var(--text-muted);text-transform:uppercase;padding:20px 60px;border-top:1px solid var(--border);}
+footer span{color:var(--red);}
+/* ── ADDITIONAL CSS ── */
+.img-caption{font-size:11px;color:var(--text-muted);text-align:center;margin-top:6px;line-height:1.4;font-style:italic;}
+.analogy-summary{font-style:normal;font-weight:600;color:#92400e;margin-bottom:10px;}
+.analogy-text ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;}
+.analogy-text li{padding-left:18px;position:relative;}
+.analogy-text li::before{content:'•';position:absolute;left:0;font-weight:700;color:#b45309;}
+.data-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;}
+.data-table th{background:#1a0606;color:#e87070;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:10px 14px;text-align:left;}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-soft);line-height:1.55;vertical-align:top;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:nth-child(even) td{background:var(--surface-2);}
+.data-table td strong{color:var(--text);font-weight:600;}
+.img-missing-msg{display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;}
+/* ── RESPONSIVE ── */
+@media(max-width:1000px){main{grid-template-columns:1fr;}.sidebar{position:static;max-height:none;padding:0 40px 40px;}}
+@media(max-width:720px){header{padding:28px 24px 24px;}header h1{font-size:32px;}.motivation-banner{padding:16px 24px;}.main-content{padding:24px 24px 40px;}.section-nav{padding:0 16px;}.top-panels{grid-template-columns:1fr;}.top-panels .qpanel{border-right:none;border-bottom:1px solid var(--border);}.lesson-tools-grid{grid-template-columns:1fr;}footer{padding:16px 24px;}}
+</style>
+</head>
+<body>
+<div id="pt-overlay"></div>
+
+<header>
+  <div class="header-left">
+    <div class="breadcrumb">
+      <a href="../nse7-ef-study-guide-hub.html">EF-NSE7</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="index.html">Chapter 04 — High Availability</a>
+      <span class="breadcrumb-sep">›</span>
+      Subtopic 01
+    </div>
+    <div class="header-eyebrow"><span class="dot-live"></span> Study Guide · EF-NSE7</div>
+    <h1>Configure <em>HA Clusters</em></h1>
+    <p>HA requirements, heartbeat configuration, primary election criteria, virtual MAC addresses, and active-active load balancing — everything the exam expects you to configure from scratch.</p>
+  </div>
+</header>
+
+<div class="motivation-banner">
+  <div class="motivation-text">HA is the difference between a <em>resilient network</em> and a single point of failure.</div>
+  <p class="motivation-sub">Chapter 04 · Subtopic 01 covers cluster formation, failover mechanics, and the virtual MAC address system that makes transparent failover possible.</p>
+</div>
+
+<div class="top-panels">
+  <div class="qpanel" id="qpanel">
+    <button class="qpanel-header" onclick="toggleQPanel()" id="qpanel-header">
+      <span class="qpanel-title">MY QUESTIONS</span>
+      <span class="qpanel-count" id="qpanel-count">0</span>
+      <span class="qpanel-hint">— click to expand</span>
+      <span class="qpanel-chevron" id="qpanel-chevron">▾</span>
+    </button>
+    <div class="qpanel-body" id="qpanel-body"></div>
+  </div>
+  <div class="notes-panel" id="notes-panel">
+    <button class="notes-panel-header" onclick="toggleNotesPanel()" id="notes-panel-header">
+      <span class="notes-panel-title">MY NOTES</span>
+      <span class="notes-panel-count" id="notes-panel-count">0</span>
+      <span class="notes-panel-hint">— click to expand</span>
+      <span class="notes-panel-chevron" id="notes-panel-chevron">▾</span>
+    </button>
+    <div class="notes-panel-body" id="notes-panel-body"></div>
+  </div>
+</div>
+
+<nav class="section-nav" id="section-nav">
+  <a class="nav-tab active" href="#s1">HA Requirements</a>
+  <a class="nav-tab" href="#s2">Primary Election</a>
+  <a class="nav-tab" href="#s3">Heartbeat &amp; Sync</a>
+  <a class="nav-tab" href="#s4">Virtual MAC</a>
+  <a class="nav-tab" href="#s5">Active-Active Load Balancing</a>
+</nav>
+
+<main>
+  <div class="main-content">
+
+    <!-- SECTION 1 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · HA REQUIREMENTS</span>
+      </div>
+      <p class="socratic-insight">Forming an HA cluster sounds simple — just connect two FortiGates. But FortiGate enforces strict preconditions before any cluster can operate. Understanding which requirements are hardware-level vs configuration-level is critical for both deployment and troubleshooting.</p>
+      <ul class="socratic-questions">
+        <li>Why must all cluster members run the same firmware version? What happens at the protocol level if they don't match?</li>
+        <li>If two members have different FortiGuard licenses, what licensing level will the cluster use — and why is that a problem you might not notice immediately?</li>
+      </ul>
+      <div class="answer-area" data-section="ha-requirements">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Cluster members use FGCP to communicate, and FGCP relies on both devices understanding the same data structures and synchronization protocol. Mismatched firmware creates incompatible data formats for heartbeats and config sync, so the cluster simply won't form — or worse, it will form inconsistently and fail during a failover.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">The cluster resolves to the lowest licensing level among all members. So if only one member has FortiGuard Web Filtering purchased, no member in the cluster will support Web Filtering. This is a silent degradation — the feature appears enabled on one device but the cluster enforces the minimum, which can cause security gaps that aren't obvious until you inspect cluster status.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s1">
+      <div class="section-label">SECTION 01</div>
+      <h2>HA <em>Requirements</em></h2>
+
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s1-ha-requirements.png" alt="HA cluster requirements checklist" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg">📷 <strong>images/s1-ha-requirements.png</strong></div>
+        <p class="img-caption">Hardware and configuration requirements that must match across all cluster members.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration: two FortiGate devices side by side with a checklist overlay showing matching model, firmware, license, hard drive, and operating mode icons. Pastel palette (teal/coral/cream), bold outlines, minimal text labels, educational infographic feel. No shadows, no gradients.</div>
+      </div>
+
+      <p>To form an <strong>HA cluster</strong>, all members must share the same hardware model (or VM model), firmware version, licensing level, hard drive configuration (same number and size), and operating mode of the management VDOM. These are non-negotiable — a mismatch prevents cluster formation.</p>
+
+      <p>Licensing is especially tricky: if members have different FortiGuard subscriptions, the cluster uses the <em>lowest</em> licensing level among all devices. For example, purchasing Web Filtering for only one member means no member in the cluster supports Web Filtering once joined. <strong>VDOMs</strong> divide a physical FortiGate into additional logical devices — so the operating mode (NAT vs transparent) of the management VDOM must also match.</p>
+
+      <p>From a configuration perspective, all members need the same <strong>HA group ID</strong>, group name, password, and heartbeat interface settings. Best practice calls for at least two heartbeat interfaces in the same broadcast domain, providing redundancy if one heartbeat link fails. The cluster will fall back to the next heartbeat interface ranked by priority in the list.</p>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Basic HA Configuration</div>
+        <pre><code>config system ha
+    set mode a-p
+    set group-id 10
+    set group-name "Training"
+    set password &lt;password&gt;
+    set hbdev "port3" 10 "port4" 20
+end</code></pre>
+      </div>
+
+      <div class="callout callout-amber"><strong>Exam tip:</strong> Use static IP configuration on DHCP or PPPoE interfaces during initial cluster setup. After the cluster forms, you can switch back. DHCP address conflicts during join can silently break the cluster.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">5 things must match: model, firmware, license, hard drive, management VDOM mode. Licensing uses the lowest level. Configure at least 2 heartbeat interfaces. The hbdev priority value is higher = higher priority (not a cost metric).</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s1" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s1','HA Requirements')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s1" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s1')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · PRIMARY ELECTION</span>
+      </div>
+      <p class="socratic-insight">Every cluster needs exactly one primary. FortiGate uses a tiered election process with two different orderings depending on whether HA override is enabled. The subtle difference between these two modes has real consequences for failover behavior in production.</p>
+      <ul class="socratic-questions">
+        <li>Override disabled is the default. In this mode, why does HA uptime take precedence over the configured priority — and how does running <code>diagnose sys ha reset-uptime</code> force a failover?</li>
+        <li>What is the key tradeoff of enabling HA override — specifically, what does the cluster do when the original primary comes back online?</li>
+      </ul>
+      <div class="answer-area" data-section="primary-election">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Override disabled means uptime stability wins — the device that has been running longer is assumed more reliable. Resetting the uptime to 0 on the current primary causes its uptime to drop below the secondary's, triggering re-election. The secondary wins because it now has the higher HA uptime, without touching priority values.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">With override enabled, priority always wins after monitored ports. The advantage is deterministic primary selection. The critical disadvantage: when the original primary recovers, it immediately triggers another failover to reclaim its primary role from the secondary that replaced it. This double-failover disrupts sessions twice — once when it fails, once when it returns.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s2">
+      <div class="section-label">SECTION 02</div>
+      <h2>Primary <em>Election</em> Criteria</h2>
+
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s2-primary-election.png" alt="Primary election flowchart" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg">📷 <strong>images/s2-primary-election.png</strong></div>
+        <p class="img-caption">Election flowchart: Override disabled vs Override enabled criteria ordering.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration: two side-by-side diamond flowcharts labeled "Override Disabled" and "Override Enabled". Each shows decision boxes in teal for: monitored ports, HA uptime/priority, priority/HA uptime, serial number. Bold outlines, pastel palette, arrow connectors, minimal text labels. Educational infographic style.</div>
+      </div>
+
+      <p>When multiple FortiGates negotiate for primary, the election evaluates criteria in a specific order, stopping at the <em>first criterion</em> that produces a winner. Two orderings exist depending on the <strong>override</strong> setting.</p>
+
+      <p><strong>Override Disabled (default):</strong> The cluster evaluates: (1) most connected monitored ports → (2) highest HA uptime (by at least 5 minutes) → (3) highest configured priority → (4) highest serial number. HA uptime outranks priority, which means a newly rebooted device with high priority will lose to a lower-priority device that has been running longer.</p>
+
+      <p><strong>Override Enabled:</strong> The order becomes: (1) monitored ports → (2) priority → (3) HA uptime → (4) serial number. Priority now decides before uptime, so the device with the highest priority always becomes primary when available. Override must be manually enabled on each member — it is not synchronized.</p>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Enable Override &amp; Force Failover</div>
+        <pre><code># Enable override (run on each member)
+config system ha
+    set override enable
+end
+
+# Force failover when override is disabled
+# (run on the current primary)
+diagnose sys ha reset-uptime</code></pre>
+      </div>
+
+      <div class="callout"><strong>Exam tip:</strong> Override and priority values are NOT synchronized. You must configure them individually on each cluster member. Forgetting this is a common lab mistake.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Override disabled order: monitored ports → HA uptime → priority → serial. Override enabled order: monitored ports → priority → HA uptime → serial. Override enabled causes double-failover when primary recovers. Override settings are NOT cluster-synchronized — set manually on each device.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s2" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s2','Primary Election')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s2" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s2')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · HEARTBEAT &amp; SYNC</span>
+      </div>
+      <p class="socratic-insight">FGCP uses non-IP Ethernet frames for heartbeats — not TCP/IP — which means you can't route heartbeat traffic across Layer 3 boundaries. Understanding the distinct Ethernet types and what each carries is key to diagnosing HA issues.</p>
+      <ul class="socratic-questions">
+        <li>What is the risk of running session synchronization over the same link as heartbeat traffic, and what happens if all dedicated session sync interfaces fail?</li>
+        <li>Why does FGCP use Ethernet types 0x8890/0x8891/0x8893 instead of IP for cluster communication?</li>
+      </ul>
+      <div class="answer-area" data-section="heartbeat-sync">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Session synchronization requires significantly more bandwidth than heartbeats — especially with many active sessions. Mixing them can starve heartbeat traffic, causing false failovers. If all dedicated session sync interfaces fail, session sync falls back to the HA heartbeat link automatically, restoring functionality at the cost of increased heartbeat link load.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Using custom Ethernet types bypasses the IP routing layer, ensuring heartbeat frames stay on the local broadcast domain and cannot be accidentally routed away. It also allows FGCP to operate before any IP address assignment is configured, which is essential during early cluster formation when management IPs may not yet be set.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s3">
+      <div class="section-label">SECTION 03</div>
+      <h2>Heartbeat &amp; <em>Synchronization</em></h2>
+
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s3-heartbeat-sync.png" alt="Heartbeat Ethernet types diagram" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg">📷 <strong>images/s3-heartbeat-sync.png</strong></div>
+        <p class="img-caption">FGCP Ethernet types: 0x8890/8891 for HA functions, 0x8893 for config sync.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration: two FortiGate boxes connected by two links labeled "Heartbeat Link" and "Session Sync Link". Above the heartbeat link, show packets labeled 0x8890 (heartbeat), 0x8891 (data sync), 0x8893 (config sync) in different colors. Bold outlines, pastel palette, minimal text. Educational infographic.</div>
+      </div>
+
+      <p>FGCP cluster communication uses proprietary Ethernet frame types rather than IP, enabling communication before IP addresses are assigned and ensuring heartbeat traffic stays local to the broadcast domain. Three Ethernet types are used:</p>
+
+      <table class="data-table">
+        <thead><tr><th>Ethernet Type</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><strong>0x8890 and 0x8891</strong></td><td>Heartbeats, device discovery, primary election, data sync, device failure detection, and traffic redistribution</td></tr>
+          <tr><td><strong>0x8893</strong></td><td>Configuration synchronization</td></tr>
+        </tbody>
+      </table>
+
+      <p>By default, <strong>session synchronization</strong> occurs over the HA heartbeat link. For better performance, configure dedicated synchronization interfaces — this separates high-bandwidth session sync traffic from heartbeat packets. If multiple session sync interfaces are configured, traffic is load balanced. If all sync interfaces fail, synchronization falls back to the heartbeat link automatically.</p>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Dedicated Session Sync &amp; Sniffer</div>
+        <pre><code># Configure dedicated session sync interfaces
+config system ha
+    set session-sync-dev port5 port6
+end
+
+# Sniff heartbeat packets to verify HA communication
+diagnose sniff packet any "ether proto 0x8890" 4</code></pre>
+      </div>
+
+      <div class="callout callout-amber"><strong>Exam tip:</strong> Mixing heartbeat and session sync on the same link can cause false failovers under high session volume. Always use dedicated sync interfaces in production.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">0x8890/0x8891 = heartbeat/data sync. 0x8893 = config sync. Session sync defaults to heartbeat link — use set session-sync-dev to dedicate separate interfaces. Load balanced across multiple sync interfaces. Falls back to heartbeat link if all sync interfaces fail.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s3" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s3','Heartbeat & Sync')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s3" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s3')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · VIRTUAL MAC ADDRESSES</span>
+      </div>
+      <p class="socratic-insight">Virtual MAC addresses are what make FortiGate HA failover transparent to the network — connected switches never need to update their ARP tables because the MAC address stays constant even after a different physical device takes over. But the mechanics of how these addresses are assigned and inherited are nuanced.</p>
+      <ul class="socratic-questions">
+        <li>During a failover, the new primary adopts the same virtual MAC addresses. Why does the new primary also send gratuitous ARP packets — and when might that not be enough?</li>
+        <li>Why does Fortinet strongly recommend using unique HA group IDs for each cluster in the same broadcast domain?</li>
+      </ul>
+      <div class="answer-area" data-section="virtual-mac">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Gratuitous ARP tells switches that the virtual MAC is now reachable through a different physical port, prompting them to update their MAC forwarding tables. Some high-end switches don't process gratuitous ARPs fast enough — so the former primary's interfaces must be shut down for 1 second (link-failed-signal enable) to force the switch to clear its MAC table entries via a link-down event.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">The virtual MAC address is derived from the HA group ID. Two clusters in the same broadcast domain using the same group ID will generate identical virtual MAC addresses for the same interface index — causing catastrophic MAC address conflicts that corrupt forwarding tables and drop traffic from both clusters.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s4">
+      <div class="section-label">SECTION 04</div>
+      <h2>Virtual <em>MAC Addresses</em> and Failover</h2>
+
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s4-virtual-mac.png" alt="Virtual MAC address assignment and failover" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg">📷 <strong>images/s4-virtual-mac.png</strong></div>
+        <p class="img-caption">Primary assigns virtual MACs; secondary inherits same MACs on failover.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration: two-panel diagram. Left panel shows "Primary FortiGate" with virtual MAC badges on each port. Right panel shows "Failover" arrow and "New Primary" with same MAC badges, plus a "Gratuitous ARP" broadcast packet labeled. Pastel palette, bold outlines, no shadows.</div>
+      </div>
+
+      <p>When a <strong>primary FortiGate</strong> joins a cluster, FortiGate assigns a <em>virtual MAC address</em> to each interface except HA heartbeat and reserved management interfaces. The primary informs all secondary devices of these assignments. During a failover, the newly elected primary adopts the identical virtual MAC addresses — so connected switches see no MAC change and do not need to relearn paths.</p>
+
+      <p>After failover, the new primary broadcasts <strong>gratuitous ARP</strong> packets to inform switches that the virtual MAC is now reachable through a different port. Most switches update their MAC forwarding tables immediately. Some high-end switches may not — in those cases, enable <strong>link-failed-signal</strong> to force the former primary's interfaces to drop for one second, triggering switch MAC table clearing.</p>
+
+      <p>FortiGate supports three virtual MAC assignment methods (highest priority first): manual per-interface, automatic per-interface, and group-ID-based (default). The default method derives MAC addresses from the <strong>vcluster ID, group ID, and physical interface index</strong> — four different logic formulas apply depending on these values. Two clusters in the same LAN using the same group ID will generate conflicting virtual MACs.</p>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Link-Failed-Signal &amp; MAC Verification</div>
+        <pre><code># Force link-down on failover to clear switch MAC tables
+config system ha
+    set link-failed-signal enable
+end
+
+# Check virtual MAC address on an interface
+diagnose hardware deviceinfo nic wan1 | grep addr
+
+# Manual virtual MAC assignment per interface
+config system interface
+    edit port1
+        set virtual-mac &lt;mac_address&gt;
+    next
+end</code></pre>
+      </div>
+
+      <div class="analogy-box">
+        <div class="analogy-label">Analogy</div>
+        <div class="analogy-text">
+          <p class="analogy-summary">Virtual MAC failover works like a relay race baton pass — the runner changes, but the baton (the MAC) stays the same.</p>
+          <ul>
+            <li><strong>Virtual MAC address</strong> — the baton that never changes hands visibly to the audience (the network)</li>
+            <li><strong>Gratuitous ARP</strong> — the announcer telling the crowd which lane the new runner is in</li>
+            <li><strong>Link-failed-signal</strong> — dropping the baton briefly so the scoreboard (switch MAC table) resets</li>
+          </ul>
+        </div>
+        <div class="analogy-img" style="margin-top:14px;background:rgba(255,255,255,0.5);border-radius:10px;padding:14px;text-align:center;">
+          <img src="images/a1-relay-race-mac.png" alt="Relay race MAC analogy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 10px;">
+          <div class="img-missing-msg" style="display:none;font-size:12px;color:#92400e;padding:8px;background:rgba(146,64,14,0.1);border-radius:6px;">📷 <strong>images/a1-relay-race-mac.png</strong> — add this image to the folder</div>
+          <button class="prompt-toggle" onclick="togglePrompt(this)" type="button">▾ Show analogy image prompt</button>
+          <div class="prompt-content" hidden>Cartoon flat illustration: relay race track with two runners. First runner labeled "Primary FortiGate" passing a baton labeled "Virtual MAC 00:09:..." to second runner labeled "New Primary". A scoreboard (switch) in the background shows the MAC table updating. Announcer character broadcasting "Gratuitous ARP!". Pastel palette, bold outlines, short text labels, no shadows.</div>
+        </div>
+      </div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Virtual MACs are assigned to all interfaces except heartbeat and reserved management. Failover: new primary adopts same virtual MACs + sends gratuitous ARP. Use link-failed-signal enable for switches that don't update MAC tables on gratuitous ARP. Two clusters on same LAN must use different group IDs to avoid MAC conflicts.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s4" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s4','Virtual MAC Addresses')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s4" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s4')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 5 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · ACTIVE-ACTIVE LOAD BALANCING</span>
+      </div>
+      <p class="socratic-insight">Active-active HA is often misunderstood as simple traffic splitting. In reality, all traffic still arrives at the primary first — the primary then decides which secondary to forward sessions to. The goal is leveraging unused secondary CPU, not raw bandwidth multiplication.</p>
+      <ul class="socratic-questions">
+        <li>Why does active-active mode typically show more traffic on the primary than on secondary devices, even when load balancing is configured?</li>
+        <li>When would you enable <code>load-balance-all</code>, and what traffic does it affect that isn't load balanced by default?</li>
+      </ul>
+      <div class="answer-area" data-section="active-active-lb">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">All client and server traffic is always sent to the primary first, since only the primary has virtual MAC addresses on data interfaces. The primary then redistributes select sessions to secondaries via MAC address rewrite (encapsulated in 0x8891 frames). Return traffic from secondaries also routes back through the primary for proxy sessions, so the primary always carries more total traffic than any secondary.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">By default, only sessions subject to proxy inspection are distributed to secondaries. Enable load-balance-all to also distribute flow-inspected and uninspected sessions. You'd use this when you have high-throughput flow or pass-through traffic that isn't proxy-inspected but still benefits from secondary processing.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s5">
+      <div class="section-label">SECTION 05</div>
+      <h2>Active-Active <em>Load Balancing</em></h2>
+
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s5-active-active.png" alt="Active-active traffic flow diagram" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg">📷 <strong>images/s5-active-active.png</strong></div>
+        <p class="img-caption">Active-active traffic flow: primary receives all traffic, distributes sessions to secondary.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration: Client on left, Primary FortiGate in center-top, Secondary FortiGate in center-bottom, Server on right. Arrows showing all traffic arriving at primary, primary forwarding some sessions to secondary via dashed arrow (labeled 0x8891), secondary responding back through primary. Round-robin labels on sessions. Pastel palette, bold outlines.</div>
+      </div>
+
+      <p>In <strong>active-active</strong> mode, all cluster devices process traffic simultaneously. However, all incoming traffic is sent to the <em>primary</em> first, since only the primary holds virtual MAC addresses on data interfaces. The primary then selects sessions to distribute to secondary devices using one of six load balancing schedules.</p>
+
+      <table class="data-table">
+        <thead><tr><th>Schedule</th><th>Behavior</th></tr></thead>
+        <tbody>
+          <tr><td><strong>round-robin</strong></td><td>Default. Sessions distributed equally across all members.</td></tr>
+          <tr><td><strong>none</strong></td><td>Load balancing off — primary handles all sessions.</td></tr>
+          <tr><td><strong>leastconnection</strong></td><td>Sessions sent to member with fewest active sessions.</td></tr>
+          <tr><td><strong>weight-round-robin</strong></td><td>Higher-weight members handle proportionally more sessions.</td></tr>
+          <tr><td><strong>random</strong></td><td>Sessions randomly distributed across members.</td></tr>
+          <tr><td><strong>ip</strong></td><td>Same source/destination IP pair always goes to same member.</td></tr>
+          <tr><td><strong>ipport</strong></td><td>Distribution based on source/destination IP and port.</td></tr>
+        </tbody>
+      </table>
+
+      <p>Only sessions subject to <strong>proxy inspection</strong> are distributed to secondaries by default. To load balance flow-inspected or uninspected sessions, enable <code>load-balance-all</code>. Note that FGCP active-active cannot load balance traffic traversing inter-VDOM links.</p>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Load Balancing Schedule</div>
+        <pre><code>config system ha
+    set schedule round-robin
+    set load-balance-all enable
+end</code></pre>
+      </div>
+
+      <div class="callout"><strong>Note:</strong> Active-active leverages unused CPU on secondary devices. In practice, the primary always carries more traffic than secondaries because all endpoints send traffic to the primary's virtual MAC. Secondary devices only process sessions forwarded by the primary.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Default schedule: round-robin. Only proxy-inspected sessions distributed by default — enable load-balance-all for flow/pass-through traffic. Active-active cannot load balance inter-VDOM traffic. Primary always handles more traffic than secondaries — all endpoints talk to primary's virtual MAC first.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s5" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s5','Active-Active Load Balancing')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s5" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s5')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">ON THIS PAGE</div>
+      <nav class="ssnav">
+        <a class="ssnav-item" href="#s1">HA Requirements</a>
+        <a class="ssnav-item" href="#s2">Primary Election</a>
+        <a class="ssnav-item" href="#s3">Heartbeat &amp; Sync</a>
+        <a class="ssnav-item" href="#s4">Virtual MAC Addresses</a>
+        <a class="ssnav-item" href="#s5">Active-Active Load Balancing</a>
+      </nav>
+    </div>
+
+    <a class="hub-link" href="index.html">← Chapter 04 Hub</a>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">PROGRESS</div>
+      <div class="checklist" id="checklist">
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s1" onchange="toggleDone(this)">
+          <span class="check-label">HA Requirements</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s2" onchange="toggleDone(this)">
+          <span class="check-label">Primary Election</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s3" onchange="toggleDone(this)">
+          <span class="check-label">Heartbeat &amp; Sync</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s4" onchange="toggleDone(this)">
+          <span class="check-label">Virtual MAC Addresses</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s5" onchange="toggleDone(this)">
+          <span class="check-label">Active-Active Load Balancing</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">QUICK REFERENCE</div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">FGCP</div>
+        <div class="quick-ref-def">FortiGate Clustering Protocol — Fortinet's proprietary HA protocol using non-IP Ethernet frames.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">HA Uptime</div>
+        <div class="quick-ref-def">Time since last reboot or monitored interface failure. Reset with <code>diagnose sys ha reset-uptime</code>.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Override</div>
+        <div class="quick-ref-def">When enabled, priority outranks HA uptime in election. NOT synchronized — must be set on each member manually.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Virtual MAC</div>
+        <div class="quick-ref-def">Cluster-assigned MAC used by primary. Inherited by new primary on failover. Derived from group ID, vcluster ID, and interface index.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">link-failed-signal</div>
+        <div class="quick-ref-def">Forces former primary's interfaces down for 1 second on failover, clearing switch MAC tables that ignore gratuitous ARP.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">session-sync-dev</div>
+        <div class="quick-ref-def">Dedicated session synchronization interface(s). Load balanced if multiple. Falls back to heartbeat link if all fail.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">load-balance-all</div>
+        <div class="quick-ref-def">Extends active-active distribution to flow-inspected and uninspected sessions. Disabled by default.</div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="page-nav">
+  <a class="page-nav-btn page-nav-prev" href="index.html">
+    <span class="page-nav-label">← BACK TO HUB</span>
+    <span class="page-nav-title">Chapter 04 Hub</span>
+  </a>
+  <a class="page-nav-btn page-nav-next" href="subtopic-02-fgcp-and-fgsp.html">
+    <span class="page-nav-label">NEXT →</span>
+    <span class="page-nav-title">FGCP and FGSP</span>
+  </a>
+</div>
+
+<footer>
+  EF-NSE7<span>.</span> Chapter 04<span>.</span> Subtopic 01<span>.</span> Configure HA Clusters
+</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-ch04-sub01-configure-ha-clusters';
+
+const SECTIONS = {
+  's1': 'HA Requirements',
+  's2': 'Primary Election',
+  's3': 'Heartbeat & Sync',
+  's4': 'Virtual MAC Addresses',
+  's5': 'Active-Active Load Balancing',
+};
+
+document.querySelectorAll('.socratic-header').forEach(function(h) {
+  h.addEventListener('click', function() { h.closest('.socratic-block').classList.toggle('soc-open'); });
+});
+
+function getQArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-qs') || '[]'); }
+function saveQArr(qs) { localStorage.setItem(PAGE_KEY+'-qs', JSON.stringify(qs)); }
+function addQuestion(key, name) {
+  const ta = document.getElementById('q-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const qs = getQArr(); qs.push({id: Date.now(), section: key, sectionName: name, text});
+  saveQArr(qs); ta.value = ''; renderQPanel();
+  if (!document.getElementById('qpanel-body').classList.contains('open')) toggleQPanel();
+}
+function deleteQ(id) { saveQArr(getQArr().filter(q => q.id !== id)); renderQPanel(); }
+function toggleQPanel() {
+  const body = document.getElementById('qpanel-body');
+  const header = document.getElementById('qpanel-header');
+  const chevron = document.getElementById('qpanel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-qpanel-open', open);
+}
+function renderQPanel() {
+  const qs = getQArr();
+  const count = document.getElementById('qpanel-count');
+  if (count) { count.textContent = qs.length; count.style.display = qs.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.qpanel-hint');
+  if (hint) hint.textContent = qs.length ? `— ${qs.length} question${qs.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('qpanel-body'); if (!body) return;
+  if (!qs.length) { body.innerHTML = '<p class="no-questions">No questions yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  qs.forEach(q => { if (groups[q.section]) groups[q.section].push(q); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(q => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${q.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteQ(${q.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function getNotesArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-notes') || '[]'); }
+function saveNotesArr(ns) { localStorage.setItem(PAGE_KEY+'-notes', JSON.stringify(ns)); }
+function addNote(key) {
+  const ta = document.getElementById('note-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const ns = getNotesArr(); ns.push({id: Date.now(), section: key, sectionName: SECTIONS[key]||key, text});
+  saveNotesArr(ns); ta.value = ''; renderNotesPanel();
+  if (!document.getElementById('notes-panel-body').classList.contains('open')) toggleNotesPanel();
+}
+function deleteNote(id) { saveNotesArr(getNotesArr().filter(n => n.id !== id)); renderNotesPanel(); }
+function toggleNotesPanel() {
+  const body = document.getElementById('notes-panel-body');
+  const header = document.getElementById('notes-panel-header');
+  const chevron = document.getElementById('notes-panel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-notes-panel-open', open);
+}
+function renderNotesPanel() {
+  const ns = getNotesArr();
+  const count = document.getElementById('notes-panel-count');
+  if (count) { count.textContent = ns.length; count.style.display = ns.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.notes-panel-hint');
+  if (hint) hint.textContent = ns.length ? `— ${ns.length} note${ns.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('notes-panel-body'); if (!body) return;
+  if (!ns.length) { body.innerHTML = '<p class="no-questions">No notes yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  ns.forEach(n => { if (groups[n.section]) groups[n.section].push(n); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(n => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteNote(${n.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function toggleDone(input) {
+  localStorage.setItem(PAGE_KEY+'-check-'+input.dataset.key, input.checked);
+}
+function initChecks() {
+  document.querySelectorAll('.check-input').forEach(function(inp) {
+    inp.checked = localStorage.getItem(PAGE_KEY+'-check-'+inp.dataset.key) === 'true';
+  });
+}
+
+function saveSocAnswer(btn) {
+  const area = btn.closest('.answer-area');
+  const ta = area.querySelector('.answer-textarea');
+  if (!ta.value.trim()) { ta.focus(); return; }
+  const key = PAGE_KEY+'-socans-'+area.dataset.section;
+  try { localStorage.setItem(key, ta.value); } catch(e) {}
+  ta.disabled = true; btn.textContent = '✓ Answer saved'; btn.disabled = true;
+  const seeBtn = area.querySelector('.btn-see-answer');
+  seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+}
+function revealSocAnswer(btn) {
+  if (btn.disabled) return;
+  const answers = btn.closest('.answer-area').querySelector('.model-answers');
+  const isHidden = answers.style.display === 'none' || !answers.style.display;
+  answers.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '▲ Hide Model Answer' : '💡 See Model Answer';
+}
+
+function togglePrompt(btn) {
+  const c = btn.nextElementSibling;
+  const isHidden = c.hasAttribute('hidden');
+  if (isHidden) { c.removeAttribute('hidden'); btn.textContent = '▴ Hide image prompt'; }
+  else { c.setAttribute('hidden', ''); btn.textContent = '▾ Show image prompt'; }
+}
+
+if (sessionStorage.getItem('pt')) {
+  document.body.style.opacity = '1';
+  sessionStorage.removeItem('pt');
+}
+document.querySelectorAll('a[href]').forEach(function(a) {
+  a.addEventListener('click', function() { sessionStorage.setItem('pt', '1'); });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderQPanel(); renderNotesPanel(); initChecks();
+  if (localStorage.getItem(PAGE_KEY+'-qpanel-open') === 'true') toggleQPanel();
+  if (localStorage.getItem(PAGE_KEY+'-notes-panel-open') === 'true') toggleNotesPanel();
+  document.querySelectorAll('.answer-area').forEach(function(area) {
+    const key = PAGE_KEY+'-socans-'+area.dataset.section;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const ta = area.querySelector('.answer-textarea'); ta.value = saved; ta.disabled = true;
+        const addBtn = area.querySelector('.btn-add-answer'); addBtn.textContent = '✓ Answer saved'; addBtn.disabled = true;
+        const seeBtn = area.querySelector('.btn-see-answer'); seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+      }
+    } catch(e) {}
+  });
+  document.querySelectorAll('.analogy-box').forEach(function(box) {
+    if (box.dataset.collapsibleInit) return;
+    box.dataset.collapsibleInit = '1';
+    box.classList.add('expanded');
+    const label = box.querySelector(':scope > .analogy-label');
+    if (label) label.addEventListener('click', () => box.classList.toggle('expanded'));
+  });
+  document.querySelectorAll('.analogy-img img').forEach(function(img) {
+    if (img.dataset.zoomInit) return;
+    img.dataset.zoomInit = '1';
+    img.addEventListener('click', () => img.classList.toggle('zoomed'));
+  });
+  document.querySelectorAll('.section-img').forEach(function(img) {
+    img.addEventListener('click', () => img.classList.toggle('si-expanded'));
+  });
+});
+
+(function() {
+  var items = document.querySelectorAll('.ssnav-item');
+  if (!items.length) return;
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      var lnk = document.querySelector('.ssnav-item[href="#'+e.target.id+'"]');
+      if (lnk) lnk.classList.toggle('active', e.isIntersecting);
+    });
+  }, { rootMargin: '-10% 0% -70% 0%' });
+  document.querySelectorAll('.section-block[id]').forEach(function(el) { obs.observe(el); });
+})();
+</script>
+</body>
+</html>

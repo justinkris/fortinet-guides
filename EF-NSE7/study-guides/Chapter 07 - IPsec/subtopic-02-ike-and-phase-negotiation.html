@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IKE and Phase Negotiation — EF-NSE7 Ch07</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#fff5f5;--surface:#ffffff;--surface-2:#fef2f2;--border:#f0c8c8;--border-dim:#fde8e8;
+  --text:#1a0606;--text-soft:#4a1212;--text-muted:#8a3a3a;
+  --red:#c0392b;--red-vivid:#e03e2d;--red-glow:rgba(192,57,43,0.07);--red-dim:#f8b4b4;
+  --red-deep:#7f1d1d;--red-light:#fef2f2;--red-border:#f8b4b4;
+  --green:#1a7c4a;--green-light:#d4f0e0;--green-border:#a7e0c0;
+  --amber:#b45309;--amber-light:#fef9c3;--amber-border:#fde68a;
+}
+html{scroll-behavior:smooth;}
+html.pt-init body{opacity:0;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+header{padding:48px 60px 36px;background:#1a0606;display:flex;align-items:flex-end;gap:32px;}
+.header-left{flex:1;}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);letter-spacing:0.08em;margin-bottom:12px;flex-wrap:wrap;}
+.breadcrumb a{color:#e87070;text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.breadcrumb-sep{color:rgba(232,112,112,0.35);}
+.header-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(232,112,112,0.1);border:1px solid rgba(232,112,112,0.25);padding:5px 14px;border-radius:20px;font-size:11px;color:#e87070;letter-spacing:0.08em;margin-bottom:14px;}
+.dot-live{width:6px;height:6px;background:#e87070;border-radius:50%;display:inline-block;animation:blink 2.4s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+header h1{font-family:'Fraunces',serif;font-size:44px;font-weight:700;line-height:1.0;color:#fff;margin-bottom:10px;}
+header h1 em{font-style:italic;font-weight:400;color:#e87070;}
+header p{font-size:13px;color:rgba(255,255,255,0.42);margin-top:10px;line-height:1.7;}
+
+.motivation-banner{padding:20px 60px;min-height:84px;display:flex;flex-direction:column;justify-content:center;border-bottom:1px solid var(--border);background:var(--surface);}
+.motivation-text{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--text);}
+.motivation-text em{font-style:italic;color:var(--red);}
+.motivation-sub{font-size:12px;color:var(--text-muted);line-height:1.7;margin-top:4px;}
+
+.top-panels{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+.top-panels .qpanel{border-bottom:none;border-right:1px solid var(--border);}
+.top-panels .qpanel-header{padding-left:32px;padding-right:32px;}
+.top-panels .qpanel-body{padding-left:32px;padding-right:32px;}
+.qpanel{background:var(--surface);}
+.qpanel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 20px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.qpanel-header:hover,.qpanel-header.open{background:var(--surface-2);}
+.qpanel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.qpanel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.qpanel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.qpanel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.qpanel-body{display:none;padding:0 20px 22px;}
+.qpanel-body.open{display:block;}
+.notes-panel{background:var(--surface);}
+.notes-panel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 32px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.notes-panel-header:hover,.notes-panel-header.open{background:var(--surface-2);}
+.notes-panel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.notes-panel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.notes-panel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.notes-panel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.notes-panel-body{display:none;padding:0 32px 22px;}
+.notes-panel-body.open{display:block;}
+.q-group{margin-bottom:16px;}
+.q-group-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+.q-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-dim);}
+.q-item:last-child{border-bottom:none;}
+.q-num{font-size:10px;font-weight:700;color:var(--red);min-width:16px;margin-top:2px;}
+.q-text{font-size:12px;color:var(--text-soft);line-height:1.5;flex:1;}
+.q-del{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 4px;margin-top:1px;}
+.q-del:hover{color:var(--red);}
+.no-questions{font-size:12px;color:var(--text-muted);padding:8px 0;}
+.btn-add-q{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-q:hover{opacity:0.85;}
+
+.section-nav{position:sticky;top:0;z-index:90;display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);padding:0 32px;overflow-x:auto;}
+.nav-tab{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:12px 18px;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--red);border-bottom-color:var(--red);}
+
+main{display:grid;grid-template-columns:1fr 320px;gap:0;align-items:start;max-width:1200px;margin:0 auto;padding:0;}
+.main-content{padding:36px 40px 60px 60px;}
+.sidebar{padding:32px 24px 60px 20px;position:sticky;top:57px;max-height:calc(100vh - 57px);overflow-y:auto;}
+
+.section-block{margin-bottom:48px;}
+.section-label{font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.section-block h2{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1.15;margin-bottom:16px;padding-left:16px;border-left:3px solid var(--red);}
+.section-block h2 em{font-style:italic;font-weight:400;color:var(--red);}
+.section-block p{font-size:14px;line-height:1.8;color:var(--text-soft);margin-bottom:14px;}
+.section-block p strong{color:var(--text);font-weight:600;}
+.section-block p em{color:var(--red);font-style:italic;}
+.section-block ul,.section-block ol{padding-left:22px;margin-bottom:14px;}
+.section-block li{font-size:14px;line-height:1.75;color:var(--text-soft);margin-bottom:4px;}
+.section-block li strong{color:var(--text);font-weight:600;}
+
+.callout{border-left:3px solid var(--red-border);background:var(--red-light);border-radius:0 10px 10px 0;padding:12px 18px;margin:16px 0;font-size:13.5px;line-height:1.65;color:var(--text-soft);}
+.callout strong{color:var(--text);}
+.callout-warn{border-left-color:var(--amber-border);background:var(--amber-light);}
+.callout-info{border-left-color:var(--green-border);background:var(--green-light);}
+
+.section-img-wrap{margin:0 0 20px;display:flex;flex-direction:column;align-items:center;}
+.section-img{width:260px;max-width:100%;border-radius:12px;cursor:zoom-in;transition:width 0.3s ease;border:1px solid var(--border);display:block;}
+.section-img.si-expanded{width:100%;cursor:zoom-out;border-radius:16px;}
+.si-placeholder{display:none;width:260px;max-width:100%;border:2px dashed var(--border);border-radius:12px;background:var(--surface-2);padding:14px 16px;flex-direction:column;align-items:flex-start;gap:8px;}
+.si-placeholder.si-show{display:flex;}
+.si-filename{font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+
+.code-block{background:#1a0606;border-radius:12px;padding:20px 24px;margin:16px 0;overflow-x:auto;}
+.code-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#e87070;margin-bottom:10px;}
+.code-block pre{margin:0;}
+.code-block code{font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:rgba(255,255,255,0.82);}
+
+.socratic-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:16px;border-top:3px solid var(--red);}
+.socratic-header{display:flex;align-items:center;gap:8px;margin-bottom:0;cursor:pointer;user-select:none;}
+.socratic-header::after{content:'▸ Expand';margin-left:auto;font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'Inter',sans-serif;}
+.socratic-block.soc-open .socratic-header{margin-bottom:10px;}
+.socratic-block.soc-open .socratic-header::after{content:'▾ Collapse';}
+.socratic-block:not(.soc-open) .socratic-insight,
+.socratic-block:not(.soc-open) .socratic-questions,
+.socratic-block:not(.soc-open) .answer-area{display:none;}
+.socratic-icon{font-size:17px;flex-shrink:0;}
+.socratic-label{font-size:9px;font-weight:700;letter-spacing:0.18em;color:var(--text-muted);}
+.socratic-insight{font-size:13px;color:var(--text-soft);line-height:1.75;margin-bottom:12px;border-left:3px solid var(--border);padding-left:12px;font-style:italic;}
+.socratic-questions{list-style:none;padding:0;margin:0;}
+.socratic-questions li{font-size:12.5px;color:var(--text);padding:7px 0 7px 22px;position:relative;border-bottom:1px solid var(--border-dim);line-height:1.6;}
+.socratic-questions li:last-child{border-bottom:none;}
+.socratic-questions li::before{content:'?';position:absolute;left:0;font-weight:700;font-size:12px;top:8px;color:var(--red);}
+.answer-area{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.answer-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.answer-textarea:focus{border-color:var(--text);}
+.answer-textarea:disabled{opacity:0.7;background:var(--surface-2);cursor:default;}
+.answer-buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.btn-add-answer{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-answer:hover:not(:disabled){opacity:0.85;}
+.btn-add-answer:disabled{opacity:0.5;cursor:default;}
+.btn-see-answer{background:var(--surface);color:var(--text-muted);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-see-answer:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-see-answer:not(:disabled){color:var(--red);border-color:var(--red);}
+.btn-see-answer:hover:not(:disabled){background:var(--red-glow);}
+.model-answers{margin-top:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.model-answer-item{padding:10px 0;border-bottom:1px solid var(--border-dim);}
+.model-answer-item:first-child{padding-top:0;}
+.model-answer-item:last-child{border-bottom:none;padding-bottom:0;}
+.model-answer-q{font-size:9px;font-weight:700;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:4px;}
+.model-answer-text{font-size:13px;color:var(--text-soft);line-height:1.7;}
+
+.mental-note-block{border-radius:10px;padding:12px 16px;margin:16px 0;display:flex;gap:10px;align-items:flex-start;background:rgba(192,57,43,0.07);border:1px solid var(--border);}
+.mental-note-block-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.mental-note-block-inner{flex:1;}
+.mental-note-block-label{font-size:9px;font-weight:700;letter-spacing:0.16em;color:var(--red);margin-bottom:3px;}
+.mental-note-block-text{font-size:13px;font-weight:600;line-height:1.55;color:var(--text);}
+
+.analogy-box{background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #b45309;border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0;}
+.analogy-label{display:flex;align-items:center;gap:6px;user-select:none;cursor:pointer;font-size:9px;font-weight:700;letter-spacing:0.16em;color:#b45309;margin-bottom:4px;}
+.analogy-label::after{content:'▾  Reveal illustration';margin-left:auto;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:none;opacity:0.75;}
+.analogy-label:hover::after{opacity:1;}
+.analogy-box.expanded > .analogy-label::after{content:'▴  Hide illustration';}
+.analogy-text{font-size:13px;color:#78350f;line-height:1.65;font-style:italic;}
+.analogy-box > .analogy-img{display:none;}
+.analogy-box.expanded > .analogy-img{display:block;}
+.analogy-img img{max-width:360px;width:100%;cursor:zoom-in;transition:max-width 0.25s ease;border-radius:8px;margin-top:10px;}
+.analogy-img img.zoomed{max-width:100%;cursor:zoom-out;}
+.prompt-toggle{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:10px;font-weight:600;letter-spacing:0.08em;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;text-transform:uppercase;}
+.prompt-toggle:hover{color:var(--text);border-color:var(--text);}
+.prompt-content{margin-top:10px;padding:10px 14px;background:rgba(0,0,0,0.04);border-radius:8px;font-size:11.5px;color:var(--text-muted);font-style:italic;line-height:1.65;text-align:left;}
+.prompt-content[hidden]{display:none;}
+
+.lesson-tools{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:40px;}
+.lesson-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.tool-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.tool-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.tool-textarea:focus{border-color:var(--red);}
+.tool-row{margin-top:8px;display:flex;gap:8px;}
+
+.sidebar-section{margin-bottom:28px;}
+.sidebar-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;}
+.ssnav{display:flex;flex-direction:column;gap:2px;margin-top:4px;}
+.ssnav-item{font-size:12px;color:var(--text-soft);padding:6px 10px;border-radius:6px;text-decoration:none;line-height:1.4;display:block;transition:background 0.15s,color 0.15s;}
+.ssnav-item:hover,.ssnav-item.active{background:var(--red-glow);color:var(--red);}
+.hub-link{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);margin-bottom:16px;transition:color 0.15s,border-color 0.15s,background 0.15s;}
+.hub-link:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);}
+.check-item{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;}
+.check-input{accent-color:var(--red);width:14px;height:14px;flex-shrink:0;cursor:pointer;}
+.check-label{font-size:12px;color:var(--text-soft);line-height:1.4;}
+.check-item:has(.check-input:checked) .check-label{color:var(--text-muted);text-decoration:line-through;}
+.quick-ref{background:#1a0606;border-radius:10px;padding:12px 16px;margin-bottom:8px;}
+.quick-ref-term{font-size:10px;font-weight:700;letter-spacing:0.12em;color:#e87070;margin-bottom:3px;text-transform:uppercase;}
+.quick-ref-def{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;}
+
+.page-nav{display:flex;border-top:2px solid var(--border);background:var(--surface);}
+.page-nav-btn{flex:1;display:flex;flex-direction:column;gap:4px;padding:16px 28px;text-decoration:none;transition:background 0.15s;cursor:pointer;}
+.page-nav-btn:hover:not(.page-nav-disabled){background:var(--surface-2);}
+.page-nav-prev{border-right:1px solid var(--border);}
+.page-nav-next{text-align:right;}
+.page-nav-disabled{opacity:0.3;pointer-events:none;}
+.page-nav-label{font-size:10px;font-weight:600;letter-spacing:0.14em;color:var(--text-muted);display:block;}
+.page-nav-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;color:var(--red);display:block;}
+
+footer{font-size:11px;letter-spacing:0.12em;color:var(--text-muted);text-transform:uppercase;padding:20px 60px;border-top:1px solid var(--border);}
+footer span{color:var(--red);}
+
+.img-caption{font-size:11px;color:var(--text-muted);text-align:center;margin-top:6px;line-height:1.4;font-style:italic;}
+.analogy-summary{font-style:normal;font-weight:600;color:#92400e;margin-bottom:10px;}
+.analogy-text ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;}
+.analogy-text li{padding-left:18px;position:relative;}
+.analogy-text li::before{content:'•';position:absolute;left:0;font-weight:700;color:#b45309;}
+.data-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;}
+.data-table th{background:#1a0606;color:#e87070;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:10px 14px;text-align:left;}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-soft);line-height:1.55;vertical-align:top;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:nth-child(even) td{background:var(--surface-2);}
+.data-table td strong{color:var(--text);font-weight:600;}
+
+@media(max-width:1000px){main{grid-template-columns:1fr;}.sidebar{position:static;max-height:none;padding:0 40px 40px;}}
+@media(max-width:720px){header{padding:28px 24px 24px;}header h1{font-size:32px;}.motivation-banner{padding:16px 24px;}.main-content{padding:24px 24px 40px;}.section-nav{padding:0 16px;}.top-panels{grid-template-columns:1fr;}.top-panels .qpanel{border-right:none;border-bottom:1px solid var(--border);}.lesson-tools-grid{grid-template-columns:1fr;}footer{padding:16px 24px;}}
+</style>
+</head>
+<body>
+<div id="page-transition" style="position:fixed;inset:0;background:#1a0606;opacity:0;pointer-events:none;z-index:999;transition:opacity 0.25s;"></div>
+
+<header>
+  <div class="header-left">
+    <div class="breadcrumb">
+      <a href="../nse7-ef-study-guide-hub.html">EF-NSE7</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="index.html">Chapter 07 — IPsec</a>
+      <span class="breadcrumb-sep">›</span>
+      Subtopic 02
+    </div>
+    <div class="header-eyebrow"><span class="dot-live"></span> Study Guide · EF-NSE7</div>
+    <h1>IKE and <em>Phase Negotiation</em></h1>
+    <p>Understand how IKEv1 and IKEv2 differ in security and efficiency, choose the right DH group, configure Perfect Forward Secrecy, and select cipher suites for Phase 1 and Phase 2 SAs.</p>
+  </div>
+</header>
+
+<div class="motivation-banner">
+  <div class="motivation-text">IKEv2 is not just "better IKE" — it's a <em>fundamentally more efficient protocol</em> that collapses the handshake and eliminates legacy baggage.</div>
+  <p class="motivation-sub">This subtopic covers the IKE negotiation mechanics that every exam question about tunnel establishment, algorithm selection, and PFS will test.</p>
+</div>
+
+<div class="top-panels">
+  <div class="qpanel" id="qpanel">
+    <button class="qpanel-header" onclick="toggleQPanel()" id="qpanel-header">
+      <span class="qpanel-title">MY QUESTIONS</span>
+      <span class="qpanel-count" id="qpanel-count">0</span>
+      <span class="qpanel-hint">— click to expand</span>
+      <span class="qpanel-chevron" id="qpanel-chevron">▾</span>
+    </button>
+    <div class="qpanel-body" id="qpanel-body"></div>
+  </div>
+  <div class="notes-panel" id="notes-panel">
+    <button class="notes-panel-header" onclick="toggleNotesPanel()" id="notes-panel-header">
+      <span class="notes-panel-title">MY NOTES</span>
+      <span class="notes-panel-count" id="notes-panel-count">0</span>
+      <span class="notes-panel-hint">— click to expand</span>
+      <span class="notes-panel-chevron" id="notes-panel-chevron">▾</span>
+    </button>
+    <div class="notes-panel-body" id="notes-panel-body"></div>
+  </div>
+</div>
+
+<nav class="section-nav" id="section-nav">
+  <a class="nav-tab active" href="#s1">IKEv1 vs IKEv2</a>
+  <a class="nav-tab" href="#s2">DH Groups: MODP &amp; ECP</a>
+  <a class="nav-tab" href="#s3">Perfect Forward Secrecy</a>
+  <a class="nav-tab" href="#s4">FortiManager IPsec Templates</a>
+</nav>
+
+<main>
+  <div class="main-content">
+
+    <!-- SECTION 1 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · IKEV1 VS IKEV2</span>
+      </div>
+      <p class="socratic-insight">IKEv1 and IKEv2 both negotiate Security Associations, but they do it very differently. IKEv1 uses separate "Main Mode" and "Aggressive Mode" exchanges with 6-9 messages. IKEv2 replaces that entire negotiation with 4 messages — and folds the child SA negotiation in at the same time.</p>
+      <ul class="socratic-questions">
+        <li>IKEv2 supports EAP for authentication while IKEv1 does not. What operational advantage does EAP give in enterprise deployments where remote users connect to a FortiGate gateway?</li>
+        <li>The study guide recommends migrating from IKEv1 to IKEv2 if all devices support it. Under what circumstance would you NOT migrate, even if all devices technically support IKEv2?</li>
+      </ul>
+      <div class="answer-area" data-section="ikev1-vs-ikev2">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">EAP lets IKEv2 integrate with external authentication services — RADIUS, LDAP, FortiAuthenticator — without requiring certificate deployment to every remote user. This is critical for large-scale remote access VPN where distributing client certificates is operationally expensive. EAP allows username/password or token-based auth within the secure IKE exchange.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">You would not migrate if the conversion would impact network operability — for example, if a third-party device (non-Fortinet) has a buggy IKEv2 implementation, or if the migration window cannot be coordinated simultaneously on both ends. A partial migration (one side IKEv1, the other IKEv2) is not possible since the protocol version must match on both peers.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s1">
+      <div class="section-label">SECTION 01</div>
+      <h2>IKEv1 vs <em>IKEv2</em> — Security Features Compared</h2>
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s1-ikev1-vs-ikev2.png" alt="Comparison table of IKEv1 and IKEv2 features" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg" style="display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;">📷 <strong>images/s1-ikev1-vs-ikev2.png</strong></div>
+        <p class="img-caption">Side-by-side feature comparison: IKEv1 vs IKEv2 encryption, DH groups, authentication, and integrity.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful two-column comparison table illustration: left column header "IKEv1" in orange, right column header "IKEv2" in teal. Rows labeled: Encryption algorithms (DES/3DES/AES-CBC vs AES-GCM/ChaCha20P), DH groups (Group 1/2/5 vs Group 14/15/16/19/20), Authentication (PSK/Digital Sigs vs EAP/PSK/Digital Sigs), Integrity (HMAC-MD5/SHA1 vs HMAC-SHA2/AES-XCBC), Mode Config (checkmark both). Each row has a small icon. Pastel palette, bold outlines, educational infographic feel.</div>
+      </div>
+      <p>When selecting an IKE version for IPsec VPN, you must evaluate the algorithm support, performance, and authentication flexibility of each version.</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>IKEv1</th>
+            <th>IKEv2</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Encryption</strong></td>
+            <td>DES, 3DES, AES-CBC</td>
+            <td>AES-GCM, ChaCha20P</td>
+          </tr>
+          <tr>
+            <td><strong>DH Groups</strong></td>
+            <td>Groups 1, 2, 5 (768–1536-bit)</td>
+            <td>Groups 14–20 (2048-bit to ECP 384-bit)</td>
+          </tr>
+          <tr>
+            <td><strong>Authentication</strong></td>
+            <td>Pre-shared Key, Digital Signatures</td>
+            <td>EAP, Pre-shared Key, Digital Signatures</td>
+          </tr>
+          <tr>
+            <td><strong>Integrity</strong></td>
+            <td>HMAC-MD5, HMAC-SHA1</td>
+            <td>HMAC-SHA2, AES-XCBC</td>
+          </tr>
+          <tr>
+            <td><strong>Mode Config</strong></td>
+            <td>Supported</td>
+            <td>Supported (integrated into exchange)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>Key advantages of IKEv2: <strong>AES-GCM</strong> provides authenticated encryption (confidentiality + integrity in one operation) reducing overhead. <strong>EAP</strong> enables integration with external authentication systems for remote-access use cases. <strong>AES-XCBC</strong> delivers efficient integrity checking. Mode Config is integrated directly into the IKE exchange in IKEv2 — reducing message count and CPU/memory load.</p>
+      <div class="callout"><strong>Exam tip:</strong> The study guide states that all examples use IKEv2. Fortinet recommends migrating from IKEv1 to IKEv2 <em>if all devices support it</em> and the conversion will not impact network operability. Both sides must run the same version.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">IKEv2 superiority: AES-GCM (auth+encrypt), EAP support, HMAC-SHA2, Groups 14–20, integrated Mode Config. IKEv1 DH groups top out at Group 5 (1536-bit MODP). Both sides must match IKE version — no cross-version negotiation.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s1" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s1','IKEv1 vs IKEv2')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s1" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s1')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · DH GROUPS: MODP &amp; ECP</span>
+      </div>
+      <p class="socratic-insight">Diffie-Hellman groups determine how two endpoints generate a shared secret without ever transmitting it — the mathematical foundation of key exchange. The choice of group affects both security strength and computational cost. MODP relies on the difficulty of discrete logarithms over large primes; ECP uses elliptic curve geometry to achieve equivalent security with shorter keys.</p>
+      <ul class="socratic-questions">
+        <li>Why does ECP (Group 19 or 20) offer equivalent security to a much larger MODP group, and why does this matter for performance-constrained devices?</li>
+        <li>DH groups are used in both Phase 1 and Phase 2 (when PFS is enabled). What would happen if Phase 1 used Group 14 but PFS in Phase 2 used Group 2?</li>
+      </ul>
+      <div class="answer-area" data-section="dh-groups">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">ECP's security comes from the difficulty of the elliptic curve discrete logarithm problem, which requires exponentially more work to break than MODP's prime-based discrete log problem for the same key size. A 256-bit ECP key (Group 19) provides security comparable to a 3072-bit MODP key (Group 15). For constrained devices, shorter keys mean faster computation, less memory, and lower power use — making ECP ideal for branch hardware.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Using a weaker DH group for PFS than for Phase 1 creates a security asymmetry — the PFS keys are only as strong as the weakest group used. An attacker who can break Group 2 (1024-bit MODP, considered weak) can derive all Phase 2 session keys, even though Phase 1 used the stronger Group 14. PFS is only as protective as the group it uses.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s2">
+      <div class="section-label">SECTION 02</div>
+      <h2>DH Groups — <em>MODP and ECP</em> Key Exchange</h2>
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s2-dh-groups.png" alt="DH group table: MODP 768 through ECP 384" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg" style="display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;">📷 <strong>images/s2-dh-groups.png</strong></div>
+        <p class="img-caption">DH groups 1–20: group number, name, key length, and security classification.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration of a data table with four columns: DH Group number, Group Name, Key Length, Security Level. Rows include: Group 1 MODP 768 Weak (red cell), Group 2 MODP 1024 Moderate, Group 5 MODP 1536 Strong, Group 14 MODP 2048 Very Strong (green), Group 15 MODP 3072, Group 19 ECP 256 Strong Efficient (teal highlight), Group 20 ECP 384 Very Strong Efficient. An inset box on the left side shows a small elliptic curve diagram vs a prime number grid to illustrate MODP vs ECP. Pastel palette, bold outlines, educational infographic feel.</div>
+      </div>
+      <p><strong>Diffie-Hellman (DH) groups</strong> define the key exchange algorithm used during Phase 1 and Phase 2 (when PFS is enabled). FortiGate supports two underlying mathematical approaches:</p>
+      <ul>
+        <li><strong>MODP (Modular Exponential):</strong> Uses large prime numbers. Security relies on the discrete logarithm problem in modular arithmetic. As prime size increases, security increases — but so does computational cost. Groups 1, 2, 5, 14, 15, 16, 17, 18.</li>
+        <li><strong>ECP (Elliptic Curve):</strong> Uses elliptic curve mathematics. Equivalent security with shorter keys — dramatically lower computational demand. Groups 19 (256-bit) and 20 (384-bit).</li>
+      </ul>
+
+      <table class="data-table">
+        <thead>
+          <tr><th>DH Group</th><th>Name</th><th>Key Length</th><th>Security</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>1</strong></td><td>MODP 768</td><td>768-bit</td><td>Weak — avoid</td></tr>
+          <tr><td><strong>2</strong></td><td>MODP 1024</td><td>1024-bit</td><td>Moderate</td></tr>
+          <tr><td><strong>5</strong></td><td>MODP 1536</td><td>1536-bit</td><td>Strong</td></tr>
+          <tr><td><strong>14</strong></td><td>MODP 2048</td><td>2048-bit</td><td>Very Strong</td></tr>
+          <tr><td><strong>15</strong></td><td>MODP 3072</td><td>3072-bit</td><td>Stronger</td></tr>
+          <tr><td><strong>19</strong></td><td>ECP 256</td><td>256-bit</td><td>Strong, Efficient</td></tr>
+          <tr><td><strong>20</strong></td><td>ECP 384</td><td>384-bit</td><td>Very Strong, Efficient</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-warn"><strong>Exam warning:</strong> Groups 1, 2, and 5 are considered legacy/weak. IKEv2 supports Groups 14–20. Never use Group 1 (768-bit) in production — it is cryptographically broken.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">MODP = large primes, scales with key size. ECP = elliptic curves, equivalent security with shorter keys. Group 14 (MODP 2048) = minimum recommended. Groups 19/20 (ECP) = best performance/security ratio. IKEv1 max = Group 5. IKEv2 supports up to Group 20.</div>
+        </div>
+      </div>
+
+      <div class="analogy-box">
+        <div class="analogy-label">Analogy</div>
+        <div class="analogy-text">
+          <p class="analogy-summary">MODP vs ECP is like cracking a safe with a combination lock vs a biometric scanner — one requires brute-forcing more and more digits, the other uses a fundamentally harder puzzle in a much smaller space.</p>
+          <ul>
+            <li><strong>MODP group size (768→4096-bit)</strong> — the number of combination digits on the safe; adding digits makes it linearly harder to guess</li>
+            <li><strong>ECP 256-bit</strong> — a biometric pattern where guessing even a fraction of the geometry is exponentially harder, despite the "small" 256-bit size</li>
+            <li><strong>Attacker's computational cost</strong> — the time needed to crack MODP 2048 vs ECP 256 is comparable, but ECP uses far less energy to operate</li>
+          </ul>
+        </div>
+        <div class="analogy-img" style="margin-top:14px;background:rgba(255,255,255,0.5);border-radius:10px;padding:14px;text-align:center;">
+          <img src="images/a1-modp-vs-ecp-safe.png" alt="Safe combination vs biometric analogy for MODP vs ECP" onerror="this.style.display='none';this.nextElementSibling.style.display='block';" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 10px;">
+          <div class="img-missing-msg" style="display:none;font-size:12px;color:#92400e;padding:8px;background:rgba(146,64,14,0.1);border-radius:6px;">📷 <strong>images/a1-modp-vs-ecp-safe.png</strong> — add this image to the folder</div>
+          <button class="prompt-toggle" onclick="togglePrompt(this)" type="button">▾ Show analogy image prompt</button>
+          <div class="prompt-content" hidden>Cartoon flat illustration in two panels side by side: left panel shows a large old-fashioned combination safe labeled "MODP" with a combination dial showing many digits, a cartoon thief sweating while spinning the dial labeled "Must try millions of combos"; right panel shows a sleek modern biometric scanner labeled "ECP" with a fingerprint glyph, the same cartoon thief looking confused labeled "Fundamentally harder pattern". Below each panel: MODP label "Big key needed, linear difficulty growth" vs ECP label "Short key, exponential difficulty". Pastel orange and teal palette, bold outlines, no shadows, educational infographic feel.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s2" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s2','DH Groups: MODP & ECP')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s2" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s2')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · PERFECT FORWARD SECRECY</span>
+      </div>
+      <p class="socratic-insight">Perfect Forward Secrecy (PFS) addresses a specific threat: if an attacker records your encrypted traffic today, and later compromises your long-term key, can they decrypt it? Without PFS, the answer is yes. PFS uses independent DH key exchanges for each Phase 2 SA, so compromising one session key reveals nothing about others.</p>
+      <ul class="socratic-questions">
+        <li>What is the performance trade-off of enabling PFS in Phase 2, and when might you disable it despite the security benefit?</li>
+        <li>If PFS is disabled, what simpler key derivation method is used for Phase 2, and what does this mean for long-term traffic confidentiality?</li>
+      </ul>
+      <div class="answer-area" data-section="pfs">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">PFS requires a full DH key exchange for every Phase 2 rekey — additional CPU computation compared to deriving Phase 2 keys from the Phase 1 key material. You might disable PFS on high-throughput tunnels where rekey frequency is high and the CPU cost becomes measurable, or on legacy hardware that cannot handle the DH computation at scale without dropping traffic.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Without PFS, Phase 2 keys are derived from the Phase 1 key material using simpler key derivation functions (PRF output). This means all Phase 2 sessions are mathematically linked to Phase 1. If the Phase 1 key is ever compromised — even retroactively — all past and future Phase 2 traffic encrypted under keys derived from it is at risk of decryption.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s3">
+      <div class="section-label">SECTION 03</div>
+      <h2>Perfect Forward Secrecy and <em>Phase 2 Rekeying</em></h2>
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s3-pfs-rekeying.png" alt="PFS enabled vs disabled — Phase 2 key derivation comparison" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg" style="display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;">📷 <strong>images/s3-pfs-rekeying.png</strong></div>
+        <p class="img-caption">With PFS: each Phase 2 session uses an independent DH exchange. Without PFS: all sessions derive from Phase 1 key material.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat illustration in two panels: left panel labeled "PFS Enabled" shows Phase 1 key at top, then three independent DH arrows below each pointing to separate Phase 2 session keys labeled SA1, SA2, SA3 — none connected to each other; right panel labeled "PFS Disabled" shows Phase 1 key at top with a single derivation arrow branching into SA1, SA2, SA3 all linked to the same Phase 1 key. A red "compromised" icon over Phase 1 in right panel shows all SAs are at risk. Pastel green (left) and red-orange (right) color coding, bold outlines, educational infographic feel.</div>
+      </div>
+      <p><strong>Perfect Forward Secrecy (PFS)</strong> is a Phase 2 setting that, when enabled, uses a fresh Diffie-Hellman exchange for each new Phase 2 Security Association. This means each session key is mathematically independent from the Phase 1 key material and all other Phase 2 session keys.</p>
+      <p>When PFS is <em>enabled</em>: a new DH group exchange runs at every Phase 2 rekey interval. Compromising any single session key reveals nothing about past or future sessions. This protects against retroactive decryption of recorded traffic.</p>
+      <p>When PFS is <em>disabled</em>: Phase 2 keys are derived from Phase 1 key material using simpler key derivation. All Phase 2 sessions are mathematically linked to Phase 1. If Phase 1 is compromised, all associated Phase 2 sessions are at risk.</p>
+      <p>The DH group selected for PFS is configured in the Phase 2 settings. You should choose a group at least as strong as the Phase 1 DH group — using a weaker PFS group degrades the overall security posture.</p>
+      <div class="callout callout-warn"><strong>Exam warning:</strong> PFS is a <em>Phase 2</em> setting — it is not part of Phase 1 negotiation. Enabling PFS adds DH computation overhead at every Phase 2 rekey. On high-throughput tunnels with short lifetimes, this can impact performance.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">PFS = Phase 2 setting. Enabled: independent DH per SA rekey — past sessions safe if current compromised. Disabled: Phase 2 keys derived from Phase 1 material — compromise propagates. PFS DH group must be at least as strong as Phase 1 DH group.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s3" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s3','Perfect Forward Secrecy')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s3" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s3')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · FORTIMANAGER IPSEC TEMPLATES</span>
+      </div>
+      <p class="socratic-insight">FortiManager offers two ways to deploy IPsec VPN at scale: the VPN Manager wizard and IPsec Templates. They are not equivalent. VPN Manager is an assisted, community-and-node approach; IPsec Templates are Device Manager provisioning templates that support dynamic metadata variables and enable zero-touch provisioning (ZTP).</p>
+      <ul class="socratic-questions">
+        <li>IPsec templates support "dynamic configurations" via metadata variables, but VPN Manager does not. What operational problem does this solve in a large hub-and-spoke deployment?</li>
+        <li>When you assign an IPsec template to a device in FortiManager, the device status immediately shows "Modified" — why is this expected, and what must you do next?</li>
+      </ul>
+      <div class="answer-area" data-section="fmg-templates">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">In a hub-and-spoke deployment, each spoke needs unique values for remote gateway IP, local ID, and remote subnet. Metadata variables let a single IPsec template define these as variables that are resolved per-device during provisioning — so you don't need a separate template for every spoke. VPN Manager requires identical configuration across all community nodes, making it unsuitable for sites with unique addressing.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Template assignment is a FortiManager-side operation that marks the device database as modified — it does not push configuration to the FortiGate. The "Modified" status with an orange warning is expected because the template has not yet been installed. You must install device settings and then push the policy package to actually deploy the IPsec configuration to the firewall.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s4">
+      <div class="section-label">SECTION 04</div>
+      <h2>FortiManager <em>IPsec Templates</em> — Deploy at Scale</h2>
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s4-fmg-ipsec-templates.png" alt="FortiManager IPsec template workflow: device layer, CLI template, zone, policy layer" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg" style="display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;">📷 <strong>images/s4-fmg-ipsec-templates.png</strong></div>
+        <p class="img-caption">4-step FortiManager IPsec template deployment: create template, install device settings, create zone, push policy package.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration showing a 4-step numbered workflow from left to right: Step 1 labeled "Create & Assign Template" shows a template icon inside a Device Layer box; Step 2 labeled "Install Device Settings" shows a CLI Template box with arrow to FortiGate icon; Step 3 labeled "Create Zone" shows an ADOM box with zone interface; Step 4 labeled "Push Policy Package" shows a Policy Layer box with document icon. Arrows connect each step left to right. Hub and Spoke labels on top. Pastel teal, blue and orange palette, bold outlines, educational infographic feel.</div>
+      </div>
+      <p><strong>FortiManager IPsec templates</strong> live under Device Manager &gt; Provisioning Templates &gt; IPsec Tunnel. Unlike VPN Manager (which uses communities and nodes), IPsec templates configure Phase 1 and Phase 2 parameters directly and support <strong>metadata variables</strong> for per-device dynamic values (remote gateway, local ID, remote subnet, tunnel interface IP).</p>
+      <p>The 4-step installation workflow:</p>
+      <ol>
+        <li><strong>Create and assign</strong> IPsec templates to hub and spoke device groups.</li>
+        <li><strong>Install device settings</strong> to push IPsec VPN interfaces to FortiGates (device layer only).</li>
+        <li><strong>Create a zone</strong> interface in the hub's device database and associate normalized interfaces for use in the policy layer.</li>
+        <li><strong>Create policies and install</strong> the policy package.</li>
+      </ol>
+      <p>When a template is assigned, all affected devices show a status of <strong>Modified</strong> (orange warning). This is expected — template assignment does not install configuration. Ensure device and policy layers are synchronized before assigning templates to avoid cascading pending-status conflicts.</p>
+
+      <table class="data-table">
+        <thead>
+          <tr><th>Feature</th><th>VPN Manager</th><th>IPsec Templates</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Central management</strong></td><td>Centralized interface for VPNs</td><td>Applied from Device Manager</td></tr>
+          <tr><td><strong>VPN creation</strong></td><td>Assisted (wizard)</td><td>Manual and Assisted</td></tr>
+          <tr><td><strong>Dynamic configurations</strong></td><td>Not supported</td><td>Metadata variables</td></tr>
+          <tr><td><strong>Import existing config</strong></td><td>Not possible</td><td>Supported</td></tr>
+          <tr><td><strong>Editable IPsec names</strong></td><td>Not supported</td><td>Supported</td></tr>
+          <tr><td><strong>Recommended for</strong></td><td>Large-scale, complex</td><td>Preprovisioning and ZTP</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-info"><strong>Note:</strong> IPsec templates must be assigned to firewalls managed within the same FortiManager ADOM. VPN Manager can include non-managed gateways (third-party devices); IPsec templates cannot.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">IPsec Templates: Device Manager location, metadata variables, supports import and editable names, ideal for ZTP. VPN Manager: wizard-based, no dynamic vars, no import, supports non-managed GWs. Template assignment → Modified status → must install separately. Sync device/policy layers BEFORE assigning templates.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s4" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s4','FortiManager IPsec Templates')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s4" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s4')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">ON THIS PAGE</div>
+      <nav class="ssnav">
+        <a class="ssnav-item" href="#s1">IKEv1 vs IKEv2</a>
+        <a class="ssnav-item" href="#s2">DH Groups: MODP &amp; ECP</a>
+        <a class="ssnav-item" href="#s3">Perfect Forward Secrecy</a>
+        <a class="ssnav-item" href="#s4">FortiManager IPsec Templates</a>
+      </nav>
+    </div>
+
+    <a class="hub-link" href="index.html">← Chapter 07 Hub</a>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">PROGRESS</div>
+      <div class="checklist" id="checklist">
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s1" onchange="toggleDone(this)">
+          <span class="check-label">IKEv1 vs IKEv2</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s2" onchange="toggleDone(this)">
+          <span class="check-label">DH Groups: MODP &amp; ECP</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s3" onchange="toggleDone(this)">
+          <span class="check-label">Perfect Forward Secrecy</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s4" onchange="toggleDone(this)">
+          <span class="check-label">FortiManager IPsec Templates</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">QUICK REFERENCE</div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">IKEv2</div>
+        <div class="quick-ref-def">Internet Key Exchange v2. Replaces IKEv1 with 4-message exchange. Adds EAP, AES-GCM, HMAC-SHA2, Groups 14–20. Both peers must run same version.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">AES-GCM</div>
+        <div class="quick-ref-def">Authenticated encryption — combines confidentiality and integrity in one operation. Reduces CPU overhead vs separate encrypt+MAC. IKEv2 only.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">DH Group 14</div>
+        <div class="quick-ref-def">MODP 2048-bit. Minimum recommended strength for modern deployments. IKEv1 and IKEv2 compatible.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">ECP Groups 19/20</div>
+        <div class="quick-ref-def">Elliptic Curve 256/384-bit. Equivalent security to MODP 3072/7680 at much smaller key size. Best performance/security ratio.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">PFS</div>
+        <div class="quick-ref-def">Perfect Forward Secrecy. Phase 2 setting. Enables independent DH exchange per SA rekey. Prevents past session decryption if current key is compromised.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">IPsec Templates</div>
+        <div class="quick-ref-def">FortiManager Device Manager provisioning templates. Support metadata variables for ZTP. Must be in same ADOM as managed devices.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Metadata Variables</div>
+        <div class="quick-ref-def">Per-device dynamic values in IPsec templates. Examples: remote gateway IP, outgoing interface, local ID, remote subnet. Enable one-template-for-many-devices.</div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="page-nav">
+  <a class="page-nav-btn page-nav-prev" href="subtopic-01-configure-ipsec-tunnels.html">
+    <span class="page-nav-label">← PREVIOUS</span>
+    <span class="page-nav-title">Configure IPsec Tunnels</span>
+  </a>
+  <a class="page-nav-btn page-nav-next" href="subtopic-03-ipsec-troubleshooting.html">
+    <span class="page-nav-label">NEXT →</span>
+    <span class="page-nav-title">IPsec Troubleshooting</span>
+  </a>
+</div>
+
+<footer>
+  EF-NSE7<span>.</span> Chapter 07<span>.</span> Subtopic 02<span>.</span> IKE and Phase Negotiation
+</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-ch07-sub02-ike-and-phase-negotiation';
+
+const SECTIONS = {
+  's1': 'IKEv1 vs IKEv2',
+  's2': 'DH Groups: MODP & ECP',
+  's3': 'Perfect Forward Secrecy',
+  's4': 'FortiManager IPsec Templates',
+};
+
+document.querySelectorAll('.socratic-header').forEach(function(h) {
+  h.addEventListener('click', function() { h.closest('.socratic-block').classList.toggle('soc-open'); });
+});
+
+function getQArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-qs') || '[]'); }
+function saveQArr(qs) { localStorage.setItem(PAGE_KEY+'-qs', JSON.stringify(qs)); }
+function addQuestion(key, name) {
+  const ta = document.getElementById('q-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const qs = getQArr(); qs.push({id: Date.now(), section: key, sectionName: name, text});
+  saveQArr(qs); ta.value = ''; renderQPanel();
+  if (!document.getElementById('qpanel-body').classList.contains('open')) toggleQPanel();
+}
+function deleteQ(id) { saveQArr(getQArr().filter(q => q.id !== id)); renderQPanel(); }
+function toggleQPanel() {
+  const body = document.getElementById('qpanel-body');
+  const header = document.getElementById('qpanel-header');
+  const chevron = document.getElementById('qpanel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-qpanel-open', open);
+}
+function renderQPanel() {
+  const qs = getQArr();
+  const count = document.getElementById('qpanel-count');
+  if (count) { count.textContent = qs.length; count.style.display = qs.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.qpanel-hint');
+  if (hint) hint.textContent = qs.length ? `— ${qs.length} question${qs.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('qpanel-body'); if (!body) return;
+  if (!qs.length) { body.innerHTML = '<p class="no-questions">No questions yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  qs.forEach(q => { if (groups[q.section]) groups[q.section].push(q); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(q => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${q.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteQ(${q.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function getNotesArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-notes') || '[]'); }
+function saveNotesArr(ns) { localStorage.setItem(PAGE_KEY+'-notes', JSON.stringify(ns)); }
+function addNote(key) {
+  const ta = document.getElementById('note-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const ns = getNotesArr(); ns.push({id: Date.now(), section: key, sectionName: SECTIONS[key]||key, text});
+  saveNotesArr(ns); ta.value = ''; renderNotesPanel();
+  if (!document.getElementById('notes-panel-body').classList.contains('open')) toggleNotesPanel();
+}
+function deleteNote(id) { saveNotesArr(getNotesArr().filter(n => n.id !== id)); renderNotesPanel(); }
+function toggleNotesPanel() {
+  const body = document.getElementById('notes-panel-body');
+  const header = document.getElementById('notes-panel-header');
+  const chevron = document.getElementById('notes-panel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-notes-panel-open', open);
+}
+function renderNotesPanel() {
+  const ns = getNotesArr();
+  const count = document.getElementById('notes-panel-count');
+  if (count) { count.textContent = ns.length; count.style.display = ns.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.notes-panel-hint');
+  if (hint) hint.textContent = ns.length ? `— ${ns.length} note${ns.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('notes-panel-body'); if (!body) return;
+  if (!ns.length) { body.innerHTML = '<p class="no-questions">No notes yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  ns.forEach(n => { if (groups[n.section]) groups[n.section].push(n); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(n => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteNote(${n.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function toggleDone(input) { localStorage.setItem(PAGE_KEY+'-check-'+input.dataset.key, input.checked); }
+function initChecks() {
+  document.querySelectorAll('.check-input').forEach(function(inp) {
+    inp.checked = localStorage.getItem(PAGE_KEY+'-check-'+inp.dataset.key) === 'true';
+  });
+}
+
+function saveSocAnswer(btn) {
+  const area = btn.closest('.answer-area');
+  const ta = area.querySelector('.answer-textarea');
+  if (!ta.value.trim()) { ta.focus(); return; }
+  const key = PAGE_KEY+'-socans-'+area.dataset.section;
+  try { localStorage.setItem(key, ta.value); } catch(e) {}
+  ta.disabled = true; btn.textContent = '✓ Answer saved'; btn.disabled = true;
+  const seeBtn = area.querySelector('.btn-see-answer');
+  seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+}
+function revealSocAnswer(btn) {
+  if (btn.disabled) return;
+  const answers = btn.closest('.answer-area').querySelector('.model-answers');
+  const isHidden = answers.style.display === 'none' || !answers.style.display;
+  answers.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '▲ Hide Model Answer' : '💡 See Model Answer';
+}
+
+function togglePrompt(btn) {
+  const c = btn.nextElementSibling;
+  const isHidden = c.hasAttribute('hidden');
+  if (isHidden) { c.removeAttribute('hidden'); btn.textContent = '▴ Hide image prompt'; }
+  else { c.setAttribute('hidden', ''); btn.textContent = '▾ Show image prompt'; }
+}
+
+if (sessionStorage.getItem('pt')) {
+  document.body.style.opacity = '1';
+  sessionStorage.removeItem('pt');
+}
+document.querySelectorAll('a[href]').forEach(function(a) {
+  a.addEventListener('click', function() { sessionStorage.setItem('pt', '1'); });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderQPanel(); renderNotesPanel(); initChecks();
+  if (localStorage.getItem(PAGE_KEY+'-qpanel-open') === 'true') toggleQPanel();
+  if (localStorage.getItem(PAGE_KEY+'-notes-panel-open') === 'true') toggleNotesPanel();
+  document.querySelectorAll('.answer-area').forEach(function(area) {
+    const key = PAGE_KEY+'-socans-'+area.dataset.section;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const ta = area.querySelector('.answer-textarea'); ta.value = saved; ta.disabled = true;
+        const addBtn = area.querySelector('.btn-add-answer'); addBtn.textContent = '✓ Answer saved'; addBtn.disabled = true;
+        const seeBtn = area.querySelector('.btn-see-answer'); seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+      }
+    } catch(e) {}
+  });
+  document.querySelectorAll('.analogy-box').forEach(function(box) {
+    if (box.dataset.collapsibleInit) return;
+    box.dataset.collapsibleInit = '1';
+    box.classList.add('expanded');
+    const label = box.querySelector(':scope > .analogy-label');
+    if (label) label.addEventListener('click', () => box.classList.toggle('expanded'));
+  });
+  document.querySelectorAll('.analogy-img img').forEach(function(img) {
+    if (img.dataset.zoomInit) return;
+    img.dataset.zoomInit = '1';
+    img.addEventListener('click', () => img.classList.toggle('zoomed'));
+  });
+  document.querySelectorAll('.section-img').forEach(function(img) {
+    img.addEventListener('click', () => img.classList.toggle('si-expanded'));
+  });
+});
+
+(function() {
+  var items = document.querySelectorAll('.ssnav-item');
+  if (!items.length) return;
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      var lnk = document.querySelector('.ssnav-item[href="#'+e.target.id+'"]');
+      if (lnk) lnk.classList.toggle('active', e.isIntersecting);
+    });
+  }, { rootMargin: '-10% 0% -70% 0%' });
+  document.querySelectorAll('.section-block[id]').forEach(function(el) { obs.observe(el); });
+})();
+</script>
+</body>
+</html>

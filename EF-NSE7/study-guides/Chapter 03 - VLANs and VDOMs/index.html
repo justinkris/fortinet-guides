@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 03 — VLANs and VDOMs</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Epilogue:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream:      #fff5f5;
+    --cream-dark: #fde8e8;
+    --ink:        #1a0606;
+    --ink-soft:   #4a1212;
+    --ink-muted:  #8a3a3a;
+    --red:        #c0392b;
+    --red-vivid:  #e03e2d;
+    --red-light:  #fef2f2;
+    --red-border: #f8b4b4;
+    --border:     #f0c8c8;
+    --card-bg:    #1a0606;
+    --card-border:#2e0c0c;
+  }
+
+  *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  html.pt-init body { opacity:0; }
+
+  body {
+    font-family: 'Epilogue', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 72px 40px 96px;
+  }
+
+  .back-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-muted); text-decoration: none;
+    margin-bottom: 48px; align-self: flex-start;
+    padding: 8px 16px; border-radius: 20px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.6);
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+  }
+  .back-link:hover { color: var(--red); border-color: var(--red-border); background: var(--red-light); }
+
+  .content { width: 100%; max-width: 860px; display: flex; flex-direction: column; }
+
+  .chapter-label {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--ink); color: var(--cream);
+    padding: 6px 16px; border-radius: 20px;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    align-self: flex-start; margin-bottom: 20px;
+  }
+  .label-dot { width: 5px; height: 5px; background: var(--red-vivid); border-radius: 50%; }
+
+  .chapter-title {
+    font-family: 'Fraunces', serif;
+    font-size: 48px; font-weight: 700; line-height: 1.05;
+    color: var(--ink); letter-spacing: -0.02em; margin-bottom: 8px;
+  }
+  .chapter-title em { font-style: italic; font-weight: 400; color: var(--red); }
+
+  .chapter-subtitle {
+    font-family: 'Fraunces', serif; font-style: italic; font-weight: 400;
+    font-size: 18px; color: var(--ink-muted); margin-bottom: 36px;
+  }
+
+  .quick-nav {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin-bottom: 40px;
+  }
+  .nav-pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 8px 18px; border-radius: 100px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-muted); text-decoration: none;
+    border: 1px solid var(--border); background: rgba(255,255,255,0.6);
+    transition: color 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  }
+  .nav-pill svg { flex-shrink: 0; transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+  .nav-pill:hover {
+    color: var(--red); border-color: var(--red-border);
+    background: var(--red-light);
+    box-shadow: 0 2px 10px rgba(192,57,43,0.12);
+  }
+  .nav-pill:hover svg { transform: translateY(3px); }
+
+  .nav-dropdown-wrap { position: relative; }
+  .nav-dropdown {
+    position: absolute; top: calc(100% + 8px); left: 0;
+    background: #fff; border: 1px solid var(--border);
+    border-radius: 14px; padding: 6px;
+    min-width: 260px;
+    box-shadow: 0 8px 28px rgba(26,6,6,0.10), 0 2px 8px rgba(26,6,6,0.06);
+    opacity: 0; pointer-events: none;
+    transform: translateY(-6px);
+    transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.34,1.56,0.64,1);
+    z-index: 100;
+  }
+  .nav-dropdown::before {
+    content: ''; position: absolute;
+    top: -10px; left: 0; right: 0; height: 10px;
+  }
+  .nav-dropdown-wrap:hover .nav-dropdown {
+    opacity: 1; pointer-events: auto; transform: translateY(0);
+  }
+  .nav-dropdown a {
+    display: flex; align-items: center; gap: 9px;
+    padding: 9px 12px; border-radius: 9px;
+    font-size: 12px; font-weight: 500; color: var(--ink-soft);
+    text-decoration: none; line-height: 1.3;
+    transition: background 0.15s, color 0.15s;
+  }
+  .nav-dropdown a:hover { background: var(--red-light); color: var(--red); }
+  .nav-dropdown a .dd-num {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-muted); flex-shrink: 0; opacity: 0.6;
+    transition: color 0.15s, opacity 0.15s;
+  }
+  .nav-dropdown a:hover .dd-num { color: var(--red); opacity: 1; }
+  .nav-dropdown-divider { height: 1px; background: var(--border); margin: 4px 6px; }
+
+  .hero-image-wrap {
+    width: 100%; border-radius: 24px; overflow: hidden;
+    border: 2px solid var(--card-border);
+    background: var(--card-bg);
+    margin-bottom: 16px;
+  }
+  .hero-image-wrap img {
+    width: 100%; display: block; min-height: 340px; object-fit: cover;
+  }
+  .hero-placeholder {
+    width: 100%; min-height: 340px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px;
+    padding: 48px 40px;
+    border: 2px dashed rgba(192,57,43,0.32);
+    border-radius: 22px;
+    background: repeating-linear-gradient(
+      -45deg, transparent, transparent 10px,
+      rgba(192,57,43,0.025) 10px, rgba(192,57,43,0.025) 20px
+    );
+  }
+  .ph-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: rgba(192,57,43,0.13); border: 1.5px solid rgba(192,57,43,0.28);
+    display: flex; align-items: center; justify-content: center; color: #e87070;
+  }
+  .ph-label {
+    font-family: 'Fraunces', serif; font-style: italic;
+    font-size: 18px; color: rgba(255,255,255,0.45); text-align: center;
+  }
+  .ph-filename {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+    color: rgba(192,57,43,0.55); font-family: monospace;
+  }
+
+  .prompt-box {
+    background: var(--card-bg); border: 1.5px solid var(--card-border);
+    border-radius: 14px; padding: 18px 22px; margin-bottom: 56px;
+  }
+  .prompt-header {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+    color: rgba(192,57,43,0.65); margin-bottom: 10px;
+  }
+  .prompt-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--red-vivid); }
+  .prompt-text {
+    font-size: 12.5px; line-height: 1.7; color: rgba(255,255,255,0.5); font-style: italic;
+  }
+  .prompt-text strong { color: rgba(255,255,255,0.78); font-style: normal; font-weight: 600; }
+  .prompt-filename { color: #e87070; font-family: monospace; font-style: normal; font-size: 11px; }
+
+  .section-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink-muted); margin-bottom: 28px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .overview { display: flex; flex-direction: column; gap: 0; margin-bottom: 56px; }
+
+  .topic-block { padding-bottom: 48px; }
+  .topic-block:last-child { padding-bottom: 0; }
+
+  .topic-heading {
+    font-family: 'Fraunces', serif;
+    font-size: 26px; font-weight: 700; line-height: 1.15;
+    color: var(--ink); letter-spacing: -0.01em;
+    margin-bottom: 14px;
+    padding-left: 18px;
+    border-left: 3px solid var(--red);
+  }
+  .topic-heading em { font-style: italic; font-weight: 400; color: var(--red); }
+
+  .topic-body {
+    font-size: 15.5px; line-height: 1.8; color: var(--ink-soft);
+    margin-bottom: 28px;
+  }
+  .topic-body strong { color: var(--ink); font-weight: 600; }
+  .topic-body em { color: var(--red); font-style: italic; }
+
+  .callout {
+    border-left: 3px solid var(--red-border);
+    background: var(--red-light);
+    border-radius: 0 12px 12px 0;
+    padding: 14px 20px;
+    margin: 20px 0 28px;
+    font-size: 14px; line-height: 1.65; color: var(--ink-soft);
+  }
+  .callout strong { color: var(--ink); }
+
+  .topic-divider {
+    height: 1px; background: var(--border);
+    margin: 0 0 48px;
+  }
+
+  .inline-img-wrap { margin-bottom: 12px; }
+
+  .inline-image {
+    width: 100%; display: block; border-radius: 18px;
+    border: 2px solid var(--card-border);
+    background: var(--card-bg); object-fit: cover;
+  }
+
+  .inline-placeholder {
+    width: 100%; border-radius: 18px;
+    border: 2px dashed var(--red-border);
+    background: var(--red-light);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 12px;
+    padding: 36px 32px; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .inline-placeholder::before {
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      -45deg, transparent, transparent 12px,
+      rgba(192,57,43,0.04) 12px, rgba(192,57,43,0.04) 24px
+    );
+    pointer-events: none;
+  }
+  .inline-ph-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: rgba(192,57,43,0.12); border: 1.5px solid rgba(192,57,43,0.26);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--red); position: relative; z-index: 1;
+  }
+  .inline-ph-label {
+    font-family: 'Fraunces', serif; font-style: italic;
+    font-size: 16px; color: var(--ink-muted); position: relative; z-index: 1;
+  }
+  .inline-ph-file {
+    font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em;
+    color: var(--red); font-family: monospace; position: relative; z-index: 1;
+  }
+
+  .inline-prompt {
+    background: var(--card-bg); border: 1.5px solid var(--card-border);
+    border-radius: 0 0 14px 14px;
+    border-top: none; padding: 16px 22px; margin-bottom: 28px;
+  }
+  .inline-prompt .prompt-header { margin-bottom: 8px; }
+  .inline-prompt .prompt-text { font-size: 12px; }
+
+  .concepts-wrap { margin-top: 8px; }
+  .concepts-heading {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink-muted); margin-bottom: 12px;
+  }
+  .concepts { display: flex; flex-wrap: wrap; gap: 8px; }
+  .concept-pill {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase;
+    padding: 6px 14px; border-radius: 20px;
+    background: var(--red-light);
+    border: 1px solid var(--red-border);
+    color: var(--red);
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .concept-pill:hover { background: #fde0e0; border-color: #f0a0a0; }
+
+  .subtopic-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+    margin-bottom: 80px;
+  }
+  .subtopic-card {
+    position: relative;
+    background: var(--card-bg); border: 2px solid var(--card-border);
+    border-radius: 18px; padding: 26px 28px 22px;
+    text-decoration: none; color: inherit;
+    display: flex; flex-direction: column;
+    overflow: hidden; will-change: transform;
+    transition:
+      transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 0.35s ease, border-color 0.28s ease, background 0.3s ease;
+  }
+  .subtopic-card::before {
+    content: ''; position: absolute; top: 0; left: -80%; width: 50%; height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.05) 50%, transparent);
+    transform: skewX(-15deg); pointer-events: none; z-index: 1;
+  }
+  @keyframes card-shine { to { left: 160%; } }
+  .subtopic-card:hover::before { animation: card-shine 0.5s ease forwards; }
+  .subtopic-card:hover {
+    transform: translateY(-10px) scale(1.016);
+    background: #260808; border-color: var(--red);
+    box-shadow: 0 24px 50px rgba(192,57,43,0.34), 0 0 0 2px rgba(192,57,43,0.12);
+  }
+  .sub-icon {
+    width: 36px; height: 36px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(192,57,43,0.13); border: 1.5px solid rgba(192,57,43,0.26);
+    color: #e87070; margin-bottom: 16px;
+    transition: background 0.3s, border-color 0.3s, color 0.3s, box-shadow 0.32s,
+                transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .subtopic-card:hover .sub-icon {
+    background: var(--red); border-color: var(--red-vivid); color: #fff;
+    box-shadow: 0 5px 18px rgba(192,57,43,0.48);
+    transform: scale(1.12) rotate(360deg);
+  }
+  .sub-num {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+    color: rgba(255,255,255,0.24); margin-bottom: 5px; transition: color 0.3s;
+  }
+  .subtopic-card:hover .sub-num { color: rgba(192,57,43,0.6); }
+  .sub-title {
+    font-family: 'Fraunces', serif; font-size: 20px; font-weight: 700; line-height: 1.15;
+    color: #fff; margin-bottom: 10px; transition: color 0.3s;
+  }
+  .subtopic-card:hover .sub-title { color: #ffe0e0; }
+  .sub-desc {
+    font-size: 12.5px; line-height: 1.5; color: rgba(255,255,255,0.4);
+    flex: 1; margin-bottom: 20px; transition: color 0.3s;
+  }
+  .subtopic-card:hover .sub-desc { color: rgba(255,255,255,0.62); }
+  .sub-cta {
+    display: inline-flex; align-items: center; gap: 5px; align-self: flex-start;
+    padding: 6px 14px; border-radius: 100px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    background: rgba(192,57,43,0.16); border: 1.5px solid rgba(192,57,43,0.32); color: #e87070;
+    transition: background 0.3s, border-color 0.3s, color 0.3s, box-shadow 0.3s;
+  }
+  .sub-arrow { display: inline-block; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .subtopic-card:hover .sub-cta {
+    background: var(--red); border-color: var(--red-vivid); color: #fff;
+    box-shadow: 0 4px 14px rgba(192,57,43,0.46);
+  }
+  .subtopic-card:hover .sub-arrow { transform: translateX(4px); }
+
+  @keyframes pageEnter {
+    from { opacity: 0; transform: scale(1.03) translateY(-16px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  body { animation: pageEnter 0.5s cubic-bezier(0.15, 0.85, 0.2, 1.08) both; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .hero-image-wrap            { animation: fadeUp 0.48s 0.06s both; }
+  .prompt-box                 { animation: fadeUp 0.48s 0.10s both; }
+  .overview                   { animation: fadeUp 0.48s 0.14s both; }
+  .subtopic-card:nth-child(1) { animation: fadeUp 0.44s 0.20s both; }
+  .subtopic-card:nth-child(2) { animation: fadeUp 0.44s 0.26s both; }
+  .subtopic-card:nth-child(3) { animation: fadeUp 0.44s 0.30s both; }
+
+  .back-to-top {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 10px 22px; border-radius: 100px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-muted); text-decoration: none;
+    border: 1px solid var(--border); background: rgba(255,255,255,0.6);
+    transition: color 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    margin-top: 56px; margin-bottom: 32px;
+  }
+  .back-to-top svg { transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+  .back-to-top:hover {
+    color: var(--red); border-color: var(--red-border);
+    background: var(--red-light);
+    box-shadow: 0 4px 14px rgba(192,57,43,0.14);
+    transform: translateY(-2px);
+  }
+  .back-to-top:hover svg { transform: translateY(-3px); }
+
+  footer {
+    font-size: 11px;
+    letter-spacing: 0.12em; color: var(--ink-muted); text-transform: uppercase;
+    margin-bottom: 60px;
+  }
+  footer span { color: var(--red); }
+
+  @media (max-width: 720px) {
+    body { padding: 56px 20px 72px; }
+    .chapter-title { font-size: 34px; }
+    .subtopic-grid { grid-template-columns: 1fr; }
+    .topic-heading { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+  <a class="back-link" href="../nse7-ef-study-guide-hub.html" id="top">← NSE7 Study Hub</a>
+
+  <div class="content">
+
+    <div class="chapter-label">
+      <span class="label-dot"></span>
+      EF-NSE7 &nbsp;·&nbsp; Chapter 03
+    </div>
+    <h1 class="chapter-title">VLANs and <em>VDOMs</em></h1>
+    <p class="chapter-subtitle">Segmenting enterprise networks with VLAN tagging and FortiGate virtual domain partitioning</p>
+
+    <nav class="quick-nav">
+      <a class="nav-pill" href="#subtopics">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        Subtopics
+      </a>
+      <div class="nav-dropdown-wrap">
+        <a class="nav-pill" href="#overview">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          Chapter Overview
+        </a>
+        <div class="nav-dropdown">
+          <a href="#topic-1">
+            <span class="dd-num">01</span>
+            VLAN Overview &amp; Tagging
+          </a>
+          <div class="nav-dropdown-divider"></div>
+          <a href="#topic-2">
+            <span class="dd-num">02</span>
+            VLANs on FortiGate Interfaces
+          </a>
+          <div class="nav-dropdown-divider"></div>
+          <a href="#topic-3">
+            <span class="dd-num">03</span>
+            VDOMs &amp; Virtual Segmentation
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="hero-image-wrap">
+      <img
+        id="heroImg"
+        src="images/chapter-03-hero.png"
+        alt="VLANs and VDOMs — overview illustration"
+      />
+      <div class="hero-placeholder" style="display:none;">
+        <div class="ph-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+        </div>
+        <div class="ph-label">Hero image not generated yet</div>
+        <div class="ph-filename">images/chapter-03-hero.png</div>
+      </div>
+    </div>
+
+    <div class="prompt-box">
+      <div class="prompt-header">
+        <span class="prompt-dot"></span>
+        Image Generation Prompt &nbsp;→&nbsp; <span class="prompt-filename">images/chapter-03-hero.png</span>
+      </div>
+      <p class="prompt-text">
+        Detailed cartoon flat illustration of a <strong>VLAN and VDOM enterprise network</strong>. Light cream background. At the center, a cartoon <strong>FortiGate firewall appliance</strong> (boxy red device with glowing indicator lights, labeled 'FortiGate') has multiple colored cables plugging into its ports. Each cable leads to a distinct floating bubble representing a VLAN zone: <strong>VLAN 10 — HR</strong> (soft lavender bubble) with cartoon desks and a filing cabinet; <strong>VLAN 20 — Engineering</strong> (pale mint bubble) with a cartoon server rack and a laptop on a desk; <strong>VLAN 30 — Finance</strong> (soft peach bubble) with a cartoon safe and a calculator; <strong>VLAN 40 — Guest</strong> (baby blue bubble) with a cartoon smartphone and a coffee cup. Each bubble has a numbered badge in its top-right corner showing the VLAN ID. At the top of the image, the FortiGate is split into two cartoon 'virtual doors' labeled <strong>VDOM A</strong> and <strong>VDOM B</strong>, each door a different pastel color, showing that the device is logically partitioned. Small 802.1Q tag icons (mini rectangles labeled 'TAG') float on the connecting cables. <strong>Fully detailed cartoon style, soft flat fills, light pastel palette (lavender, mint, peach, baby blue, cream), bold clean outlines, white background.</strong> Labels in a friendly rounded sans-serif.
+      </p>
+    </div>
+
+    <div class="section-label" id="subtopics">Subtopics</div>
+    <div class="subtopic-grid">
+
+      <a class="subtopic-card" href="subtopic-01-configure-vlans.html">
+        <div class="sub-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/>
+            <line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/>
+          </svg>
+        </div>
+        <div class="sub-num">Subtopic 01</div>
+        <div class="sub-title">Configure VLANs on FortiGate</div>
+        <div class="sub-desc">802.1Q tagging, trunk and access ports, hardware and software switches, FortiLink, and MCLAG configurations.</div>
+        <div class="sub-cta">Study <span class="sub-arrow">→</span></div>
+      </a>
+
+      <a class="subtopic-card" href="subtopic-02-implement-enterprise-vdoms.html">
+        <div class="sub-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          </svg>
+        </div>
+        <div class="sub-num">Subtopic 02</div>
+        <div class="sub-title">Implement Enterprise Networks Using VDOMs</div>
+        <div class="sub-desc">Traffic, Admin, and LAN Extension VDOM types, global objects, NAT and transparent mode, VDOM administrator roles.</div>
+        <div class="sub-cta">Study <span class="sub-arrow">→</span></div>
+      </a>
+
+      <a class="subtopic-card" href="subtopic-03-inter-vdom-routing.html">
+        <div class="sub-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+            <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+          </svg>
+        </div>
+        <div class="sub-num">Subtopic 03</div>
+        <div class="sub-title">Inter-VDOM Routing</div>
+        <div class="sub-desc">Routing traffic between VDOMs using virtual links, policies between VDOMs, and performance considerations.</div>
+        <div class="sub-cta">Study <span class="sub-arrow">→</span></div>
+      </a>
+
+    </div>
+
+    <div class="section-label" id="overview">Chapter Overview</div>
+    <div class="overview">
+
+      <div class="topic-block">
+        <h2 class="topic-heading" id="topic-1">VLAN Overview &amp; <em>Tagging</em></h2>
+        <p class="topic-body">
+          VLANs (Virtual Local Area Networks) are the primary tool for segmenting a flat Layer 2 network into multiple isolated broadcast domains without requiring separate physical hardware. The industry standard is <strong>IEEE 802.1Q</strong>, which inserts a 4-byte tag into an Ethernet frame to carry VLAN ID information (VID 1–4094). Switches use this tag to know which VLAN a frame belongs to and whether to forward, drop, or strip the tag when handing the frame off to an end device.
+        </p>
+        <p class="topic-body">
+          Beyond basic 802.1Q, enterprise networks may use <strong>QinQ (802.1ad)</strong> — double-tagging that stacks a service provider tag on top of a customer tag, allowing multiple customer VLANs to be tunneled through a carrier network sharing the same VLAN space. <strong>VXLAN</strong> (Virtual Extensible LAN) takes segmentation further by encapsulating Layer 2 frames inside UDP/IP packets, enabling virtual networks that span physical data centers or cloud regions with up to 16 million segment IDs.
+        </p>
+
+        <div class="inline-img-wrap">
+          <img
+            class="inline-image"
+            src="images/chapter-03-vlan-tagging.png"
+            alt="802.1Q VLAN tagging diagram illustration"
+          />
+          <div class="inline-placeholder" style="display:none;">
+            <div class="inline-ph-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+            </div>
+            <div class="inline-ph-label">Image not generated yet</div>
+            <div class="inline-ph-file">images/chapter-03-vlan-tagging.png</div>
+          </div>
+          <div class="inline-prompt">
+            <div class="prompt-header">
+              <span class="prompt-dot"></span>
+              Image Generation Prompt &nbsp;→&nbsp; <span class="prompt-filename">images/chapter-03-vlan-tagging.png</span>
+            </div>
+            <p class="prompt-text">
+              Detailed cartoon flat illustration of <strong>802.1Q VLAN tagging on a network switch</strong>. Light cream background. Center stage: a cartoon network switch (boxy teal appliance with multiple labeled ports along the bottom). On the left side, three cartoon computers connect via cables into <em>access ports</em> (ports labeled 'VLAN 10', 'VLAN 20', 'VLAN 30' in color-coded badges). Each computer sends a plain Ethernet frame shown as a small colorful rectangle. As the frame enters the switch, a cartoon 'stamp' animation shows a <strong>4-byte tag being inserted</strong> into the frame — the tag is drawn as a bright sticker slapped onto the rectangle, labeled '802.1Q TAG · VID=10' in bold. On the right side of the switch, a fat <em>trunk port</em> carries all three tagged frames up a wider cable to a cartoon <strong>FortiGate firewall</strong>. Small speech bubbles from the frames say things like <em>'I belong to VLAN 10!'</em>. At the bottom, a small legend shows: access port icon (single VLAN, tag stripped) vs trunk port icon (multiple VLANs, tags preserved). <strong>Fully detailed cartoon style, soft flat fills, light pastel palette (teal, lavender, mint, peach), bold clean outlines, cream background.</strong> Friendly rounded sans-serif labels.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="topic-divider"></div>
+
+      <div class="topic-block">
+        <h2 class="topic-heading" id="topic-2">VLANs on <em>FortiGate</em> Interfaces</h2>
+        <p class="topic-body">
+          FortiGate supports VLANs through multiple interface types. <strong>VLAN subinterfaces</strong> attach to a physical or aggregate port and carry a specific 802.1Q tag — each subinterface appears as an independent routed interface with its own IP, policies, and DHCP scope. <strong>Hardware switches</strong> (on models with an integrated switch fabric) allow multiple physical ports to be grouped into a single Layer 2 domain; combined with VLAN configuration this lets FortiGate behave like a managed access switch without external hardware.
+        </p>
+        <p class="topic-body">
+          <strong>Software switches</strong> provide the same grouping capability in software on models without a dedicated switch chip. <strong>FortiLink</strong> is Fortinet's proprietary protocol for managing FortiSwitch units directly from FortiGate — once a FortiSwitch is authorized, FortiGate controls its port VLANs, spanning tree, and security policies as if they were local interfaces. <strong>MCLAG (Multi-Chassis Link Aggregation Group)</strong> allows two FortiSwitch units to present a single logical LAG to an upstream device, eliminating spanning-tree blocked links and providing active-active redundancy at the access layer.
+        </p>
+
+        <div class="callout">
+          <strong>Exam tip:</strong> On FortiGate, a VLAN subinterface inherits the physical port's link state. If the parent interface goes down, all child VLANs lose connectivity simultaneously — design with LAG or redundant physical links when high availability is required.
+        </div>
+
+        <div class="inline-img-wrap">
+          <img
+            class="inline-image"
+            src="images/chapter-03-vdom-types.png"
+            alt="FortiGate VDOM types diagram illustration"
+          />
+          <div class="inline-placeholder" style="display:none;">
+            <div class="inline-ph-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+            </div>
+            <div class="inline-ph-label">Image not generated yet</div>
+            <div class="inline-ph-file">images/chapter-03-vdom-types.png</div>
+          </div>
+          <div class="inline-prompt">
+            <div class="prompt-header">
+              <span class="prompt-dot"></span>
+              Image Generation Prompt &nbsp;→&nbsp; <span class="prompt-filename">images/chapter-03-vdom-types.png</span>
+            </div>
+            <p class="prompt-text">
+              Detailed cartoon flat illustration of <strong>FortiGate VDOM types side by side</strong>. Light cream background. The FortiGate appliance is drawn as a large cartoon box in the center, split vertically into three colored columns, each representing a VDOM type. <strong>Left column — Traffic VDOM</strong> (soft red/coral): shows cartoon traffic arrows flowing in from the internet (globe icon) on the left, through the VDOM, and out to an internal LAN (desks) on the right — labeled 'Routes &amp; Policies'. <strong>Center column — Admin VDOM</strong> (soft lavender): shows a cartoon admin person at a desk with a management console, labeled 'Management Only · No traffic forwarding'. <strong>Right column — LAN Extension VDOM</strong> (soft mint green): shows FortiGate connecting to a FortiSwitch icon below, with VLAN subinterfaces branching out like a tree, labeled 'Extends switch VLANs'. Above the three columns, a banner reads <em>'Virtual Domains (VDOMs)'</em> with a dividing line. Below each column, a small badge shows the VDOM type name. Small global-object icons (gears and lock) float outside the split, labeled 'Shared Global Objects'. <strong>Fully detailed cartoon style, soft flat fills, pastel palette, bold outlines, cream background.</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="topic-divider"></div>
+
+      <div class="topic-block">
+        <h2 class="topic-heading" id="topic-3">VDOMs &amp; <em>Virtual Segmentation</em></h2>
+        <p class="topic-body">
+          Virtual Domains (VDOMs) partition a single FortiGate into multiple independent firewall instances. Each VDOM has its own routing table, firewall policies, security profiles, and administrators — traffic in one VDOM cannot cross into another without an explicit inter-VDOM link and matching policy. This makes VDOMs ideal for managed service providers hosting multiple customers on shared hardware, or enterprises that need strict regulatory separation between departments.
+        </p>
+        <p class="topic-body">
+          FortiGate supports three VDOM types: <strong>Traffic VDOMs</strong> forward user traffic and run full security inspection; <strong>Admin VDOMs</strong> are dedicated management planes that carry no user traffic; <strong>LAN Extension VDOMs</strong> extend the switch fabric from a FortiSwitch or FortiAP without performing routing. <strong>Global objects</strong> (such as certain address objects and services) can be shared across all VDOMs to reduce duplication. Administrators can be scoped to individual VDOMs or granted super-admin privileges across all. For inter-VDOM communication, <strong>virtual links (VDOM links)</strong> create a logical point-to-point connection between two VDOMs, with policies controlling exactly what crosses the boundary.
+        </p>
+
+        <div class="concepts-wrap">
+          <div class="concepts-heading">Key Concepts</div>
+          <div class="concepts">
+            <span class="concept-pill">802.1Q</span>
+            <span class="concept-pill">802.1ad QinQ</span>
+            <span class="concept-pill">VXLAN</span>
+            <span class="concept-pill">FortiLink</span>
+            <span class="concept-pill">MCLAG</span>
+            <span class="concept-pill">VDOM</span>
+            <span class="concept-pill">Inter-VDOM Routing</span>
+            <span class="concept-pill">NAT Mode</span>
+            <span class="concept-pill">Transparent Mode</span>
+            <span class="concept-pill">Hardware Switch</span>
+            <span class="concept-pill">Global Objects</span>
+            <span class="concept-pill">VDOM Link</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <a class="back-to-top" href="#top">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+    Back to Top
+  </a>
+
+  <footer>
+    EF-NSE7<span>.</span> Chapter 03<span>.</span> VLANs and VDOMs
+  </footer>
+
+  <script>
+    if (sessionStorage.getItem('pt')) {
+      document.body.style.opacity = '1';
+      sessionStorage.removeItem('pt');
+    }
+    document.querySelectorAll('.subtopic-card, .back-link').forEach(el => {
+      el.addEventListener('click', () => sessionStorage.setItem('pt', '1'));
+    });
+
+    (function () {
+      var img    = document.getElementById('heroImg');
+      var ph     = document.querySelector('.hero-placeholder');
+      var prompt = document.querySelector('.prompt-box');
+      if (!img) return;
+      function onLoad()  { if (ph) ph.style.display = 'none'; if (prompt) prompt.style.display = 'none'; }
+      function onError() { img.style.display = 'none'; if (ph) ph.style.display = 'flex'; }
+      img.addEventListener('load',  onLoad);
+      img.addEventListener('error', onError);
+      if (img.complete) { img.naturalWidth > 0 ? onLoad() : onError(); }
+    }());
+
+    document.querySelectorAll('.inline-img-wrap').forEach(function (wrap) {
+      var img    = wrap.querySelector('.inline-image');
+      var ph     = wrap.querySelector('.inline-placeholder');
+      var prompt = wrap.querySelector('.inline-prompt');
+      if (!img) return;
+      function onLoad() {
+        if (ph)     ph.style.display     = 'none';
+        if (prompt) prompt.style.display = 'none';
+      }
+      function onError() {
+        img.style.display = 'none';
+        if (ph) ph.style.display = 'flex';
+        if (prompt) {
+          prompt.style.display      = 'block';
+          prompt.style.borderRadius = '14px';
+          prompt.style.borderTop    = '1.5px solid var(--card-border)';
+          prompt.style.marginTop    = '8px';
+        }
+      }
+      img.addEventListener('load',  onLoad);
+      img.addEventListener('error', onError);
+      if (img.complete) { img.naturalWidth > 0 ? onLoad() : onError(); }
+    });
+  </script>
+
+</body>
+</html>

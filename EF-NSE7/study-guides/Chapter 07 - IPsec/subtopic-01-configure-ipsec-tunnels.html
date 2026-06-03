@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configure IPsec Tunnels — EF-NSE7 Ch07</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#fff5f5;--surface:#ffffff;--surface-2:#fef2f2;--border:#f0c8c8;--border-dim:#fde8e8;
+  --text:#1a0606;--text-soft:#4a1212;--text-muted:#8a3a3a;
+  --red:#c0392b;--red-vivid:#e03e2d;--red-glow:rgba(192,57,43,0.07);--red-dim:#f8b4b4;
+  --red-deep:#7f1d1d;--red-light:#fef2f2;--red-border:#f8b4b4;
+  --green:#1a7c4a;--green-light:#d4f0e0;--green-border:#a7e0c0;
+  --amber:#b45309;--amber-light:#fef9c3;--amber-border:#fde68a;
+}
+html{scroll-behavior:smooth;}
+html.pt-init body{opacity:0;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* HEADER */
+header{padding:48px 60px 36px;background:#1a0606;display:flex;align-items:flex-end;gap:32px;}
+.header-left{flex:1;}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);letter-spacing:0.08em;margin-bottom:12px;flex-wrap:wrap;}
+.breadcrumb a{color:#e87070;text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.breadcrumb-sep{color:rgba(232,112,112,0.35);}
+.header-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(232,112,112,0.1);border:1px solid rgba(232,112,112,0.25);padding:5px 14px;border-radius:20px;font-size:11px;color:#e87070;letter-spacing:0.08em;margin-bottom:14px;}
+.dot-live{width:6px;height:6px;background:#e87070;border-radius:50%;display:inline-block;animation:blink 2.4s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+header h1{font-family:'Fraunces',serif;font-size:44px;font-weight:700;line-height:1.0;color:#fff;margin-bottom:10px;}
+header h1 em{font-style:italic;font-weight:400;color:#e87070;}
+header p{font-size:13px;color:rgba(255,255,255,0.42);margin-top:10px;line-height:1.7;}
+
+/* MOTIVATION BANNER */
+.motivation-banner{padding:20px 60px;min-height:84px;display:flex;flex-direction:column;justify-content:center;border-bottom:1px solid var(--border);background:var(--surface);}
+.motivation-text{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--text);}
+.motivation-text em{font-style:italic;color:var(--red);}
+.motivation-sub{font-size:12px;color:var(--text-muted);line-height:1.7;margin-top:4px;}
+
+/* TOP PANELS */
+.top-panels{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+.top-panels .qpanel{border-bottom:none;border-right:1px solid var(--border);}
+.top-panels .qpanel-header{padding-left:32px;padding-right:32px;}
+.top-panels .qpanel-body{padding-left:32px;padding-right:32px;}
+.qpanel{background:var(--surface);}
+.qpanel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 20px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.qpanel-header:hover,.qpanel-header.open{background:var(--surface-2);}
+.qpanel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.qpanel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.qpanel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.qpanel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.qpanel-body{display:none;padding:0 20px 22px;}
+.qpanel-body.open{display:block;}
+.notes-panel{background:var(--surface);}
+.notes-panel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 32px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.notes-panel-header:hover,.notes-panel-header.open{background:var(--surface-2);}
+.notes-panel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.notes-panel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.notes-panel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.notes-panel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.notes-panel-body{display:none;padding:0 32px 22px;}
+.notes-panel-body.open{display:block;}
+.q-group{margin-bottom:16px;}
+.q-group-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+.q-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-dim);}
+.q-item:last-child{border-bottom:none;}
+.q-num{font-size:10px;font-weight:700;color:var(--red);min-width:16px;margin-top:2px;}
+.q-text{font-size:12px;color:var(--text-soft);line-height:1.5;flex:1;}
+.q-del{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 4px;margin-top:1px;}
+.q-del:hover{color:var(--red);}
+.no-questions{font-size:12px;color:var(--text-muted);padding:8px 0;}
+.btn-add-q{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-q:hover{opacity:0.85;}
+
+/* SECTION NAV */
+.section-nav{position:sticky;top:0;z-index:90;display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);padding:0 32px;overflow-x:auto;}
+.nav-tab{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:12px 18px;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--red);border-bottom-color:var(--red);}
+
+/* MAIN GRID */
+main{display:grid;grid-template-columns:1fr 320px;gap:0;align-items:start;max-width:1200px;margin:0 auto;padding:0;}
+.main-content{padding:36px 40px 60px 60px;}
+.sidebar{padding:32px 24px 60px 20px;position:sticky;top:57px;max-height:calc(100vh - 57px);overflow-y:auto;}
+
+/* SECTION BLOCK */
+.section-block{margin-bottom:48px;}
+.section-label{font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.section-block h2{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1.15;margin-bottom:16px;padding-left:16px;border-left:3px solid var(--red);}
+.section-block h2 em{font-style:italic;font-weight:400;color:var(--red);}
+.section-block p{font-size:14px;line-height:1.8;color:var(--text-soft);margin-bottom:14px;}
+.section-block p strong{color:var(--text);font-weight:600;}
+.section-block p em{color:var(--red);font-style:italic;}
+.section-block ul,.section-block ol{padding-left:22px;margin-bottom:14px;}
+.section-block li{font-size:14px;line-height:1.75;color:var(--text-soft);margin-bottom:4px;}
+.section-block li strong{color:var(--text);font-weight:600;}
+
+/* CALLOUTS */
+.callout{border-left:3px solid var(--red-border);background:var(--red-light);border-radius:0 10px 10px 0;padding:12px 18px;margin:16px 0;font-size:13.5px;line-height:1.65;color:var(--text-soft);}
+.callout strong{color:var(--text);}
+.callout-warn{border-left-color:var(--amber-border);background:var(--amber-light);}
+.callout-info{border-left-color:var(--green-border);background:var(--green-light);}
+
+/* SECTION IMAGE */
+.section-img-wrap{margin:0 0 20px;display:flex;flex-direction:column;align-items:center;}
+.section-img{width:260px;max-width:100%;border-radius:12px;cursor:zoom-in;transition:width 0.3s ease;border:1px solid var(--border);display:block;}
+.section-img.si-expanded{width:100%;cursor:zoom-out;border-radius:16px;}
+.si-placeholder{display:none;width:260px;max-width:100%;border:2px dashed var(--border);border-radius:12px;background:var(--surface-2);padding:14px 16px;flex-direction:column;align-items:flex-start;gap:8px;}
+.si-placeholder.si-show{display:flex;}
+.si-filename{font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+
+/* CODE BLOCK */
+.code-block{background:#1a0606;border-radius:12px;padding:20px 24px;margin:16px 0;overflow-x:auto;}
+.code-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#e87070;margin-bottom:10px;}
+.code-block pre{margin:0;}
+.code-block code{font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:rgba(255,255,255,0.82);}
+
+/* SOCRATIC */
+.socratic-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:16px;border-top:3px solid var(--red);}
+.socratic-header{display:flex;align-items:center;gap:8px;margin-bottom:0;cursor:pointer;user-select:none;}
+.socratic-header::after{content:'▸ Expand';margin-left:auto;font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'Inter',sans-serif;}
+.socratic-block.soc-open .socratic-header{margin-bottom:10px;}
+.socratic-block.soc-open .socratic-header::after{content:'▾ Collapse';}
+.socratic-block:not(.soc-open) .socratic-insight,
+.socratic-block:not(.soc-open) .socratic-questions,
+.socratic-block:not(.soc-open) .answer-area{display:none;}
+.socratic-icon{font-size:17px;flex-shrink:0;}
+.socratic-label{font-size:9px;font-weight:700;letter-spacing:0.18em;color:var(--text-muted);}
+.socratic-insight{font-size:13px;color:var(--text-soft);line-height:1.75;margin-bottom:12px;border-left:3px solid var(--border);padding-left:12px;font-style:italic;}
+.socratic-questions{list-style:none;padding:0;margin:0;}
+.socratic-questions li{font-size:12.5px;color:var(--text);padding:7px 0 7px 22px;position:relative;border-bottom:1px solid var(--border-dim);line-height:1.6;}
+.socratic-questions li:last-child{border-bottom:none;}
+.socratic-questions li::before{content:'?';position:absolute;left:0;font-weight:700;font-size:12px;top:8px;color:var(--red);}
+.answer-area{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.answer-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.answer-textarea:focus{border-color:var(--text);}
+.answer-textarea:disabled{opacity:0.7;background:var(--surface-2);cursor:default;}
+.answer-buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.btn-add-answer{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-answer:hover:not(:disabled){opacity:0.85;}
+.btn-add-answer:disabled{opacity:0.5;cursor:default;}
+.btn-see-answer{background:var(--surface);color:var(--text-muted);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-see-answer:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-see-answer:not(:disabled){color:var(--red);border-color:var(--red);}
+.btn-see-answer:hover:not(:disabled){background:var(--red-glow);}
+.model-answers{margin-top:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.model-answer-item{padding:10px 0;border-bottom:1px solid var(--border-dim);}
+.model-answer-item:first-child{padding-top:0;}
+.model-answer-item:last-child{border-bottom:none;padding-bottom:0;}
+.model-answer-q{font-size:9px;font-weight:700;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:4px;}
+.model-answer-text{font-size:13px;color:var(--text-soft);line-height:1.7;}
+
+/* MENTAL NOTE */
+.mental-note-block{border-radius:10px;padding:12px 16px;margin:16px 0;display:flex;gap:10px;align-items:flex-start;background:rgba(192,57,43,0.07);border:1px solid var(--border);}
+.mental-note-block-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.mental-note-block-inner{flex:1;}
+.mental-note-block-label{font-size:9px;font-weight:700;letter-spacing:0.16em;color:var(--red);margin-bottom:3px;}
+.mental-note-block-text{font-size:13px;font-weight:600;line-height:1.55;color:var(--text);}
+
+/* ANALOGY BOX */
+.analogy-box{background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #b45309;border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0;}
+.analogy-label{display:flex;align-items:center;gap:6px;user-select:none;cursor:pointer;font-size:9px;font-weight:700;letter-spacing:0.16em;color:#b45309;margin-bottom:4px;}
+.analogy-label::after{content:'▾  Reveal illustration';margin-left:auto;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:none;opacity:0.75;}
+.analogy-label:hover::after{opacity:1;}
+.analogy-box.expanded > .analogy-label::after{content:'▴  Hide illustration';}
+.analogy-text{font-size:13px;color:#78350f;line-height:1.65;font-style:italic;}
+.analogy-box > .analogy-img{display:none;}
+.analogy-box.expanded > .analogy-img{display:block;}
+.analogy-img img{max-width:360px;width:100%;cursor:zoom-in;transition:max-width 0.25s ease;border-radius:8px;margin-top:10px;}
+.analogy-img img.zoomed{max-width:100%;cursor:zoom-out;}
+.prompt-toggle{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:10px;font-weight:600;letter-spacing:0.08em;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;text-transform:uppercase;}
+.prompt-toggle:hover{color:var(--text);border-color:var(--text);}
+.prompt-content{margin-top:10px;padding:10px 14px;background:rgba(0,0,0,0.04);border-radius:8px;font-size:11.5px;color:var(--text-muted);font-style:italic;line-height:1.65;text-align:left;}
+.prompt-content[hidden]{display:none;}
+
+/* LESSON TOOLS */
+.lesson-tools{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:40px;}
+.lesson-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.tool-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.tool-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.tool-textarea:focus{border-color:var(--red);}
+.tool-row{margin-top:8px;display:flex;gap:8px;}
+
+/* SIDEBAR */
+.sidebar-section{margin-bottom:28px;}
+.sidebar-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;}
+.ssnav{display:flex;flex-direction:column;gap:2px;margin-top:4px;}
+.ssnav-item{font-size:12px;color:var(--text-soft);padding:6px 10px;border-radius:6px;text-decoration:none;line-height:1.4;display:block;transition:background 0.15s,color 0.15s;}
+.ssnav-item:hover,.ssnav-item.active{background:var(--red-glow);color:var(--red);}
+.hub-link{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);margin-bottom:16px;transition:color 0.15s,border-color 0.15s,background 0.15s;}
+.hub-link:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);}
+.check-item{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;}
+.check-input{accent-color:var(--red);width:14px;height:14px;flex-shrink:0;cursor:pointer;}
+.check-label{font-size:12px;color:var(--text-soft);line-height:1.4;}
+.check-item:has(.check-input:checked) .check-label{color:var(--text-muted);text-decoration:line-through;}
+.quick-ref{background:#1a0606;border-radius:10px;padding:12px 16px;margin-bottom:8px;}
+.quick-ref-term{font-size:10px;font-weight:700;letter-spacing:0.12em;color:#e87070;margin-bottom:3px;text-transform:uppercase;}
+.quick-ref-def{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;}
+
+/* PAGE NAV */
+.page-nav{display:flex;border-top:2px solid var(--border);background:var(--surface);}
+.page-nav-btn{flex:1;display:flex;flex-direction:column;gap:4px;padding:16px 28px;text-decoration:none;transition:background 0.15s;cursor:pointer;}
+.page-nav-btn:hover:not(.page-nav-disabled){background:var(--surface-2);}
+.page-nav-prev{border-right:1px solid var(--border);}
+.page-nav-next{text-align:right;}
+.page-nav-disabled{opacity:0.3;pointer-events:none;}
+.page-nav-label{font-size:10px;font-weight:600;letter-spacing:0.14em;color:var(--text-muted);display:block;}
+.page-nav-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;color:var(--red);display:block;}
+
+/* FOOTER */
+footer{font-size:11px;letter-spacing:0.12em;color:var(--text-muted);text-transform:uppercase;padding:20px 60px;border-top:1px solid var(--border);}
+footer span{color:var(--red);}
+
+/* EXTRA */
+.img-caption{font-size:11px;color:var(--text-muted);text-align:center;margin-top:6px;line-height:1.4;font-style:italic;}
+.analogy-summary{font-style:normal;font-weight:600;color:#92400e;margin-bottom:10px;}
+.analogy-text ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;}
+.analogy-text li{padding-left:18px;position:relative;}
+.analogy-text li::before{content:'•';position:absolute;left:0;font-weight:700;color:#b45309;}
+.data-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;}
+.data-table th{background:#1a0606;color:#e87070;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:10px 14px;text-align:left;}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-soft);line-height:1.55;vertical-align:top;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:nth-child(even) td{background:var(--surface-2);}
+.data-table td strong{color:var(--text);font-weight:600;}
+
+@media(max-width:1000px){main{grid-template-columns:1fr;}.sidebar{position:static;max-height:none;padding:0 40px 40px;}}
+@media(max-width:720px){header{padding:28px 24px 24px;}header h1{font-size:32px;}.motivation-banner{padding:16px 24px;}.main-content{padding:24px 24px 40px;}.section-nav{padding:0 16px;}.top-panels{grid-template-columns:1fr;}.top-panels .qpanel{border-right:none;border-bottom:1px solid var(--border);}.lesson-tools-grid{grid-template-columns:1fr;}footer{padding:16px 24px;}}
+</style>
+</head>
+<body>
+<div id="page-transition" style="position:fixed;inset:0;background:#1a0606;opacity:0;pointer-events:none;z-index:999;transition:opacity 0.25s;"></div>
+
+<header>
+  <div class="header-left">
+    <div class="breadcrumb">
+      <a href="../nse7-ef-study-guide-hub.html">EF-NSE7</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="index.html">Chapter 07 — IPsec</a>
+      <span class="breadcrumb-sep">›</span>
+      Subtopic 01
+    </div>
+    <div class="header-eyebrow"><span class="dot-live"></span> Study Guide · EF-NSE7</div>
+    <h1>Configure <em>IPsec Tunnels</em></h1>
+    <p>Master IPsec VPN topology design — from site-to-site to full mesh — and learn how FortiGate handles tunnel aggregation, overlapping routes, IP addressing, and certificate-based authentication.</p>
+  </div>
+</header>
+
+<div class="motivation-banner">
+  <div class="motivation-text">Topology is <em>destiny</em> — pick the wrong one and no amount of tuning saves you.</div>
+  <p class="motivation-sub">This subtopic covers the design decisions that underpin every IPsec deployment: topology type, redundancy, Phase 2 segmentation, and route conflict resolution.</p>
+</div>
+
+<div class="top-panels">
+  <div class="qpanel" id="qpanel">
+    <button class="qpanel-header" onclick="toggleQPanel()" id="qpanel-header">
+      <span class="qpanel-title">MY QUESTIONS</span>
+      <span class="qpanel-count" id="qpanel-count">0</span>
+      <span class="qpanel-hint">— click to expand</span>
+      <span class="qpanel-chevron" id="qpanel-chevron">▾</span>
+    </button>
+    <div class="qpanel-body" id="qpanel-body"></div>
+  </div>
+  <div class="notes-panel" id="notes-panel">
+    <button class="notes-panel-header" onclick="toggleNotesPanel()" id="notes-panel-header">
+      <span class="notes-panel-title">MY NOTES</span>
+      <span class="notes-panel-count" id="notes-panel-count">0</span>
+      <span class="notes-panel-hint">— click to expand</span>
+      <span class="notes-panel-chevron" id="notes-panel-chevron">▾</span>
+    </button>
+    <div class="notes-panel-body" id="notes-panel-body"></div>
+  </div>
+</div>
+
+<nav class="section-nav" id="section-nav">
+  <a class="nav-tab active" href="#s1">Topology Design</a>
+  <a class="nav-tab" href="#s2">DPD &amp; Phase 2 Selectors</a>
+  <a class="nav-tab" href="#s3">Tunnel Aggregation</a>
+  <a class="nav-tab" href="#s4">Overlapping Routes</a>
+  <a class="nav-tab" href="#s5">Certificates &amp; SCEP</a>
+</nav>
+
+<main>
+  <div class="main-content">
+
+    <!-- SECTION 1 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · TOPOLOGY DESIGN</span>
+      </div>
+      <p class="socratic-insight">IPsec VPN topology is not just a physical diagram — it determines scaling, failover behavior, and policy complexity. A hub-and-spoke saves tunnel count but creates a single point of failure. Full mesh eliminates that, but at the cost of O(n²) tunnel growth.</p>
+      <ul class="socratic-questions">
+        <li>When would you choose hub-and-spoke over full mesh, and what happens to spoke-to-spoke traffic in hub-and-spoke that does not exist in full mesh?</li>
+        <li>What does "dual hub-and-spoke" buy you compared to single hub-and-spoke, and what does it cost in tunnel overhead?</li>
+      </ul>
+      <div class="answer-area" data-section="topology-design">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Hub-and-spoke is preferred when branches need to communicate with HQ but rarely with each other, and when minimizing tunnel count matters (n tunnels vs. n(n-1)/2). In hub-and-spoke, spoke-to-spoke traffic must traverse the hub — adding latency and loading the hub FortiGate's policy engine with traffic it originates from neither endpoint.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Dual hub-and-spoke provides redundancy: if one hub fails, spokes fail over to the second hub. The cost is that each spoke now maintains two tunnels instead of one, and hub failure detection depends on correctly tuned DPD. Without dual hub, a single hub outage takes down all branch connectivity simultaneously.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s1">
+      <div class="section-label">SECTION 01</div>
+      <h2>IPsec VPN <em>Topology Design</em></h2>
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s1-topology-design.png" alt="Four IPsec topologies: site-to-site, hub-and-spoke, dual hub-and-spoke, full mesh" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg" style="display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;">📷 <strong>images/s1-topology-design.png</strong></div>
+        <p class="img-caption">Four IPsec VPN topology patterns and when to choose each.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration split into four equal panels: top-left shows Site-to-Site with two FortiGate nodes connected by a single tunnel line over a cloud labeled "Internet"; top-right shows Hub-and-Spoke with one central hub node and four branch nodes each connected by a separate tunnel to the hub; bottom-left shows Dual Hub-and-Spoke with two hub nodes at center and branches connecting to both; bottom-right shows Full Mesh ADVPN with every node connected to every other node. Pastel palette, bold outlines, short labels, no shadows, educational infographic feel.</div>
+      </div>
+      <p>When designing an <strong>IPsec VPN topology</strong>, you must consider scalability, redundancy, security algorithms, and the firewall model at each site. FortiGate supports four primary topologies: <strong>site-to-site</strong>, <strong>hub-and-spoke</strong>, <strong>dual hub-and-spoke</strong>, and <strong>full mesh (ADVPN)</strong>.</p>
+      <p>Site-to-site is the simplest — one tunnel, two endpoints. Hub-and-spoke centralizes traffic through a headquarters device, reducing the number of tunnels required as the branch count grows. <em>Dual hub-and-spoke</em> adds a second HQ device for redundancy. Full mesh via ADVPN creates direct spoke-to-spoke tunnels on demand, eliminating hub bottlenecks but requiring careful routing configuration.</p>
+      <p>The number of tunnels also depends on the type of traffic traversing the IPsec tunnel and the firewall model deployed. A branch-model firewall may support fewer concurrent tunnels than a campus-core model, making topology choice a hardware decision as much as a design one.</p>
+      <div class="callout"><strong>Exam tip:</strong> Full mesh topologies use <strong>ADVPN (Auto-Discovery VPN)</strong> to build spoke-to-spoke shortcuts dynamically. Standard full mesh would require pre-configuring n(n-1)/2 tunnels — operationally unacceptable at scale.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">4 topology types: site-to-site, hub-and-spoke, dual hub-and-spoke, full mesh (ADVPN). Hub-and-spoke = n tunnels; full mesh = n(n-1)/2 tunnels. Always match topology to firewall hardware capacity and traffic patterns.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s1" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s1','Topology Design')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s1" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s1')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · DPD &amp; PHASE 2 SELECTORS</span>
+      </div>
+      <p class="socratic-insight">Dead Peer Detection (DPD) and Phase 2 selectors solve two different problems in IPsec stability. DPD detects when a remote peer has gone silent. Phase 2 selectors define exactly which traffic flows are encrypted through a given SA.</p>
+      <ul class="socratic-questions">
+        <li>What is the difference between DPD on-demand and DPD on-idle, and in which scenario would on-idle cause unnecessary overhead?</li>
+        <li>Why would using all-zeros (0.0.0.0/0.0.0.0) in Phase 2 selectors be risky in a multi-site hub environment?</li>
+      </ul>
+      <div class="answer-area" data-section="dpd-selectors">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">On-demand sends DPD probes only when outbound traffic is waiting but no response arrives — ideal for unpredictable traffic patterns. On-idle sends probes whenever the tunnel is idle for a defined interval, which wastes bandwidth in environments where tunnels are legitimately quiet most of the time (e.g., a backup-only tunnel).</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">All-zeros selectors mean "encrypt everything," which prevents the hub from distinguishing traffic destined for different spokes. When multiple spokes advertise the same subnet (overlapping routes), all-zeros selectors create ambiguous route entries and can cause invalid-path blackholing. Explicit subnet selectors let the hub route correctly to the right spoke.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s2">
+      <div class="section-label">SECTION 02</div>
+      <h2>DPD Modes and <em>Phase 2 Selectors</em></h2>
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s2-dpd-selectors.png" alt="DPD modes diagram and Phase 2 selectors configuration" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg" style="display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;">📷 <strong>images/s2-dpd-selectors.png</strong></div>
+        <p class="img-caption">DPD on-demand, on-idle, and disabled — and how Phase 2 selectors define encrypted traffic.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration in two panels: left panel shows three rows each with HQ FortiGate on left, IPsec cloud in middle, Branch FortiGate on right — top row has green arrows labeled "On-demand", middle row has blue arrows labeled "On-idle", bottom row has gray dotted line labeled "Disabled"; right panel shows a Phase 2 selector table with rows listing local subnet, remote subnet, and example values. Pastel palette, bold outlines, educational infographic feel.</div>
+      </div>
+      <p><strong>Dead Peer Detection (DPD)</strong> is essential for VPN stability by detecting unreachable peers. FortiGate supports three DPD modes: <em>on-demand</em>, <em>on-idle</em>, and <em>disable</em>.</p>
+      <ul>
+        <li><strong>On-demand:</strong> Sends probes only when outbound traffic is queued but no reply arrives. Best for unpredictable or bursty traffic patterns.</li>
+        <li><strong>On-idle:</strong> Sends probes at regular intervals when the tunnel is idle. Best for networks with predictable, regular traffic that need fast failover detection.</li>
+        <li><strong>Disable:</strong> No probes. Suitable only in highly stable networks where DPD overhead is unwarranted.</li>
+      </ul>
+      <p>The default DPD retry count is <strong>3</strong> with a retry interval of <strong>20 seconds</strong>. In full-mesh and hub-and-spoke topologies, DPD mode significantly impacts performance and reliability — on-demand prevents unnecessary probe traffic in high-node-count meshes.</p>
+      <p><strong>Phase 2 selectors</strong> specify which local and remote network segments are encrypted over a single Phase 1 tunnel. Multiple Phase 2 selectors can operate over one Phase 1 SA, letting you segment traffic by subnet. You can configure selectors by IP address, subnet, or IP range. Using all-zeros (0.0.0.0/0) as selectors is tempting for simplicity, but causes routing ambiguity in environments with overlapping subnets — particularly during migrations.</p>
+      <div class="callout callout-warn"><strong>Exam warning:</strong> Phase 2 selectors with all zeros (0.0.0.0/0) risk invalid-path issues when multiple spokes share the same subnet. Use routing protocols over the tunnel to specify allowed subnets instead.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">DPD: 3 modes (on-demand, on-idle, disable); default retry=3, interval=20s. Phase 2: multiple selectors per Phase 1 SA. Selector = (local subnet, remote subnet). Avoid 0.0.0.0/0 selectors in multi-spoke deployments with overlapping subnets.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s2" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s2','DPD & Phase 2 Selectors')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s2" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s2')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · TUNNEL AGGREGATION</span>
+      </div>
+      <p class="socratic-insight">IPsec tunnel aggregation groups multiple tunnels under a virtual interface — much like LACP bonds physical links. This provides both redundancy and load distribution, but the choice of balancing algorithm determines which traffic property drives the distribution decision.</p>
+      <ul class="socratic-questions">
+        <li>What is the functional difference between L3 and L4 load balancing in IPsec aggregation, and when would you prefer one over the other?</li>
+        <li>If one tunnel in an aggregate fails, what happens to in-flight sessions, and which algorithm minimizes disruption?</li>
+      </ul>
+      <div class="answer-area" data-section="tunnel-aggregation">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">L3 balances based on source/destination IP — good for ensuring consistent path per session. L4 adds port information, providing finer-grained distribution across more flows. L4 is preferable when many sessions share the same IP pair (e.g., a server farm) and you want to spread load across tunnels. L3 is simpler and more predictable for general traffic.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">When a tunnel fails, in-flight sessions using that tunnel will be disrupted and must re-establish over the remaining tunnels. The "redundant" algorithm minimizes this by always sending all traffic through the first active tunnel — there is no rebalancing needed, just a failover to the next member, which is already warm.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s3">
+      <div class="section-label">SECTION 03</div>
+      <h2>IPsec <em>Tunnel Aggregation</em></h2>
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s3-tunnel-aggregation.png" alt="IPsec aggregate interface binding two tunnels" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg" style="display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;">📷 <strong>images/s3-tunnel-aggregation.png</strong></div>
+        <p class="img-caption">Two IPsec tunnels bound into one aggregate interface with weighted round-robin balancing.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat illustration showing two FortiGate boxes connected by two parallel tunnel lines labeled "Tunnel1" and "Tunnel2"; both tunnel lines converge into a single virtual interface labeled "IPSEC_AGG" on the left FortiGate. Below the diagram, a small table shows five load balancing algorithm names: round-robin, L3, L4, redundant, weighted-round-robin. Pastel blue and green palette, bold outlines, minimal text, educational infographic feel.</div>
+      </div>
+      <p><strong>IPsec tunnel aggregation</strong> lets you bind multiple IPsec tunnels into a single virtual aggregate interface — the same concept as LACP for Layer 2 links. You need at least two tunnels as aggregate members.</p>
+      <p>Aggregation provides two benefits: <em>redundancy</em> (if one tunnel fails, traffic continues on the others) and <em>load distribution</em> across member tunnels. Five load balancing algorithms are available:</p>
+      <ul>
+        <li><strong>Round-robin:</strong> Traffic balanced per packet.</li>
+        <li><strong>L3:</strong> Balanced based on Layer 3 (IP) header information.</li>
+        <li><strong>L4:</strong> Balanced based on Layer 4 (port) header information.</li>
+        <li><strong>Redundant:</strong> All traffic through the first active tunnel; others serve as standby backups.</li>
+        <li><strong>Weighted-round-robin:</strong> Round-robin adjusted by per-tunnel weight values.</li>
+      </ul>
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — IPsec Aggregate</div>
+        <pre><code>config system ipsec-aggregate
+    edit "IPSEC_AGG"
+        set member "Tunnel1" "Tunnel2"
+        set algorithm weighted-round-robin
+    next
+end</code></pre>
+      </div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Aggregate requires minimum 2 tunnels. 5 algorithms: round-robin, L3, L4, redundant, weighted-round-robin. "Redundant" = active/standby; all others = active/active load sharing. Configure under <code>config system ipsec-aggregate</code>.</div>
+        </div>
+      </div>
+
+      <div class="analogy-box">
+        <div class="analogy-label">Analogy</div>
+        <div class="analogy-text">
+          <p class="analogy-summary">IPsec tunnel aggregation is like a multi-lane highway merger — multiple roads become one flow, with traffic cops deciding which lane each car takes.</p>
+          <ul>
+            <li><strong>Tunnel1 / Tunnel2</strong> — individual lanes of the highway, each capable of carrying traffic independently</li>
+            <li><strong>IPSEC_AGG interface</strong> — the merge point where all lanes funnel into one logical road</li>
+            <li><strong>Load balancing algorithm</strong> — the traffic cop assigning cars to lanes based on their destination, license plate (IP), or random rotation</li>
+            <li><strong>Redundant mode</strong> — one lane is always open; the other is a breakdown lane used only if the main lane closes</li>
+          </ul>
+        </div>
+        <div class="analogy-img" style="margin-top:14px;background:rgba(255,255,255,0.5);border-radius:10px;padding:14px;text-align:center;">
+          <img src="images/a1-tunnel-aggregation-highway.png" alt="Highway merge analogy for IPsec tunnel aggregation" onerror="this.style.display='none';this.nextElementSibling.style.display='block';" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 10px;">
+          <div class="img-missing-msg" style="display:none;font-size:12px;color:#92400e;padding:8px;background:rgba(146,64,14,0.1);border-radius:6px;">📷 <strong>images/a1-tunnel-aggregation-highway.png</strong> — add this image to the folder</div>
+          <button class="prompt-toggle" onclick="togglePrompt(this)" type="button">▾ Show analogy image prompt</button>
+          <div class="prompt-content" hidden>Cartoon flat illustration of a multi-lane highway: two parallel roads labeled "Tunnel 1" and "Tunnel 2" merge into a single road labeled "IPSEC_AGG". At the merge point stands a cartoon traffic cop holding a directional sign. On the dual-lane road, cars are labeled with different IP addresses. To the right of the merge, the single road continues toward a FortiGate device icon. One lane has a flashing orange cone labeled "Redundant / Standby". Pastel orange, blue, and green palette, bold outlines, short text labels, educational infographic feel, no shadows.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s3" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s3','Tunnel Aggregation')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s3" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s3')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · OVERLAPPING ROUTES</span>
+      </div>
+      <p class="socratic-insight">When two remote sites share the same subnet (e.g., both use 192.168.1.0/24), a hub FortiGate faces a routing conflict — it cannot know which spoke should receive traffic for that subnet. The route-overlap setting determines how FortiGate resolves the conflict.</p>
+      <ul class="socratic-questions">
+        <li>What is the default route-overlap behavior, and why might it cause unexpected tunnel drops during a migration where a new site comes online with a duplicate subnet?</li>
+        <li>When would you use route-overlap allow with SD-WAN, and what additional configuration is required to prevent interface instability?</li>
+      </ul>
+      <div class="answer-area" data-section="overlapping-routes">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">The default is use-new, which disconnects the existing dialup VPN and accepts the new one. During migration, this means a new site with a duplicate subnet will silently drop the existing site's tunnel. The original site loses connectivity with no error message on the hub — making this a critical gotcha during staged rollouts.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">With route-overlap allow, both VPNs remain active and traffic is ECMP load-balanced. In SD-WAN with multiple egress interfaces, not setting this on the hub can cause interfaces to oscillate between active and dead states, because the hub cannot consistently recognize which interface belongs to which tunnel. You must explicitly set "set route-overlap allow" on the hub Phase 2 config to prevent instability.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s4">
+      <div class="section-label">SECTION 04</div>
+      <h2>Overlapping Routes and <em>IPsec Interfaces</em></h2>
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s4-overlapping-routes.png" alt="Two remote sites with 192.168.1.0/24 both connecting to hub FortiGate" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg" style="display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;">📷 <strong>images/s4-overlapping-routes.png</strong></div>
+        <p class="img-caption">Route-overlap scenario: two spokes share the same subnet, hub must choose behavior.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration showing a central hub FortiGate connected to two spoke FortiGates on the right; both spokes have cloud labels reading "192.168.1.0/24" in red indicating conflict; arrows from each spoke point to the hub; at the hub, a decision diamond labeled "route-overlap?" branches into three options: "use-new", "use-old", "allow". Pastel palette, bold outlines, short labels, educational infographic feel.</div>
+      </div>
+      <p>When two remote sites use identical subnets, the hub FortiGate faces a <strong>route-overlap conflict</strong>. In Phase 2, the <code>route-overlap</code> parameter controls what happens when a new dialup VPN connects with a subnet that already exists:</p>
+      <ul>
+        <li><strong>use-new</strong> (default): Disconnects the existing VPN and accepts the new one.</li>
+        <li><strong>use-old</strong>: Maintains the existing VPN and rejects the new connection.</li>
+        <li><strong>allow</strong>: Keeps both VPNs active; traffic is ECMP load-balanced between them.</li>
+      </ul>
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Phase 2 Route Overlap</div>
+        <pre><code>config vpn ipsec phase1-interface
+    edit Phase1
+        set type dynamic
+    end
+
+config vpn ipsec phase2-interface
+    edit Phase2
+        set phase1name Phase1
+        set route-overlap allow
+    next
+end</code></pre>
+      </div>
+      <p>IPsec VPN interfaces do not require an IP address by default. However, assigning one enables: traffic identification for tunnel establishment, ADVPN peer discovery, and easier management and troubleshooting. When NAT is applied to an IPsec interface, packets use the IPsec interface IP — not the physical WAN address.</p>
+      <div class="callout callout-warn"><strong>Exam warning:</strong> In SD-WAN with multiple egress interfaces, not enabling <code>route-overlap allow</code> on the hub can cause interfaces to falsely toggle between active and dead states — especially if defaults are not adjusted during FortiOS upgrades.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">route-overlap default = use-new (drops existing VPN). Options: use-new, use-old, allow. IPsec interfaces: no IP required by default; assign one for ADVPN discovery, NAT, and troubleshooting. NAT on IPsec uses the interface IP, not the WAN IP.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s4" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s4','Overlapping Routes')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s4" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s4')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 5 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · CERTIFICATES &amp; SCEP</span>
+      </div>
+      <p class="socratic-insight">Pre-shared keys are simple but carry a significant risk: if the key is compromised, every tunnel using it is vulnerable, and rekeying requires manual changes across all devices. Certificate-based authentication with SCEP automates the enrollment and renewal cycle — eliminating the manual key-distribution problem at scale.</p>
+      <ul class="socratic-questions">
+        <li>Why is certificate-based authentication considered stronger than pre-shared keys for IPsec, and what does the "peer certificate" field accomplish during tunnel establishment?</li>
+        <li>What role does FortiAuthenticator play in the SCEP enrollment process, and why is it called a "proxy" in this workflow?</li>
+      </ul>
+      <div class="answer-area" data-section="certificates-scep">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Certificate-based authentication uses asymmetric cryptography — the private key never leaves the device, so compromise of the network doesn't expose it. The "peer certificate" field on the FortiGate specifies which certificate (or CA) the remote peer must present, enabling mutual authentication. Pre-shared keys are symmetric and must be distributed to all peers — creating key-management overhead and a shared secret risk.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">FortiAuthenticator acts as a SCEP server proxy: it receives the CSR from FortiGate, forwards it to the actual CA, and returns the signed certificate. This intermediary role means FortiGate doesn't need direct internet access to a public CA — FortiAuthenticator handles the CA communication, automates enrollment, and reduces manual certificate management in large deployments.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s5">
+      <div class="section-label">SECTION 05</div>
+      <h2>Certificate Authentication and <em>SCEP Enrollment</em></h2>
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s5-scep-enrollment.png" alt="SCEP enrollment flow: FortiGate to FortiAuthenticator to CA" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg" style="display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;">📷 <strong>images/s5-scep-enrollment.png</strong></div>
+        <p class="img-caption">SCEP automated certificate enrollment: 6-step flow from FortiGate CSR to operational certificate.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration showing a numbered flow diagram with 6 steps: Step 1 shows FortiGate icon generating a CSR with a dotted arrow; Step 2 shows CSR sent to FortiAuthenticator proxy icon; Step 3 shows FortiAuthenticator forwarding to CA server icon; Step 4 shows CA signing and returning certificate; Step 5 shows signed cert returned through FortiAuthenticator to FortiGate; Step 6 shows FortiGate with a green shield icon labeled "Operational use". Pastel blue and teal palette, numbered circles at each step, bold outlines, no shadows, educational infographic feel.</div>
+      </div>
+      <p>For IPsec Phase 1 authentication, FortiGate supports two methods: <strong>pre-shared key</strong> and <strong>digital signature (certificate)</strong>. Certificates provide stronger authentication because the private key never leaves the device — unlike a pre-shared key that must be configured identically on both sides.</p>
+      <p>To use certificate authentication, select the certificate and the <strong>peer certificate</strong> (the certificate the remote peer must present). Ensure you use a certificate signed by a valid <strong>Certificate Authority (CA)</strong>. You can also import custom CA certificates.</p>
+      <p>For large deployments, <strong>SCEP (Simple Certificate Enrollment Protocol)</strong> with <strong>FortiAuthenticator</strong> automates certificate lifecycle management. The 6-step SCEP workflow is:</p>
+      <ol>
+        <li>Configure FortiGate with the SCEP server URL and credentials.</li>
+        <li>FortiGate generates a <strong>CSR (Certificate Signing Request)</strong> containing its public key and identity.</li>
+        <li>The SCEP server (FortiAuthenticator) proxies the CSR to the CA.</li>
+        <li>The CA validates and signs the certificate.</li>
+        <li>The signed certificate is returned to FortiGate via the SCEP server.</li>
+        <li>FortiGate installs the certificate and uses it for VPN, management, and other secure functions.</li>
+      </ol>
+      <div class="callout callout-info"><strong>Note:</strong> SCEP enrollment happens under <strong>System &gt; Certificates</strong> on FortiGate. Select "Online SCEP" as the enrollment method and provide the CA server URL and challenge password.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Certificate auth = private key stays on device (stronger than PSK). SCEP = 6-step automated enrollment via FortiAuthenticator proxy. FortiAuthenticator is the SCEP server — it proxies CSR to CA and returns signed cert. Configure at System &gt; Certificates with "Online SCEP" method.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s5" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s5','Certificates & SCEP')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s5" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s5')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">ON THIS PAGE</div>
+      <nav class="ssnav">
+        <a class="ssnav-item" href="#s1">Topology Design</a>
+        <a class="ssnav-item" href="#s2">DPD &amp; Phase 2 Selectors</a>
+        <a class="ssnav-item" href="#s3">Tunnel Aggregation</a>
+        <a class="ssnav-item" href="#s4">Overlapping Routes</a>
+        <a class="ssnav-item" href="#s5">Certificates &amp; SCEP</a>
+      </nav>
+    </div>
+
+    <a class="hub-link" href="index.html">← Chapter 07 Hub</a>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">PROGRESS</div>
+      <div class="checklist" id="checklist">
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s1" onchange="toggleDone(this)">
+          <span class="check-label">Topology Design</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s2" onchange="toggleDone(this)">
+          <span class="check-label">DPD &amp; Phase 2 Selectors</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s3" onchange="toggleDone(this)">
+          <span class="check-label">Tunnel Aggregation</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s4" onchange="toggleDone(this)">
+          <span class="check-label">Overlapping Routes</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s5" onchange="toggleDone(this)">
+          <span class="check-label">Certificates &amp; SCEP</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">QUICK REFERENCE</div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Hub-and-Spoke</div>
+        <div class="quick-ref-def">Topology where all branches connect to a central hub. N tunnels total. Spoke-to-spoke traffic hairpins through hub.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">ADVPN</div>
+        <div class="quick-ref-def">Auto-Discovery VPN. Enables dynamic spoke-to-spoke tunnels on demand in a full-mesh topology without pre-configuring all tunnel pairs.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">DPD</div>
+        <div class="quick-ref-def">Dead Peer Detection. Detects unreachable peers. 3 modes: on-demand, on-idle, disable. Default: retry=3, interval=20s.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Phase 2 Selector</div>
+        <div class="quick-ref-def">Defines which (local subnet, remote subnet) pairs are encrypted over a Phase 1 SA. Multiple selectors can share one Phase 1.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">route-overlap</div>
+        <div class="quick-ref-def">Phase 2 parameter. Values: use-new (default), use-old, allow. Controls behavior when a new VPN brings a duplicate subnet.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">IPsec Aggregate</div>
+        <div class="quick-ref-def">Virtual interface bonding 2+ tunnels. Algorithms: round-robin, L3, L4, redundant, weighted-round-robin. Configured under system ipsec-aggregate.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">SCEP</div>
+        <div class="quick-ref-def">Simple Certificate Enrollment Protocol. Automates certificate CSR generation, CA submission, and retrieval via FortiAuthenticator proxy.</div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="page-nav">
+  <a class="page-nav-btn page-nav-prev" href="index.html">
+    <span class="page-nav-label">← BACK TO HUB</span>
+    <span class="page-nav-title">Chapter 07 Hub</span>
+  </a>
+  <a class="page-nav-btn page-nav-next" href="subtopic-02-ike-and-phase-negotiation.html">
+    <span class="page-nav-label">NEXT →</span>
+    <span class="page-nav-title">IKE and Phase Negotiation</span>
+  </a>
+</div>
+
+<footer>
+  EF-NSE7<span>.</span> Chapter 07<span>.</span> Subtopic 01<span>.</span> Configure IPsec Tunnels
+</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-ch07-sub01-configure-ipsec-tunnels';
+
+const SECTIONS = {
+  's1': 'Topology Design',
+  's2': 'DPD & Phase 2 Selectors',
+  's3': 'Tunnel Aggregation',
+  's4': 'Overlapping Routes',
+  's5': 'Certificates & SCEP',
+};
+
+document.querySelectorAll('.socratic-header').forEach(function(h) {
+  h.addEventListener('click', function() { h.closest('.socratic-block').classList.toggle('soc-open'); });
+});
+
+function getQArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-qs') || '[]'); }
+function saveQArr(qs) { localStorage.setItem(PAGE_KEY+'-qs', JSON.stringify(qs)); }
+function addQuestion(key, name) {
+  const ta = document.getElementById('q-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const qs = getQArr(); qs.push({id: Date.now(), section: key, sectionName: name, text});
+  saveQArr(qs); ta.value = ''; renderQPanel();
+  if (!document.getElementById('qpanel-body').classList.contains('open')) toggleQPanel();
+}
+function deleteQ(id) { saveQArr(getQArr().filter(q => q.id !== id)); renderQPanel(); }
+function toggleQPanel() {
+  const body = document.getElementById('qpanel-body');
+  const header = document.getElementById('qpanel-header');
+  const chevron = document.getElementById('qpanel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-qpanel-open', open);
+}
+function renderQPanel() {
+  const qs = getQArr();
+  const count = document.getElementById('qpanel-count');
+  if (count) { count.textContent = qs.length; count.style.display = qs.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.qpanel-hint');
+  if (hint) hint.textContent = qs.length ? `— ${qs.length} question${qs.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('qpanel-body'); if (!body) return;
+  if (!qs.length) { body.innerHTML = '<p class="no-questions">No questions yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  qs.forEach(q => { if (groups[q.section]) groups[q.section].push(q); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(q => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${q.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteQ(${q.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function getNotesArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-notes') || '[]'); }
+function saveNotesArr(ns) { localStorage.setItem(PAGE_KEY+'-notes', JSON.stringify(ns)); }
+function addNote(key) {
+  const ta = document.getElementById('note-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const ns = getNotesArr(); ns.push({id: Date.now(), section: key, sectionName: SECTIONS[key]||key, text});
+  saveNotesArr(ns); ta.value = ''; renderNotesPanel();
+  if (!document.getElementById('notes-panel-body').classList.contains('open')) toggleNotesPanel();
+}
+function deleteNote(id) { saveNotesArr(getNotesArr().filter(n => n.id !== id)); renderNotesPanel(); }
+function toggleNotesPanel() {
+  const body = document.getElementById('notes-panel-body');
+  const header = document.getElementById('notes-panel-header');
+  const chevron = document.getElementById('notes-panel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-notes-panel-open', open);
+}
+function renderNotesPanel() {
+  const ns = getNotesArr();
+  const count = document.getElementById('notes-panel-count');
+  if (count) { count.textContent = ns.length; count.style.display = ns.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.notes-panel-hint');
+  if (hint) hint.textContent = ns.length ? `— ${ns.length} note${ns.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('notes-panel-body'); if (!body) return;
+  if (!ns.length) { body.innerHTML = '<p class="no-questions">No notes yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  ns.forEach(n => { if (groups[n.section]) groups[n.section].push(n); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(n => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteNote(${n.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function toggleDone(input) { localStorage.setItem(PAGE_KEY+'-check-'+input.dataset.key, input.checked); }
+function initChecks() {
+  document.querySelectorAll('.check-input').forEach(function(inp) {
+    inp.checked = localStorage.getItem(PAGE_KEY+'-check-'+inp.dataset.key) === 'true';
+  });
+}
+
+function saveSocAnswer(btn) {
+  const area = btn.closest('.answer-area');
+  const ta = area.querySelector('.answer-textarea');
+  if (!ta.value.trim()) { ta.focus(); return; }
+  const key = PAGE_KEY+'-socans-'+area.dataset.section;
+  try { localStorage.setItem(key, ta.value); } catch(e) {}
+  ta.disabled = true; btn.textContent = '✓ Answer saved'; btn.disabled = true;
+  const seeBtn = area.querySelector('.btn-see-answer');
+  seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+}
+function revealSocAnswer(btn) {
+  if (btn.disabled) return;
+  const answers = btn.closest('.answer-area').querySelector('.model-answers');
+  const isHidden = answers.style.display === 'none' || !answers.style.display;
+  answers.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '▲ Hide Model Answer' : '💡 See Model Answer';
+}
+
+function togglePrompt(btn) {
+  const c = btn.nextElementSibling;
+  const isHidden = c.hasAttribute('hidden');
+  if (isHidden) { c.removeAttribute('hidden'); btn.textContent = '▴ Hide image prompt'; }
+  else { c.setAttribute('hidden', ''); btn.textContent = '▾ Show image prompt'; }
+}
+
+if (sessionStorage.getItem('pt')) {
+  document.body.style.opacity = '1';
+  sessionStorage.removeItem('pt');
+}
+document.querySelectorAll('a[href]').forEach(function(a) {
+  a.addEventListener('click', function() { sessionStorage.setItem('pt', '1'); });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderQPanel(); renderNotesPanel(); initChecks();
+  if (localStorage.getItem(PAGE_KEY+'-qpanel-open') === 'true') toggleQPanel();
+  if (localStorage.getItem(PAGE_KEY+'-notes-panel-open') === 'true') toggleNotesPanel();
+  document.querySelectorAll('.answer-area').forEach(function(area) {
+    const key = PAGE_KEY+'-socans-'+area.dataset.section;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const ta = area.querySelector('.answer-textarea'); ta.value = saved; ta.disabled = true;
+        const addBtn = area.querySelector('.btn-add-answer'); addBtn.textContent = '✓ Answer saved'; addBtn.disabled = true;
+        const seeBtn = area.querySelector('.btn-see-answer'); seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+      }
+    } catch(e) {}
+  });
+  document.querySelectorAll('.analogy-box').forEach(function(box) {
+    if (box.dataset.collapsibleInit) return;
+    box.dataset.collapsibleInit = '1';
+    box.classList.add('expanded');
+    const label = box.querySelector(':scope > .analogy-label');
+    if (label) label.addEventListener('click', () => box.classList.toggle('expanded'));
+  });
+  document.querySelectorAll('.analogy-img img').forEach(function(img) {
+    if (img.dataset.zoomInit) return;
+    img.dataset.zoomInit = '1';
+    img.addEventListener('click', () => img.classList.toggle('zoomed'));
+  });
+  document.querySelectorAll('.section-img').forEach(function(img) {
+    img.addEventListener('click', () => img.classList.toggle('si-expanded'));
+  });
+});
+
+(function() {
+  var items = document.querySelectorAll('.ssnav-item');
+  if (!items.length) return;
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      var lnk = document.querySelector('.ssnav-item[href="#'+e.target.id+'"]');
+      if (lnk) lnk.classList.toggle('active', e.isIntersecting);
+    });
+  }, { rootMargin: '-10% 0% -70% 0%' });
+  document.querySelectorAll('.section-block[id]').forEach(function(el) { obs.observe(el); });
+})();
+</script>
+</body>
+</html>

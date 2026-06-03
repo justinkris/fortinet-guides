@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADVPN Shortcuts — EF-NSE7 Ch08 Sub02</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #fff5f5;
+  --surface: #ffffff;
+  --surface-2: #fef2f2;
+  --border: #f0c8c8;
+  --border-dim: #fde8e8;
+  --text: #1a0606;
+  --text-soft: #4a1212;
+  --text-muted: #8a3a3a;
+  --red: #c0392b;
+  --red-vivid: #e03e2d;
+  --red-glow: rgba(192,57,43,0.07);
+  --red-dim: #f8b4b4;
+  --red-deep: #7f1d1d;
+  --red-light: #fef2f2;
+  --red-border: #f8b4b4;
+  --green: #1a7c4a; --green-light:#d4f0e0; --green-border:#a7e0c0;
+  --amber: #b45309; --amber-light:#fef9c3; --amber-border:#fde68a;
+}
+html { scroll-behavior: smooth; }
+html.pt-init body { opacity: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+header{padding:48px 60px 36px;background:#1a0606;display:flex;align-items:flex-end;gap:32px;}
+.header-left{flex:1;}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);letter-spacing:0.08em;margin-bottom:12px;flex-wrap:wrap;}
+.breadcrumb a{color:#e87070;text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.breadcrumb-sep{color:rgba(232,112,112,0.35);}
+.header-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(232,112,112,0.1);border:1px solid rgba(232,112,112,0.25);padding:5px 14px;border-radius:20px;font-size:11px;color:#e87070;letter-spacing:0.08em;margin-bottom:14px;}
+.dot-live{width:6px;height:6px;background:#e87070;border-radius:50%;display:inline-block;animation:blink 2.4s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+header h1{font-family:'Fraunces',serif;font-size:44px;font-weight:700;line-height:1.0;color:#fff;margin-bottom:10px;}
+header h1 em{font-style:italic;font-weight:400;color:#e87070;}
+header p{font-size:13px;color:rgba(255,255,255,0.42);margin-top:10px;line-height:1.7;}
+.motivation-banner{padding:20px 60px;min-height:84px;display:flex;flex-direction:column;justify-content:center;border-bottom:1px solid var(--border);background:var(--surface);}
+.motivation-text{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--text);}
+.motivation-text em{font-style:italic;color:var(--red);}
+.motivation-sub{font-size:12px;color:var(--text-muted);line-height:1.7;margin-top:4px;}
+.top-panels{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+.top-panels .qpanel{border-bottom:none;border-right:1px solid var(--border);}
+.top-panels .qpanel-header{padding-left:32px;padding-right:32px;}
+.top-panels .qpanel-body{padding-left:32px;padding-right:32px;}
+.qpanel{background:var(--surface);}
+.qpanel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 20px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.qpanel-header:hover,.qpanel-header.open{background:var(--surface-2);}
+.qpanel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.qpanel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.qpanel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.qpanel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.qpanel-body{display:none;padding:0 20px 22px;}
+.qpanel-body.open{display:block;}
+.notes-panel{background:var(--surface);}
+.notes-panel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 32px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.notes-panel-header:hover,.notes-panel-header.open{background:var(--surface-2);}
+.notes-panel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.notes-panel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.notes-panel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.notes-panel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.notes-panel-body{display:none;padding:0 32px 22px;}
+.notes-panel-body.open{display:block;}
+.q-group{margin-bottom:16px;}
+.q-group-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+.q-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-dim);}
+.q-item:last-child{border-bottom:none;}
+.q-num{font-size:10px;font-weight:700;color:var(--red);min-width:16px;margin-top:2px;}
+.q-text{font-size:12px;color:var(--text-soft);line-height:1.5;flex:1;}
+.q-del{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 4px;margin-top:1px;}
+.q-del:hover{color:var(--red);}
+.no-questions{font-size:12px;color:var(--text-muted);padding:8px 0;}
+.btn-add-q{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-q:hover{opacity:0.85;}
+.section-nav{position:sticky;top:0;z-index:90;display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);padding:0 32px;overflow-x:auto;}
+.nav-tab{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:12px 18px;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--red);border-bottom-color:var(--red);}
+main{display:grid;grid-template-columns:1fr 320px;gap:0;align-items:start;max-width:1200px;margin:0 auto;padding:0;}
+.main-content{padding:36px 40px 60px 60px;}
+.sidebar{padding:32px 24px 60px 20px;position:sticky;top:57px;max-height:calc(100vh - 57px);overflow-y:auto;}
+.section-block{margin-bottom:48px;}
+.section-label{font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.section-block h2{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1.15;margin-bottom:16px;padding-left:16px;border-left:3px solid var(--red);}
+.section-block h2 em{font-style:italic;font-weight:400;color:var(--red);}
+.section-block p{font-size:14px;line-height:1.8;color:var(--text-soft);margin-bottom:14px;}
+.section-block p strong{color:var(--text);font-weight:600;}
+.section-block p em{color:var(--red);font-style:italic;}
+.section-block ul,.section-block ol{padding-left:22px;margin-bottom:14px;}
+.section-block li{font-size:14px;line-height:1.75;color:var(--text-soft);margin-bottom:4px;}
+.section-block li strong{color:var(--text);font-weight:600;}
+.callout{border-left:3px solid var(--red-border);background:var(--red-light);border-radius:0 10px 10px 0;padding:12px 18px;margin:16px 0;font-size:13.5px;line-height:1.65;color:var(--text-soft);}
+.callout strong{color:var(--text);}
+.callout-warn{border-left-color:var(--amber-border);background:var(--amber-light);}
+.callout-info{border-left-color:var(--green-border);background:var(--green-light);}
+.section-img-wrap{margin:0 0 20px;display:flex;flex-direction:column;align-items:center;}
+.section-img{width:260px;max-width:100%;border-radius:12px;cursor:zoom-in;transition:width 0.3s ease;border:1px solid var(--border);display:block;}
+.section-img.si-expanded{width:100%;cursor:zoom-out;border-radius:16px;}
+.si-placeholder{display:none;width:260px;max-width:100%;border:2px dashed var(--border);border-radius:12px;background:var(--surface-2);padding:14px 16px;flex-direction:column;align-items:flex-start;gap:8px;}
+.si-placeholder.si-show{display:flex;}
+.si-filename{font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+.code-block{background:#1a0606;border-radius:12px;padding:20px 24px;margin:16px 0;overflow-x:auto;}
+.code-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#e87070;margin-bottom:10px;}
+.code-block pre{margin:0;}
+.code-block code{font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:rgba(255,255,255,0.82);}
+.socratic-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:16px;border-top:3px solid var(--red);}
+.socratic-header{display:flex;align-items:center;gap:8px;margin-bottom:0;cursor:pointer;user-select:none;}
+.socratic-header::after{content:'▸ Expand';margin-left:auto;font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'Inter',sans-serif;}
+.socratic-block.soc-open .socratic-header{margin-bottom:10px;}
+.socratic-block.soc-open .socratic-header::after{content:'▾ Collapse';}
+.socratic-block:not(.soc-open) .socratic-insight,
+.socratic-block:not(.soc-open) .socratic-questions,
+.socratic-block:not(.soc-open) .answer-area{display:none;}
+.socratic-icon{font-size:17px;flex-shrink:0;}
+.socratic-label{font-size:9px;font-weight:700;letter-spacing:0.18em;color:var(--text-muted);}
+.socratic-insight{font-size:13px;color:var(--text-soft);line-height:1.75;margin-bottom:12px;border-left:3px solid var(--border);padding-left:12px;font-style:italic;}
+.socratic-questions{list-style:none;padding:0;margin:0;}
+.socratic-questions li{font-size:12.5px;color:var(--text);padding:7px 0 7px 22px;position:relative;border-bottom:1px solid var(--border-dim);line-height:1.6;}
+.socratic-questions li:last-child{border-bottom:none;}
+.socratic-questions li::before{content:'?';position:absolute;left:0;font-weight:700;font-size:12px;top:8px;color:var(--red);}
+.answer-area{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.answer-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.answer-textarea:focus{border-color:var(--text);}
+.answer-textarea:disabled{opacity:0.7;background:var(--surface-2);cursor:default;}
+.answer-buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.btn-add-answer{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-answer:hover:not(:disabled){opacity:0.85;}
+.btn-add-answer:disabled{opacity:0.5;cursor:default;}
+.btn-see-answer{background:var(--surface);color:var(--text-muted);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-see-answer:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-see-answer:not(:disabled){color:var(--red);border-color:var(--red);}
+.btn-see-answer:hover:not(:disabled){background:var(--red-glow);}
+.model-answers{margin-top:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.model-answer-item{padding:10px 0;border-bottom:1px solid var(--border-dim);}
+.model-answer-item:first-child{padding-top:0;}
+.model-answer-item:last-child{border-bottom:none;padding-bottom:0;}
+.model-answer-q{font-size:9px;font-weight:700;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:4px;}
+.model-answer-text{font-size:13px;color:var(--text-soft);line-height:1.7;}
+.mental-note-block{border-radius:10px;padding:12px 16px;margin:16px 0;display:flex;gap:10px;align-items:flex-start;background:rgba(192,57,43,0.07);border:1px solid var(--border);}
+.mental-note-block-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.mental-note-block-inner{flex:1;}
+.mental-note-block-label{font-size:9px;font-weight:700;letter-spacing:0.16em;color:var(--red);margin-bottom:3px;}
+.mental-note-block-text{font-size:13px;font-weight:600;line-height:1.55;color:var(--text);}
+.analogy-box{background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #b45309;border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0;}
+.analogy-label{display:flex;align-items:center;gap:6px;user-select:none;cursor:pointer;font-size:9px;font-weight:700;letter-spacing:0.16em;color:#b45309;margin-bottom:4px;}
+.analogy-label::after{content:'▾  Reveal illustration';margin-left:auto;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:none;opacity:0.75;}
+.analogy-label:hover::after{opacity:1;}
+.analogy-box.expanded > .analogy-label::after{content:'▴  Hide illustration';}
+.analogy-text{font-size:13px;color:#78350f;line-height:1.65;font-style:italic;}
+.analogy-box > .analogy-img{display:none;}
+.analogy-box.expanded > .analogy-img{display:block;}
+.analogy-img img{max-width:360px;width:100%;cursor:zoom-in;transition:max-width 0.25s ease;border-radius:8px;margin-top:10px;}
+.analogy-img img.zoomed{max-width:100%;cursor:zoom-out;}
+.prompt-toggle{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:10px;font-weight:600;letter-spacing:0.08em;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;text-transform:uppercase;}
+.prompt-toggle:hover{color:var(--text);border-color:var(--text);}
+.prompt-content{margin-top:10px;padding:10px 14px;background:rgba(0,0,0,0.04);border-radius:8px;font-size:11.5px;color:var(--text-muted);font-style:italic;line-height:1.65;text-align:left;}
+.prompt-content[hidden]{display:none;}
+.lesson-tools{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:40px;}
+.lesson-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.tool-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.tool-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.tool-textarea:focus{border-color:var(--red);}
+.tool-row{margin-top:8px;display:flex;gap:8px;}
+.sidebar-section{margin-bottom:28px;}
+.sidebar-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;}
+.ssnav{display:flex;flex-direction:column;gap:2px;margin-top:4px;}
+.ssnav-item{font-size:12px;color:var(--text-soft);padding:6px 10px;border-radius:6px;text-decoration:none;line-height:1.4;display:block;transition:background 0.15s,color 0.15s;}
+.ssnav-item:hover,.ssnav-item.active{background:var(--red-glow);color:var(--red);}
+.hub-link{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);margin-bottom:16px;transition:color 0.15s,border-color 0.15s,background 0.15s;}
+.hub-link:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);}
+.check-item{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;}
+.check-input{accent-color:var(--red);width:14px;height:14px;flex-shrink:0;cursor:pointer;}
+.check-label{font-size:12px;color:var(--text-soft);line-height:1.4;}
+.check-item:has(.check-input:checked) .check-label{color:var(--text-muted);text-decoration:line-through;}
+.quick-ref{background:#1a0606;border-radius:10px;padding:12px 16px;margin-bottom:8px;}
+.quick-ref-term{font-size:10px;font-weight:700;letter-spacing:0.12em;color:#e87070;margin-bottom:3px;text-transform:uppercase;}
+.quick-ref-def{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;}
+.page-nav{display:flex;border-top:2px solid var(--border);background:var(--surface);}
+.page-nav-btn{flex:1;display:flex;flex-direction:column;gap:4px;padding:16px 28px;text-decoration:none;transition:background 0.15s;cursor:pointer;}
+.page-nav-btn:hover:not(.page-nav-disabled){background:var(--surface-2);}
+.page-nav-prev{border-right:1px solid var(--border);}
+.page-nav-next{text-align:right;}
+.page-nav-disabled{opacity:0.3;pointer-events:none;}
+.page-nav-label{font-size:10px;font-weight:600;letter-spacing:0.14em;color:var(--text-muted);display:block;}
+.page-nav-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;color:var(--red);display:block;}
+footer{font-size:11px;letter-spacing:0.12em;color:var(--text-muted);text-transform:uppercase;padding:20px 60px;border-top:1px solid var(--border);}
+footer span{color:var(--red);}
+.img-caption{font-size:11px;color:var(--text-muted);text-align:center;margin-top:6px;line-height:1.4;font-style:italic;}
+.analogy-summary{font-style:normal;font-weight:600;color:#92400e;margin-bottom:10px;}
+.analogy-text ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;}
+.analogy-text li{padding-left:18px;position:relative;}
+.analogy-text li::before{content:'•';position:absolute;left:0;font-weight:700;color:#b45309;}
+.data-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;}
+.data-table th{background:#1a0606;color:#e87070;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:10px 14px;text-align:left;}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-soft);line-height:1.55;vertical-align:top;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:nth-child(even) td{background:var(--surface-2);}
+.data-table td strong{color:var(--text);font-weight:600;}
+.img-missing-msg{font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;}
+.step-list{list-style:none;padding:0;margin:14px 0;counter-reset:step-counter;}
+.step-list li{counter-increment:step-counter;padding:10px 0 10px 44px;position:relative;border-bottom:1px solid var(--border-dim);font-size:14px;color:var(--text-soft);line-height:1.7;}
+.step-list li:last-child{border-bottom:none;}
+.step-list li::before{content:counter(step-counter);position:absolute;left:0;top:10px;width:28px;height:28px;background:var(--red);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+.step-list li strong{color:var(--text);}
+@media(max-width:1000px){main{grid-template-columns:1fr;}.sidebar{position:static;max-height:none;padding:0 40px 40px;}}
+@media(max-width:720px){header{padding:28px 24px 24px;}header h1{font-size:32px;}.motivation-banner{padding:16px 24px;}.main-content{padding:24px 24px 40px;}.section-nav{padding:0 16px;}.top-panels{grid-template-columns:1fr;}.top-panels .qpanel{border-right:none;border-bottom:1px solid var(--border);}.lesson-tools-grid{grid-template-columns:1fr;}footer{padding:16px 24px;}}
+</style>
+</head>
+<body>
+
+<div style="position:fixed;inset:0;background:#1a0606;pointer-events:none;z-index:9999;opacity:0;transition:opacity 0.3s;" id="pt-overlay"></div>
+
+<header>
+  <div class="header-left">
+    <div class="breadcrumb">
+      <a href="../nse7-ef-study-guide-hub.html">EF-NSE7</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="index.html">Chapter 08 — Auto-Discovery VPN</a>
+      <span class="breadcrumb-sep">›</span>
+      Subtopic 02
+    </div>
+    <div class="header-eyebrow"><span class="dot-live"></span> Study Guide · EF-NSE7</div>
+    <h1>ADVPN <em>Shortcuts</em></h1>
+    <p>Understand the 6-step shortcut message interchange, how on-demand tunnels are triggered and established, overlay stickiness in SD-WAN, and ADVPN 2.0's edge discovery and path management improvements — all high-value exam topics.</p>
+  </div>
+</header>
+
+<div class="motivation-banner">
+  <div class="motivation-text">The shortcut is the <em>heart of ADVPN</em> — six messages that transform a hub detour into a direct path.</div>
+  <p class="motivation-sub">Know the exact 6-step offer→query→forward→reply→forward→negotiate sequence and understand why overlay stickiness is a limitation ADVPN 2.0 solves.</p>
+</div>
+
+<div class="top-panels">
+  <div class="qpanel" id="qpanel">
+    <button class="qpanel-header" onclick="toggleQPanel()" id="qpanel-header">
+      <span class="qpanel-title">MY QUESTIONS</span>
+      <span class="qpanel-count" id="qpanel-count">0</span>
+      <span class="qpanel-hint">— click to expand</span>
+      <span class="qpanel-chevron" id="qpanel-chevron">▾</span>
+    </button>
+    <div class="qpanel-body" id="qpanel-body"></div>
+  </div>
+  <div class="notes-panel" id="notes-panel">
+    <button class="notes-panel-header" onclick="toggleNotesPanel()" id="notes-panel-header">
+      <span class="notes-panel-title">MY NOTES</span>
+      <span class="notes-panel-count" id="notes-panel-count">0</span>
+      <span class="notes-panel-hint">— click to expand</span>
+      <span class="notes-panel-chevron" id="notes-panel-chevron">▾</span>
+    </button>
+    <div class="notes-panel-body" id="notes-panel-body"></div>
+  </div>
+</div>
+
+<nav class="section-nav" id="section-nav">
+  <a class="nav-tab active" href="#s1">Triggering On-Demand</a>
+  <a class="nav-tab" href="#s2">6-Step Interchange</a>
+  <a class="nav-tab" href="#s3">Shortcut Established</a>
+  <a class="nav-tab" href="#s4">SD-WAN &amp; Stickiness</a>
+  <a class="nav-tab" href="#s5">ADVPN 2.0</a>
+</nav>
+
+<main>
+  <div class="main-content">
+
+    <!-- ═══════════════════ SECTION 1 ═══════════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · TRIGGERING ON-DEMAND</span>
+      </div>
+      <p class="socratic-insight">ADVPN shortcuts don't appear magically — a client must generate actual data traffic first to trigger the process. The hub is the key actor that detects the need for a shortcut and initiates the negotiation. The spokes don't know about each other until the hub introduces them.</p>
+      <ul class="socratic-questions">
+        <li>Before the shortcut tunnel exists, how does Spoke 1 send traffic to a device behind Spoke 2? Walk through the exact encryption path the packet takes.</li>
+        <li>What would happen to ADVPN shortcut establishment if the hub's firewall policy didn't permit spoke-to-spoke transit traffic (traffic from the VPN1 interface back out the VPN1 interface)?</li>
+      </ul>
+      <div class="answer-area" data-section="trigger-ondemand">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Before the shortcut: (1) Client behind Spoke 1 generates traffic destined for a device behind Spoke 2. (2) Spoke 1 receives the packet and encrypts it inside the existing hub tunnel, sending it to the hub. (3) The hub decrypts the packet, sees the destination is behind Spoke 2, re-encrypts it into the Spoke 2 tunnel, and forwards it. (4) Spoke 2 decrypts and delivers to the destination. All inter-spoke traffic traverses the hub in both directions until the shortcut is established.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">If the hub has no policy permitting spoke-to-spoke transit, the initial data packets are dropped at the hub before the shortcut negotiation can even begin. ADVPN shortcut signaling is triggered by the detection of inter-spoke data traffic transiting the hub — without that traffic passing through, the hub never sends the shortcut offer to Spoke 1, and the shortcut tunnel is never established.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s1">
+      <div class="section-label">SECTION 01</div>
+      <h2>Triggering the <em>On-Demand</em> IPsec Tunnel</h2>
+
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s1-trigger-ondemand.png" alt="ADVPN on-demand tunnel trigger showing 4-step initial data flow through hub" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg" style="display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;">📷 <strong>images/s1-trigger-ondemand.png</strong></div>
+        <p class="img-caption">Step 1–4: Client generates traffic → Spoke 1 encrypts to hub → Hub forwards encrypted to Spoke 2 → Spoke 2 decrypts and delivers. This initial flow triggers the shortcut offer.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration: a hub at the top connected to Spoke 1 (bottom left) and Spoke 2 (bottom right). A client device is to the left of Spoke 1. Numbered arrows show the data flow: 1) Client to Spoke 1 (unencrypted), 2) Spoke 1 to Hub (encrypted, blue dashed), 3) Hub to Spoke 2 (encrypted, blue dashed), 4) Spoke 2 to destination device (decrypted). Small config boxes show auto-discovery-sender on hub and auto-discovery-receiver on spoke. Pastel palette, bold outlines, no shadows.</div>
+      </div>
+
+      <p>ADVPN shortcut establishment requires actual <strong>data traffic</strong> to flow first. The process is triggered when a client behind one spoke generates traffic destined for a device behind another spoke. Before any shortcut exists, this traffic takes the classic hub path:</p>
+
+      <ol class="step-list">
+        <li><strong>Client generates</strong> unencrypted traffic destined for a host behind Spoke 2.</li>
+        <li><strong>Spoke 1 encrypts</strong> the packet and sends it via the existing hub IPsec tunnel.</li>
+        <li><strong>Hub receives, decrypts, re-encrypts,</strong> and forwards the packet toward Spoke 2.</li>
+        <li><strong>Spoke 2 decrypts</strong> and delivers the packet to the destination device.</li>
+      </ol>
+
+      <p>When the hub detects inter-spoke traffic transiting its IPsec interface (<em>traffic arriving from and destined back to the same ADVPN tunnel</em>), it triggers the shortcut message sequence. The hub's <code>auto-discovery-sender</code> setting causes it to initiate this process automatically.</p>
+
+      <div class="callout"><strong>Note:</strong> The hub must have firewall policies permitting spoke-to-spoke transit traffic for ADVPN to function. Traffic that the hub drops before forwarding will never trigger a shortcut offer.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Shortcut trigger = real data traffic transiting the hub (spoke-to-spoke). No data traffic = no shortcut. The hub detects this and sends a shortcut offer to the initiating spoke. Firewall policy must allow spoke-to-spoke transit on the hub.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s1" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s1','Triggering On-Demand')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s1" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s1')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ SECTION 2 ═══════════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · 6-STEP INTERCHANGE</span>
+      </div>
+      <p class="socratic-insight">The shortcut message interchange involves all three FortiGate devices — hub, Spoke 1, and Spoke 2 — each playing a specific role in a tightly choreographed sequence. The hub acts as the matchmaker: it knows both spokes' WAN IP addresses and brokers the introduction without the spokes ever directly communicating until step 6.</p>
+      <ul class="socratic-questions">
+        <li>In step 4 of the shortcut interchange, Spoke 2 sends a "shortcut reply" that includes its own WAN IP address. Why must Spoke 2 actively send its WAN IP — can't the hub already provide this information from its own records?</li>
+        <li>Why does the actual IKE negotiation (step 6) happen directly between Spoke 1 and Spoke 2 rather than going through the hub?</li>
+      </ul>
+      <div class="answer-area" data-section="sixstep-interchange">
+        <textarea class="answer-area data-section" data-section="sixstep-interchange">
+        </textarea>
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">The hub does know Spoke 2's WAN IP from the established IPsec tunnel, but having Spoke 2 actively include its own WAN IP in the reply ensures the address is current and accurate. More importantly, in NAT scenarios, the WAN IP used by Spoke 2 to reach the hub may differ from the address that Spoke 1 needs to use to reach Spoke 2 directly. By requiring Spoke 2 to send the reply, ADVPN captures the actual IP that Spoke 2's peer endpoint should use.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">The IKE negotiation happens directly between Spoke 1 and Spoke 2 because the purpose of the entire shortcut process is to bypass the hub for data traffic. If the IKE negotiation itself went through the hub, that would defeat the purpose — the hub would still be in the path during the tunnel setup phase. The shortcut message interchange gives Spoke 1 the target WAN IP of Spoke 2, enabling Spoke 1 to initiate IKE directly to Spoke 2's public IP.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s2">
+      <div class="section-label">SECTION 02</div>
+      <h2>ADVPN Shortcut <em>Message Interchange</em></h2>
+
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s2-shortcut-interchange.png" alt="ADVPN 6-step shortcut message interchange between hub, Spoke 1, and Spoke 2" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg" style="display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;">📷 <strong>images/s2-shortcut-interchange.png</strong></div>
+        <p class="img-caption">The 6-step ADVPN shortcut interchange: Offer (hub→S1), Query (S1→hub), Forward (hub→S2), Reply with WAN IP (S2→hub), Forward (hub→S1), IKE Negotiate (S1↔S2 direct).</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration: hub node at top, Spoke 1 at bottom left, Spoke 2 at bottom right. Six numbered arrows between nodes: 1) hub→Spoke1 labeled "Offer", 2) Spoke1→hub labeled "Query", 3) hub→Spoke2 labeled "Forward Query", 4) Spoke2→hub labeled "Reply + WAN IP (100.65.3.113)", 5) hub→Spoke1 labeled "Forward Reply", 6) Spoke1↔Spoke2 direct arrow labeled "IKE Negotiation". Pastel palette, bold outlines, no shadows, labels clearly visible.</div>
+      </div>
+
+      <p>Once data traffic triggers the process, three FortiGate devices participate in the <strong>6-step shortcut message interchange</strong>. These are control-plane messages separate from data traffic — they use the existing hub tunnels to coordinate the new spoke-to-spoke tunnel:</p>
+
+      <ol class="step-list">
+        <li><strong>Offer:</strong> The hub sends a shortcut offer message to Spoke 1, suggesting a more direct tunnel to Spoke 2 is available.</li>
+        <li><strong>Query:</strong> Spoke 1 acknowledges the offer by sending a shortcut query back to the hub, requesting Spoke 2's contact information.</li>
+        <li><strong>Forward (Query):</strong> The hub forwards the shortcut query to Spoke 2.</li>
+        <li><strong>Reply:</strong> Spoke 2 acknowledges the query and sends a shortcut reply to the hub, including its <em>WAN IP address</em> (e.g., 100.65.3.113).</li>
+        <li><strong>Forward (Reply):</strong> The hub forwards Spoke 2's shortcut reply — including the WAN IP — to Spoke 1.</li>
+        <li><strong>Negotiation:</strong> Spoke 1 and Spoke 2 directly initiate IKE tunnel negotiation using Spoke 2's WAN IP address. The hub is no longer involved.</li>
+      </ol>
+
+      <div class="callout callout-warn"><strong>Exam tip:</strong> Know all 6 steps by name: Offer → Query → Forward → Reply → Forward → Negotiation. The hub participates in steps 1–5 but NOT step 6. The WAN IP of Spoke 2 is delivered to Spoke 1 in step 5 (the forwarded reply).</div>
+
+      <div class="analogy-box">
+        <div class="analogy-label">Analogy</div>
+        <div class="analogy-text">
+          <p class="analogy-summary">The ADVPN shortcut interchange is like a matchmaker at a party who introduces two guests and then steps aside.</p>
+          <ul>
+            <li><strong>Hub (matchmaker)</strong> — knows everyone at the party and brokers the introduction between two guests who don't yet know each other</li>
+            <li><strong>Shortcut offer</strong> — matchmaker taps Spoke 1 on the shoulder: "I think you two should meet directly"</li>
+            <li><strong>WAN IP in the reply</strong> — Spoke 2 hands over a business card (their contact info) to the matchmaker to pass along</li>
+            <li><strong>Direct IKE negotiation</strong> — the two guests exchange contact info and arrange their own direct conversation, no longer needing the matchmaker</li>
+          </ul>
+        </div>
+        <div class="analogy-img" style="margin-top:14px;background:rgba(255,255,255,0.5);border-radius:10px;padding:14px;text-align:center;">
+          <img src="images/a1-matchmaker-shortcut.png" alt="Matchmaker analogy for ADVPN shortcut message interchange" onerror="this.style.display='none';this.nextElementSibling.style.display='block';" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 10px;">
+          <div class="img-missing-msg" style="display:none;font-size:12px;color:#92400e;padding:8px;background:rgba(146,64,14,0.1);border-radius:6px;">📷 <strong>images/a1-matchmaker-shortcut.png</strong> — add this image to the folder</div>
+          <button class="prompt-toggle" onclick="togglePrompt(this)" type="button">▾ Show analogy image prompt</button>
+          <div class="prompt-content" hidden>Cartoon illustration in pastel style: a party scene with three characters. Center character labeled "Hub (Matchmaker)" wears a bow tie and holds numbered message envelopes (1-5). Left character labeled "Spoke 1" looks eager. Right character labeled "Spoke 2" holds a business card. Final panel shows Spoke 1 and Spoke 2 shaking hands directly (step 6) while the matchmaker steps aside. Bold outlines, no shadows, flat pastel colors, numbered steps visible on the envelopes.</div>
+        </div>
+      </div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">6 steps: Offer(hub→S1) → Query(S1→hub) → Forward(hub→S2) → Reply+WAN IP(S2→hub) → Forward(hub→S1) → IKE Negotiate(S1↔S2 direct). Hub exits after step 5. Spoke 2's WAN IP is the key piece of data that enables direct IKE in step 6.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s2" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s2','6-Step Interchange')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s2" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s2')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ SECTION 3 ═══════════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · SHORTCUT ESTABLISHED</span>
+      </div>
+      <p class="socratic-insight">Once the shortcut tunnel is up, the routing table changes. The next-hop for Spoke 2's subnet via Spoke 1 shifts from the hub's overlay IP to Spoke 2's overlay IP — but the routing protocol (BGP) still runs on the overlay, not the shortcut tunnel's underlay IPs. This is a subtle but important distinction.</p>
+      <ul class="socratic-questions">
+        <li>After the shortcut is established, the routing table shows the next-hop as 172.16.1.3 (Spoke 2's overlay IP). The actual IPsec tunnel was built to 100.65.3.113 (Spoke 2's underlay WAN IP). How does FortiGate resolve this — how does a packet routed to overlay IP 172.16.1.3 end up inside the shortcut tunnel to underlay IP 100.65.3.113?</li>
+        <li>Why is the overlay network required for dynamic routing to work in ADVPN? What breaks if you remove overlay IP addresses from the IPsec interfaces?</li>
+      </ul>
+      <div class="answer-area" data-section="shortcut-established">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">The IPsec virtual interface associated with the shortcut tunnel has the overlay IP 172.16.1.3 assigned to it. When Spoke 1's routing table routes traffic to 172.16.1.3, it's actually routing to the shortcut IPsec virtual interface — FortiGate then encrypts that traffic into the shortcut SA and sends it to the underlay endpoint 100.65.3.113. The overlay IP is logically bound to the IPsec interface, not the underlay address; they're different layers of the same tunnel object.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Without overlay IPs on the IPsec interfaces, FortiGate has no shared logical network on which to run the routing protocol. BGP requires adjacent peers to be reachable on a common subnet — without the 172.16.1.0/24 overlay, the hub and spokes have no common IP range for BGP peering. Each spoke's local subnets would have no dynamic path to be advertised or discovered, breaking the entire routing redistribution model that ADVPN depends on.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s3">
+      <div class="section-label">SECTION 03</div>
+      <h2>Shortcut <em>Established</em> — Overlay Routing After Tunnel Up</h2>
+
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s3-shortcut-established.png" alt="On-demand shortcut established: client uses direct spoke-to-spoke tunnel bypassing hub" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg" style="display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;">📷 <strong>images/s3-shortcut-established.png</strong></div>
+        <p class="img-caption">After shortcut establishment: client traffic flows directly Spoke1↔Spoke2 bypassing hub. Routing table next-hop = Spoke 2 overlay IP (172.16.1.3) via shortcut tunnel interface.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration: hub at top (faded/greyed out), Spoke 1 and Spoke 2 at bottom with a bold green arrow directly between them labeled "Shortcut Tunnel (active)". A routing table excerpt shown near Spoke 1: "172.20.3.0/24 via 172.16.1.3 (HUB1-VPN1_0_0)". Hub still shows dashed lines to spokes but traffic arrow bypasses it. Overlay network cloud shown between spokes with IPs labeled. Pastel palette, bold outlines, no shadows.</div>
+      </div>
+
+      <p>After the 6-step shortcut interchange, the on-demand IPsec tunnel between Spoke 1 and Spoke 2 is established. <strong>The client behind Spoke 1 immediately begins using the new direct tunnel</strong> — the hub is no longer in the data path for this spoke-pair traffic.</p>
+      <p>The routing table on Spoke 1 now shows the destination subnet behind Spoke 2 with a next-hop of <em>Spoke 2's overlay IP</em> (e.g., 172.16.1.3), not the hub's overlay IP. The routing entry is marked as "known via BGP" and points to the shortcut IPsec virtual interface:</p>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Routing Table After Shortcut (Spoke 1)</div>
+        <pre><code>Spoke1 # get router info routing-table details 172.20.3.62
+Routing entry for 172.20.3.0/24
+  Known via "bgp", distance 200, metric 0, best
+  * vrf 0 172.16.1.3 priority 1 (recursive is directly connected, HUB1-VPN1_0_0)</code></pre>
+      </div>
+
+      <p>The overlay network (172.16.1.0/24) is critical for this to work. It provides a shared logical network on which the dynamic routing protocol (BGP/OSPF) can peer and exchange routes. <strong>IPsec tunnels are built over underlay IPs</strong> (real internet addresses), but <strong>routing protocols run over overlay IPs</strong> assigned to the IPsec virtual interfaces — these are distinct layers that must not be confused.</p>
+
+      <div class="callout callout-info"><strong>Note:</strong> When FortiGates have multiple internet connections, each connection requires a separate phase 1 interface with its own overlay IP address. A topology with 3 firewalls and 3 ISPs each results in 9 IPsec virtual interfaces and 9 overlay IP addresses total.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">After shortcut: next-hop = spoke's overlay IP (not underlay WAN). BGP next-hop is the overlay IPsec interface IP. Routing = overlay; tunneling = underlay. Multiple ISPs = multiple phase 1 interfaces = multiple overlay IPs per device. The shortcut interface appears as HUB1-VPN1_0_0 in the routing table (dynamic spoke interface).</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s3" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s3','Shortcut Established')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s3" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s3')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ SECTION 4 ═══════════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · SD-WAN &amp; STICKINESS</span>
+      </div>
+      <p class="socratic-insight">When ADVPN is combined with SD-WAN, shortcut tunnels are determined by the initial packet's path through the hub — whichever ISP link the SD-WAN rule selected. This creates "overlay stickiness": the shortcut is locked to that ISP link even if a better one becomes available. ADVPN 1.0 has no mechanism to change this without tearing down and re-establishing the shortcut.</p>
+      <ul class="socratic-questions">
+        <li>In ADVPN with SD-WAN, the initial data packet travels via ISP1 to the hub, which then forwards it to Spoke 2 via ISP2. The shortcut reply contains ISP2's address. When the shortcut tunnel is established, which ISP link does it use — ISP1 or ISP2? Why?</li>
+        <li>What is "overlay stickiness" and why is it a problem specifically in multi-ISP SD-WAN environments?</li>
+      </ul>
+      <div class="answer-area" data-section="sdwan-stickiness">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">The shortcut reply only includes the WAN IP address of the internet connection that received the initial packet on Spoke 2's side — in this case the ISP that the hub used to forward to Spoke 2. The shortcut tunnel is then established between Spoke 1's side and that specific ISP endpoint of Spoke 2. The ISP selection is determined by the SD-WAN rule at the hub, not by any quality measurement between the two spokes. Spoke 1 has no visibility into Spoke 2's other ISP links at this point.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Overlay stickiness means the shortcut remains locked to the ISP link that was selected during initial tunnel establishment, even if another ISP link on the same spoke pair would perform better. In a multi-ISP SD-WAN environment, ISP link quality changes constantly — an ISP that was best when the shortcut was created might degrade, but ADVPN 1.0 cannot dynamically reroute the established shortcut to a better ISP. The shortcut must be torn down and re-triggered to select a new path.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s4">
+      <div class="section-label">SECTION 04</div>
+      <h2>SD-WAN Integration &amp; <em>Overlay Stickiness</em></h2>
+
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s4-sdwan-stickiness.png" alt="ADVPN with SD-WAN overlay stickiness: shortcut locked to initial ISP path" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg" style="display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;">📷 <strong>images/s4-sdwan-stickiness.png</strong></div>
+        <p class="img-caption">SD-WAN selects ISP for initial hub transit. The shortcut reply contains only that ISP's WAN IP, locking the shortcut to that path — overlay stickiness. ADVPN 2.0 resolves this.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration: hub at top connected to Spoke 1 (left) via ISP1 (blue line) and to Spoke 2 (right) via ISP2 and ISP3. Shortcut tunnel arrow shown between Spoke 1 and Spoke 2 via ISP3 (yellow line, locked). A warning callout says "Overlay Stickiness: shortcut locked to ISP3 path regardless of better options". A lock icon on the shortcut arrow. Pastel palette, bold outlines, no shadows.</div>
+      </div>
+
+      <p>When ADVPN is combined with <strong>SD-WAN</strong>, shortcut tunnel selection is determined by the initial data traffic path through the hub. SD-WAN rules at the hub select which ISP link is used to forward the triggering packet to Spoke 2, and the shortcut reply includes only that ISP connection's WAN address.</p>
+      <p>This creates <strong>overlay stickiness</strong>: once the shortcut is established, it remains locked to the ISP link selected by SD-WAN during initial setup — even if other ISP links between the spokes would provide better performance. The shortcut does not dynamically reroute based on changing link conditions.</p>
+      <p>Additionally, in the shortcut reply (step 4), Spoke 2 only sends the WAN IP of the internet connection that received the packet. It does not include information about its other ISP links or their quality — leaving Spoke 1 with no basis to choose a better path for the shortcut tunnel.</p>
+
+      <div class="callout callout-warn"><strong>Exam tip:</strong> Overlay stickiness = shortcut tunnel stays on the ISP path chosen during initial hub-transit, regardless of link quality changes. This is the key limitation of ADVPN 1.0 with SD-WAN. ADVPN 2.0 solves this with edge discovery and path management.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Overlay stickiness: shortcut = locked to ISP selected during initial SD-WAN hub-transit. The shortcut reply only contains that ISP's WAN IP, not all available ISP links. ADVPN 1.0 cannot reroute established shortcuts when ISP quality changes. Consider ADVPN 2.0 for multi-ISP SD-WAN environments.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s4" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s4','SD-WAN & Stickiness')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s4" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s4')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ SECTION 5 ═══════════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · ADVPN 2.0</span>
+      </div>
+      <p class="socratic-insight">ADVPN 2.0 fundamentally changes shortcut selection independence. Instead of inheriting the hub's SD-WAN ISP choice, spokes gather real-time WAN link quality data about all remote spokes' internet connections and make their own path decisions. The update frequency (every 5 seconds) is a testable detail.</p>
+      <ul class="socratic-questions">
+        <li>ADVPN 2.0 introduces "edge discovery" where spokes exchange WAN link information. What specific data does a spoke share about each of its internet connections, and how often is it updated?</li>
+        <li>ADVPN 2.0 also introduces "path management." How does this differ from SD-WAN steering at the hub, and what does it mean for overlay stickiness?</li>
+      </ul>
+      <div class="answer-area" data-section="advpn2">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">With edge discovery, each spoke shares the following about each of its internet connections via IKE messages: WAN IP address, transport group, link quality, link cost, and member configuration order. This information is exchanged every 5 seconds, giving spokes a continuously updated table of all remote spokes' ISP link statuses to use for shortcut path selection decisions.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">With path management, local spokes calculate and direct IKE to establish the best shortcut path based on their own SD-WAN rules — not the hub's SD-WAN rules. This means the initiating spoke selects the optimal ISP pair for the shortcut based on real-time link quality data from edge discovery. Overlay stickiness is eliminated: if a better ISP becomes available, ADVPN 2.0 can dynamically adjust shortcuts without hub involvement, not just when the shortcut is first created.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s5">
+      <div class="section-label">SECTION 05</div>
+      <h2>ADVPN 2.0 — <em>Edge Discovery</em> &amp; Path Management</h2>
+
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s5-advpn2-edge-discovery.png" alt="ADVPN 2.0 edge discovery and path management: spokes exchange WAN link info every 5 seconds" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg" style="display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;">📷 <strong>images/s5-advpn2-edge-discovery.png</strong></div>
+        <p class="img-caption">ADVPN 2.0: edge discovery shares WAN IP, transport group, link quality, link cost per ISP via IKE every 5 seconds. Path management lets spokes pick the best shortcut path using their own SD-WAN rules.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration: hub at top, Spoke 1 and Spoke 2 at bottom. Edge discovery: bi-directional arrows between spokes labeled "WAN IP / Transport Group / Link Quality / Link Cost (every 5s)". Path management: a magnifying glass icon near Spoke 1 with a decision table showing ISP1, ISP2, ISP3 with quality scores. Best path arrow highlighted in green to Spoke 2. "No overlay stickiness" label. Pastel palette, bold outlines, no shadows.</div>
+      </div>
+
+      <p><strong>ADVPN 2.0</strong> addresses the overlay stickiness limitation by giving spokes direct knowledge of each other's WAN link quality. It introduces two major enhancements to the ADVPN shortcut process:</p>
+
+      <ul>
+        <li><strong>Edge Discovery:</strong> Local spokes obtain remote WAN link information via IKE messages. After the shortcut is established, Spoke 2 sends information about <em>all</em> of its internet connections to Spoke 1 — including WAN IP address, transport group, link quality, link cost, and member configuration order. This information is <em>updated every 5 seconds</em>, giving Spoke 1 a continuously current view of Spoke 2's link statuses.</li>
+        <li><strong>Path Management:</strong> Local spokes calculate and direct IKE to establish the best shortcut path based on their own SD-WAN rules, not the hub's SD-WAN rules. If a better ISP link becomes available (based on the edge discovery data), ADVPN 2.0 can adjust the shortcut tunnel to that link — eliminating overlay stickiness.</li>
+      </ul>
+
+      <p>ADVPN 2.0 is particularly valuable for use cases like VoIP between branches, where both the best path selection and rapid failover to another ISP path matter. It enables spoke-to-spoke connections to use the optimal ISP combination regardless of how the initial triggering traffic was routed through the hub.</p>
+
+      <div class="callout callout-info"><strong>Note:</strong> ADVPN 2.0 still uses the same 6-step shortcut message interchange for initial tunnel establishment. The edge discovery data is exchanged after the shortcut is up, enabling ongoing path optimization — not just initial selection.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">ADVPN 2.0 adds: (1) Edge discovery — spokes share WAN IP + transport group + link quality + link cost + member order via IKE, updated every 5 seconds. (2) Path management — spoke (not hub) selects best shortcut path using its own SD-WAN rules. Result: no overlay stickiness; shortcuts can be dynamically re-optimized.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s5" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s5','ADVPN 2.0')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s5" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s5')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">ON THIS PAGE</div>
+      <nav class="ssnav">
+        <a class="ssnav-item" href="#s1">Triggering On-Demand</a>
+        <a class="ssnav-item" href="#s2">6-Step Interchange</a>
+        <a class="ssnav-item" href="#s3">Shortcut Established</a>
+        <a class="ssnav-item" href="#s4">SD-WAN &amp; Stickiness</a>
+        <a class="ssnav-item" href="#s5">ADVPN 2.0</a>
+      </nav>
+    </div>
+
+    <a class="hub-link" href="index.html">← Chapter 08 Hub</a>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">PROGRESS</div>
+      <div class="checklist" id="checklist">
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s1" onchange="toggleDone(this)">
+          <span class="check-label">Triggering On-Demand</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s2" onchange="toggleDone(this)">
+          <span class="check-label">6-Step Interchange</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s3" onchange="toggleDone(this)">
+          <span class="check-label">Shortcut Established</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s4" onchange="toggleDone(this)">
+          <span class="check-label">SD-WAN &amp; Stickiness</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s5" onchange="toggleDone(this)">
+          <span class="check-label">ADVPN 2.0</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">QUICK REFERENCE</div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Shortcut Trigger</div>
+        <div class="quick-ref-def">Real data traffic transiting the hub between two spokes triggers the ADVPN shortcut process. No data = no shortcut offer.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Shortcut Offer</div>
+        <div class="quick-ref-def">Step 1: hub→Spoke 1. Hub suggests that Spoke 1 can establish a more direct tunnel to the destination spoke.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Shortcut Reply</div>
+        <div class="quick-ref-def">Step 4: Spoke 2→hub. Spoke 2 confirms and provides its WAN IP address, which hub forwards to Spoke 1 in step 5.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Overlay Stickiness</div>
+        <div class="quick-ref-def">ADVPN 1.0 limitation: shortcut tunnel remains locked to the ISP link chosen during initial SD-WAN hub-transit, regardless of subsequent link quality changes.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Edge Discovery</div>
+        <div class="quick-ref-def">ADVPN 2.0 feature: spokes share WAN IP, transport group, link quality, link cost, and member order for all ISPs via IKE — updated every 5 seconds.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Path Management</div>
+        <div class="quick-ref-def">ADVPN 2.0 feature: local spoke (not the hub) calculates and directs IKE to select the best shortcut path based on its own SD-WAN rules and edge discovery data.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">IKE Negotiate (Step 6)</div>
+        <div class="quick-ref-def">Direct spoke-to-spoke IKE negotiation that establishes the shortcut IPsec tunnel. Hub is NOT involved in this step.</div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="page-nav">
+  <a class="page-nav-btn page-nav-prev" href="subtopic-01-configure-advpn.html">
+    <span class="page-nav-label">← PREVIOUS</span>
+    <span class="page-nav-title">Configure ADVPN</span>
+  </a>
+  <a class="page-nav-btn page-nav-next" href="subtopic-03-advpn-with-bgp.html">
+    <span class="page-nav-label">NEXT →</span>
+    <span class="page-nav-title">ADVPN with BGP</span>
+  </a>
+</div>
+
+<footer>
+  EF-NSE7<span>.</span> Chapter 08<span>.</span> Subtopic 02<span>.</span> ADVPN Shortcuts
+</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-ch08-sub02-advpn-shortcuts';
+
+const SECTIONS = {
+  's1': 'Triggering On-Demand',
+  's2': '6-Step Interchange',
+  's3': 'Shortcut Established',
+  's4': 'SD-WAN & Stickiness',
+  's5': 'ADVPN 2.0',
+};
+
+document.querySelectorAll('.socratic-header').forEach(function(h) {
+  h.addEventListener('click', function() { h.closest('.socratic-block').classList.toggle('soc-open'); });
+});
+
+function getQArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-qs') || '[]'); }
+function saveQArr(qs) { localStorage.setItem(PAGE_KEY+'-qs', JSON.stringify(qs)); }
+function addQuestion(key, name) {
+  const ta = document.getElementById('q-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const qs = getQArr(); qs.push({id: Date.now(), section: key, sectionName: name, text});
+  saveQArr(qs); ta.value = ''; renderQPanel();
+  if (!document.getElementById('qpanel-body').classList.contains('open')) toggleQPanel();
+}
+function deleteQ(id) { saveQArr(getQArr().filter(q => q.id !== id)); renderQPanel(); }
+function toggleQPanel() {
+  const body = document.getElementById('qpanel-body');
+  const header = document.getElementById('qpanel-header');
+  const chevron = document.getElementById('qpanel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-qpanel-open', open);
+}
+function renderQPanel() {
+  const qs = getQArr();
+  const count = document.getElementById('qpanel-count');
+  if (count) { count.textContent = qs.length; count.style.display = qs.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.qpanel-hint');
+  if (hint) hint.textContent = qs.length ? `— ${qs.length} question${qs.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('qpanel-body'); if (!body) return;
+  if (!qs.length) { body.innerHTML = '<p class="no-questions">No questions yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  qs.forEach(q => { if (groups[q.section]) groups[q.section].push(q); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(q => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${q.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteQ(${q.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+function getNotesArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-notes') || '[]'); }
+function saveNotesArr(ns) { localStorage.setItem(PAGE_KEY+'-notes', JSON.stringify(ns)); }
+function addNote(key) {
+  const ta = document.getElementById('note-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const ns = getNotesArr(); ns.push({id: Date.now(), section: key, sectionName: SECTIONS[key]||key, text});
+  saveNotesArr(ns); ta.value = ''; renderNotesPanel();
+  if (!document.getElementById('notes-panel-body').classList.contains('open')) toggleNotesPanel();
+}
+function deleteNote(id) { saveNotesArr(getNotesArr().filter(n => n.id !== id)); renderNotesPanel(); }
+function toggleNotesPanel() {
+  const body = document.getElementById('notes-panel-body');
+  const header = document.getElementById('notes-panel-header');
+  const chevron = document.getElementById('notes-panel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-notes-panel-open', open);
+}
+function renderNotesPanel() {
+  const ns = getNotesArr();
+  const count = document.getElementById('notes-panel-count');
+  if (count) { count.textContent = ns.length; count.style.display = ns.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.notes-panel-hint');
+  if (hint) hint.textContent = ns.length ? `— ${ns.length} note${ns.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('notes-panel-body'); if (!body) return;
+  if (!ns.length) { body.innerHTML = '<p class="no-questions">No notes yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  ns.forEach(n => { if (groups[n.section]) groups[n.section].push(n); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(n => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteNote(${n.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+function toggleDone(input) {
+  localStorage.setItem(PAGE_KEY+'-check-'+input.dataset.key, input.checked);
+}
+function initChecks() {
+  document.querySelectorAll('.check-input').forEach(function(inp) {
+    inp.checked = localStorage.getItem(PAGE_KEY+'-check-'+inp.dataset.key) === 'true';
+  });
+}
+function saveSocAnswer(btn) {
+  const area = btn.closest('.answer-area');
+  const ta = area.querySelector('.answer-textarea');
+  if (!ta.value.trim()) { ta.focus(); return; }
+  const key = PAGE_KEY+'-socans-'+area.dataset.section;
+  try { localStorage.setItem(key, ta.value); } catch(e) {}
+  ta.disabled = true; btn.textContent = '✓ Answer saved'; btn.disabled = true;
+  const seeBtn = area.querySelector('.btn-see-answer');
+  seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+}
+function revealSocAnswer(btn) {
+  if (btn.disabled) return;
+  const answers = btn.closest('.answer-area').querySelector('.model-answers');
+  const isHidden = answers.style.display === 'none' || !answers.style.display;
+  answers.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '▲ Hide Model Answer' : '💡 See Model Answer';
+}
+function togglePrompt(btn) {
+  const c = btn.nextElementSibling;
+  const isHidden = c.hasAttribute('hidden');
+  if (isHidden) { c.removeAttribute('hidden'); btn.textContent = '▴ Hide image prompt'; }
+  else { c.setAttribute('hidden', ''); btn.textContent = '▾ Show image prompt'; }
+}
+if (sessionStorage.getItem('pt')) {
+  document.body.style.opacity = '1';
+  sessionStorage.removeItem('pt');
+}
+document.querySelectorAll('a[href]').forEach(function(a) {
+  a.addEventListener('click', function() { sessionStorage.setItem('pt', '1'); });
+});
+document.addEventListener('DOMContentLoaded', function() {
+  renderQPanel(); renderNotesPanel(); initChecks();
+  if (localStorage.getItem(PAGE_KEY+'-qpanel-open') === 'true') toggleQPanel();
+  if (localStorage.getItem(PAGE_KEY+'-notes-panel-open') === 'true') toggleNotesPanel();
+  document.querySelectorAll('.answer-area').forEach(function(area) {
+    const key = PAGE_KEY+'-socans-'+area.dataset.section;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const ta = area.querySelector('.answer-textarea'); ta.value = saved; ta.disabled = true;
+        const addBtn = area.querySelector('.btn-add-answer'); addBtn.textContent = '✓ Answer saved'; addBtn.disabled = true;
+        const seeBtn = area.querySelector('.btn-see-answer'); seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+      }
+    } catch(e) {}
+  });
+  document.querySelectorAll('.analogy-box').forEach(function(box) {
+    if (box.dataset.collapsibleInit) return;
+    box.dataset.collapsibleInit = '1';
+    box.classList.add('expanded');
+    const label = box.querySelector(':scope > .analogy-label');
+    if (label) label.addEventListener('click', () => box.classList.toggle('expanded'));
+  });
+  document.querySelectorAll('.analogy-img img').forEach(function(img) {
+    if (img.dataset.zoomInit) return;
+    img.dataset.zoomInit = '1';
+    img.addEventListener('click', () => img.classList.toggle('zoomed'));
+  });
+  document.querySelectorAll('.section-img').forEach(function(img) {
+    img.addEventListener('click', () => img.classList.toggle('si-expanded'));
+  });
+});
+(function() {
+  var items = document.querySelectorAll('.ssnav-item');
+  if (!items.length) return;
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      var lnk = document.querySelector('.ssnav-item[href="#'+e.target.id+'"]');
+      if (lnk) lnk.classList.toggle('active', e.isIntersecting);
+    });
+  }, { rootMargin: '-10% 0% -70% 0%' });
+  document.querySelectorAll('.section-block[id]').forEach(function(el) { obs.observe(el); });
+})();
+</script>
+</body>
+</html>

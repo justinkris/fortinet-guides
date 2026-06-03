@@ -1,0 +1,612 @@
+EF-NSE7 — IMAGE GENERATION PROMPTS
+============================================================
+Each entry shows the file path where the image should be saved
+and the prompt to use when generating it.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Chapter 01 - Network Security Architecture
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [subtopic-01-enterprise-firewall-solution.html]
+
+  Save to: study-guides/Chapter 01 - Network Security Architecture/images/s1-evolution.png
+  Prompt:  Flat colorful illustration, pastel palette (soft pinks, warm teals, cream background), bold outlines, minimal text. Two zones with a center divider. LEFT labeled "Perimeter-Only": a castle drawbridge gate — an attacker in a red hoodie easily walks through marked "Port 443 OK"; inside the perimeter a second red figure already moves freely between unprotected server racks carrying a bag labeled "LATERAL MOVEMENT". RIGHT labeled "Zero Trust": same network but layered glowing shield checkpoints between every zone — badge icons, device posture icons (laptop + green checkmark), red/green indicator lights at each internal boundary. No shadows, flat design, clean educational infographic style.
+
+  Save to: study-guides/Chapter 01 - Network Security Architecture/images/a1-zero-trust-analogy.png
+  Prompt:  Flat-style educational cartoon, pastel palette (warm pinks, soft blues, cream backgrounds), bold clean outlines, infographic feel. Two side-by-side scenes. LEFT labeled "Perimeter-Only (Traditional)": a medieval stone castle with a single drawbridge and moat; one guard checks a traveler at the gate; inside the castle walls, multiple figures move freely between buildings — one carries a red bag labeled "THREAT" and walks unchallenged past servers and doors. RIGHT labeled "Zero Trust Architecture": a modern glass office building; front lobby has a guard checking a badge plus a small laptop icon with a green checkmark (device posture); stairwell doors between floors each have badge readers; on the 3rd floor a figure in red attempts to open a server room door — a red "ACCESS DENIED" sign appears. Small callout labels: "Identity Check", "Device Posture", "Least Privilege", "Micro-segmentation". Professional educational illustration, slightly playful.
+
+  Save to: study-guides/Chapter 01 - Network Security Architecture/images/s2-ngfw.png
+  Prompt:  Flat colorful illustration, pastel palette (soft blues, sage green, light yellow), bold outlines, minimal text. Two scanner stations side by side with a center "vs." divider. LEFT labeled "Traditional Firewall": a simple gate with only a port/IP tag reader — a red envelope packet marked "443" sails through with a green checkmark; inside the envelope (X-ray faded view) is a malware bomb icon it never detected. RIGHT labeled "FortiGate NGFW": same red envelope arrives at a detailed scanning station showing an X-ray view revealing dangerous contents; a bold red BLOCKED stamp drops on it; small icons below the scanner: App Control, IPS, SSL Inspect. No shadows, flat design, educational infographic style.
+
+  Save to: study-guides/Chapter 01 - Network Security Architecture/images/s3-ecosystem.png
+  Prompt:  Flat colorful illustration, pastel palette (warm yellows, soft blues, sage green, coral), bold outlines, minimal text. Bird's-eye network topology map. Four FortiGate appliance icons at different positions: top labeled "DCFW — Data Center", center-left labeled "ISFW — Internal Segmentation", right labeled "NGFW — Internet Perimeter", bottom labeled "DEFW — Branch". A central management console icon in the middle labeled "FortiManager" with dotted management lines connecting to all four appliances. A globe icon in the upper-right corner labeled "FortiGuard" with small arrow icons radiating outward to each appliance. Clean node-graph aesthetic, pastel fills on each node, bold labels, no shadows, flat design.
+
+  Save to: study-guides/Chapter 01 - Network Security Architecture/images/a2-fortimanager-analogy.png
+  Prompt:  Flat-style educational cartoon, pastel sky blues and warm ambers, bold outlines, infographic style. Main scene: a stylized airport control tower in the center labeled "FortiManager". In the airspace around it, 4 small cartoon aircraft each labeled with a FortiGate deployment role: "DCFW" (large jet, data center icon on tail), "ISFW" (mid-size plane, internal network segment icon), "NGFW" (plane with globe/internet icon), "DEFW" (small commuter plane with branch office icon). Dotted radio-wave lines from the tower to each aircraft labeled "Policy Push" and "Config Sync". Bottom-left corner inset labeled "Without FortiManager": 4 tiny planes flying in random conflicting directions with question marks above each. Short labels throughout. Professional educational illustration.
+
+  Save to: study-guides/Chapter 01 - Network Security Architecture/images/s4-packet.png
+  Prompt:  Flat colorful illustration, pastel palette (blues, purples, mint green, cream), bold outlines, minimal text. Horizontal conveyor-belt pipeline. A small blue packet-box travels left to right through 6 labeled stations: 1) "NIC" (network port icon, teal), 2) "NP Fast Path" (chip icon, green — dotted bypass arrow arcs over stations 3-5 labeled "Known Session"), 3) "DNAT" (swap/transform icon — packet's destination label visibly changes from a public IP to a private IP, yellow), 4) "Policy" (rulebook with green/red traffic light, coral), 5) "UTM / CP" (magnifying glass + chip icon, purple), 6) "SNAT + OUT" (send-arrow icon, blue). Small red callout banner at the bottom: "VM FortiGate: no NP/CP → CPU only" with a bottleneck hourglass icon. Bold flow arrows between each station. No shadows, flat design.
+
+
+  [subtopic-02-design-secure-networks.html]
+
+  Save to: study-guides/Chapter 01 - Network Security Architecture/images/s1-dcfw.png
+  Prompt:  Flat colorful illustration, pastel palette (cool blues, teals, light grays), bold outlines, minimal text. Bird's-eye view of a data center environment. LEFT: two rows of server rack icons. CENTER: two large FortiGate appliance icons (1000-7000 series) labeled "DCFW" with a bold throughput callout "10–1000 Gbps". RIGHT: multiple switch icons drawn bundled together with a thick unified cable labeled "Unified Switch Fabric (LAG)". Feature icons arranged in a vertical column on the far right: NGFW, VRF/VDOM, HW SSL, Low Latency, Hyperscale — each with a small icon and label. Banner at bottom: "FortiGate 1000–7000 Series". Flat design, no shadows, clean educational infographic style.
+
+  Save to: study-guides/Chapter 01 - Network Security Architecture/images/s2-isfw.png
+  Prompt:  Flat colorful illustration, pastel palette (sage greens, soft yellows, warm cream, coral), bold outlines, minimal text. A campus network top-down diagram. Four distinct internal network zone blobs in different pastel colors: "Finance" (blue), "HR" (green), "Engineering" (yellow), "IoT" (orange). A FortiGate appliance icon labeled "ISFW" in the center where all zones meet, with inspection lines radiating out to each zone. A red crossed-out arrow between two zones labeled "BLOCKED — Lateral Movement". FortiAP wireless icons around the campus perimeter with dotted lines connecting back to the ISFW. Label: "Campus — Internal Segmentation, 1–100 Gbps". Flat design, no shadows.
+
+  Save to: study-guides/Chapter 01 - Network Security Architecture/images/s3-cloud.png
+  Prompt:  Flat colorful illustration, pastel palette (soft purples, sky blues, cloud white, mint), bold outlines, minimal text. A large stylized cloud in the center labeled "Cloud + Internet". Three distinct delivery options floating around it: LEFT — a "FortiGate VM" box with cloud provider logos (AWS, Azure, GCP, VMware icons); TOP — a "FortiCNF" box labeled "Cloud-Native Firewall"; RIGHT — a "FortiSASE" bubble labeled "FWaaS / SaaS Security". IPsec padlock icons on connection lines from each option to the cloud. At the bottom, a row of laptop/user icons labeled "Remote + Mobile Users" with ZTNA arrows connecting up to FortiSASE. Small SD-WAN icon on one of the connection paths. Flat design, no shadows, educational style.
+
+  Save to: study-guides/Chapter 01 - Network Security Architecture/images/s4-hybrid.png
+  Prompt:  Flat colorful illustration, pastel palette (warm reds, blues, greens, coral, cream), bold outlines, minimal text. An enterprise topology network map combining all four FortiGate roles. TOP: a cloud/internet icon. Below it: "NGFW" (blue box) at the internet perimeter. Center-left: "DCFW" (red, large) at the data center boundary. Center: "ISFW" (green) bridging internal campus VLANs with east-west arrows. RIGHT: "DEFW" (small, coral) at a branch office icon. A second "D-NGFW" icon at another campus site connected via VPN lines (padlock on WAN). All connected with flow arrows labeled "North-South" (vertical) and "East-West" (horizontal). A banner at the bottom: "Hybrid Mesh — All Roles, One FortiOS". Small callout bubble: "Role = Deployment Position + Configuration". Flat design, no shadows.
+
+  Save to: study-guides/Chapter 01 - Network Security Architecture/images/a3-deployment-roles-analogy.png
+  Prompt:  Flat colorful illustration, pastel palette (warm pinks, soft blues, sage green, cream), bold outlines, minimal text, educational infographic style. A stylized hospital building split into four clearly labeled departments. TOP-LEFT labeled "Trauma Center / DCFW": large red room with multiple beds and fast-moving carts (representing high throughput, high-speed processing). CENTER labeled "Wards / ISFW": a corridor with multiple separate locked doors between patient rooms (representing zone segmentation, east-west control). BOTTOM-LEFT labeled "Ambulance Bay / DEFW": a small bay with compact ambulance vehicles labeled "Branch" departing on roads (IPsec VPN lines). RIGHT labeled "Mobile Clinic / D-NGFW": a van with a WiFi icon visiting multiple building icons. In the CENTER TOP: a small admin office labeled "FortiManager" with dotted coordination lines to each department. Small badge at bottom: "Same Team (FortiOS) — Different Roles". No shadows, clean flat design.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Chapter 02 - Central Management
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [subtopic-01-examine-fortimanager-architecture.html]
+
+  Save to: study-guides/Chapter 02 - Central Management/images/s1-core-functions.png
+  Prompt:  Flat illustration, pastel palette, bold outlines, no shadows. Bird's-eye node graph. Center: FortiManager appliance icon. Left: multiple FortiGate icons connecting into a blue rectangle labeled "Device Layer." Right: purple rectangle labeled "Policy Layer" containing stacked policy-package icons. Above both: yellow rectangle labeled "Global ADOM" with downward arrows into each ADOM. Top-right: teal cloud labeled "FortiGuard" with arrows to all ADOMs. Clean short labels, educational infographic style.
+
+  Save to: study-guides/Chapter 02 - Central Management/images/a1-fortimanager-layers-analogy.png
+  Prompt:  Flat cartoon, pastel palette, bold outlines, no shadows. Three-tier vertical layout. TOP: pastel-green "Corporate HQ" building with globe icon, labeled "Global ADOM — sets brand standards (global policies)." MIDDLE ROW: two pastel-blue "Regional Office" buildings side by side, each labeled "ADOM Site A" and "ADOM Site B", each containing a small purple folder stack (Policy Layer) and a blue filing cabinet (Device Layer). BOTTOM ROW: row of small restaurant/FortiGate icons connecting up to each regional office with arrows. Far-right: teal delivery truck labeled "FortiGuard — updates to all." Short bold labels on every element, educational infographic feel.
+
+  Save to: study-guides/Chapter 02 - Central Management/images/s2-device-policy-layers.png
+  Prompt:  Flat two-panel illustration, pastel palette, bold outlines. LEFT PANEL "Device Layer" (pastel blue): icons for Network, VPN, System, Log settings, plus a stacked filing cabinet labeled "Revision History (per device)." FortiGate icon on left connects here. RIGHT PANEL "Policy Layer" (pastel purple): stacked policy-package icons, checkmark for "Firewall Objects," warning triangle "Requires install to apply." Arrow from Device Layer → FortiGate is solid (direct effect). Arrow from Policy Layer → Device Layer → FortiGate is dashed with "Install required" label. Both panels inside an "ADOM" border. No shadows, clean labels.
+
+  Save to: study-guides/Chapter 02 - Central Management/images/s3-config-operations.png
+  Prompt:  Flat left-to-right pipeline illustration, pastel palette, bold outlines. Three columns: FortiGate (orange, left), Device Layer (blue, center), Policy Layer (purple, right). Eight labeled arrows between columns: Retrieve and Auto-Retrieve (solid and dashed arrows FortiGate→Device Layer), Install Device Settings (Device Layer→FortiGate with "preview" badge), Quick Install (same, "no preview" badge), Revert (Device Layer internal loop), Import (Device Layer→Policy Layer), Install Policy Package (Policy Layer→Device Layer+FortiGate with wizard badge), Reinstall Policy (Policy Layer→FortiGate direct with preview badge). Each arrow has a short label. No shadows, clean educational infographic.
+
+  Save to: study-guides/Chapter 02 - Central Management/images/s4-global-provisioning.png
+  Prompt:  Flat two-path illustration, pastel palette, bold outlines. TOP: yellow "Global ADOM" rectangle containing "Global Policy Package" icon. Two arrows diverge downward. LEFT PATH labeled "Auto-Install": single solid arrow straight to "ADOM Policy Layer + Device Layer + FortiGate" with "No Preview" badge. RIGHT PATH labeled "Assign": dashed arrow to "Policy Layer (Modified)" then second dashed arrow requiring admin action to "Device Layer + FortiGate." Bottom: multiple ADOM-n boxes receive policies from both paths. Side block: "Provisioning Templates" (blue) with upward "Override Precedence" badge. Clean labels, no shadows.
+
+
+  [subtopic-02-explore-dynamic-objects.html]
+
+  Save to: study-guides/Chapter 02 - Central Management/images/s1-normalized-interfaces.png
+  Prompt:  Flat illustration, pastel palette, bold outlines. Center: a large label "LAN" (abstract normalized interface name in a rounded pill shape). Left: FortiGate 500E icon connected by arrow labeled "Per-platform → port3." Below it: FortiGate 600H icon connected by arrow labeled "Per-platform → port3." Right: FortiGate VM64 icon connected by arrow labeled "Per-device → port4." Bottom callout: "Case-sensitive — LAN ≠ lan." Two-column result: policy layer uses "LAN," FortiGate receives the specific physical port. Clean labels, no shadows, educational infographic.
+
+  Save to: study-guides/Chapter 02 - Central Management/images/s2-per-device-mapping.png
+  Prompt:  Flat illustration, pastel palette, bold outlines. Center: one object box labeled "LAN (Firewall Address)" with a "Per-Device Mapping" badge. Two arrows branch out. Left arrow → "Branch1 [root]" → IP label "172.16.0.0/24" (green badge). Right arrow → "Branch2 [root]" → IP label "192.168.0.0/24" (blue badge). Below: a crossed-out object labeled "Web Filter Profile" with label "No per-device mapping — must use unique names." Clean, minimal, educational infographic, no shadows.
+
+  Save to: study-guides/Chapter 02 - Central Management/images/s3-mapping-conflicts.png
+  Prompt:  Flat two-column table illustration, pastel palette, bold outlines. LEFT COLUMN (pastel green header "Supports Per-Device Mapping"): bullet list with icons — Addresses, VIPs, IP Pools, User Groups, LDAP/RADIUS/TACACS+, Metadata Variables, Dynamic Local Cert, Dynamic VPN Tunnel. RIGHT COLUMN (pastel red header "No Per-Device Mapping"): bullet list — Web Filter, Antivirus, IPS, Application Control, Internet Service, Network Service, User Definitions, FortiTokens, most Security Fabric connectors. Between columns: a conflict icon (orange exclamation) with label "Same name = FortiManager must choose." Bottom: resolution tip "Create unique name on FortiGate, re-import." No shadows, clean infographic.
+
+  Save to: study-guides/Chapter 02 - Central Management/images/s4-metadata-variables.png
+  Prompt:  Flat illustration, pastel palette, bold outlines. LEFT: address object edit form showing "IP/Netmask" field with a magnifying glass + $ symbol icon, field value showing "$Area". A tooltip bubble labeled "This field supports variables." RIGHT: Metadata Variables management table (Policy &amp; Objects → Advanced → Metadata Variables) listing entries: Area, Network1, Network2, Router_IP, WAN — each with a Default Value column and a "Per-Device Mapping" option. Arrows connect from the variable table to the address object field. Clean, no shadows, educational infographic feel.
+
+
+  [subtopic-03-use-scripts.html]
+
+  Save to: study-guides/Chapter 02 - Central Management/images/s1-execution-contexts.png
+  Prompt:  Flat four-quadrant illustration, pastel palette, bold outlines. CENTER: "Script" pill shape. Four arrows pointing to four quadrants. TOP-LEFT: "Remote FGT" (orange) — FortiGate icon, label "Runs directly on firewall, auto-retrieve syncs device DB." TOP-RIGHT: "Device Database" (blue) — filing cabinet icon, label "Modifies device layer → Config Status: Modified → install to push." BOTTOM-LEFT: "Policy Package" (purple) — policy package icon, label "Modifies policy layer → package flagged Modified → install policy to apply." BOTTOM-RIGHT: "Global Database" (yellow) — globe icon, label "Modifies global policies → assign or auto-install to apply." No shadows, clean educational infographic.
+
+  Save to: study-guides/Chapter 02 - Central Management/images/a1-scripts-context-analogy.png
+  Prompt:  Flat four-panel cartoon, pastel palette, bold outlines, no shadows. Each panel shows a person filing a document in a different location. PANEL 1 (orange): Person hands memo directly to a store employee at a counter, labeled "Remote FGT — direct delivery, auto-copy to records." PANEL 2 (blue): Person files in a filing cabinet in a regional office, labeled "Device DB — filed regionally, store gets it after an install step." PANEL 3 (purple): Person updates a large binder on a shelf at HQ, labeled "Policy Package — HQ manual updated, distributed only after formal send." PANEL 4 (yellow): Person archives in a vault, labeled "Global DB — master archive, regions get it only after HQ assigns." Short bold labels, educational infographic feel.
+
+  Save to: study-guides/Chapter 02 - Central Management/images/s2-ztp-ltp.png
+  Prompt:  Flat left-to-right conveyor-belt flow, pastel palette, bold outlines. Step 1: FortiManager admin creates "Model Device" box (blue, with serial number label). Step 2: "New FortiGate" (orange box) ships to remote site. Two paths diverge: ZTP path (top) shows FortiGate auto-connecting via WAN/internet arrow with "No preconfiguration needed" label. LTP path (bottom) shows FortiGate with small "Initial setup" badge before connecting. Both paths converge at Step 3: "Auto-Link" event — FortiManager pushes config via Quick Install. Step 4: "Model Device → Real Device" swap icon. Clean labels, no shadows, educational infographic.
+
+  Save to: study-guides/Chapter 02 - Central Management/images/s3-cli-templates.png
+  Prompt:  Flat two-panel comparison, pastel palette, bold outlines. LEFT PANEL "Pre-Run CLI Template" (pastel orange): numbered flow — 1. Admin creates template in policy layer. 2. Template assigned to model device. 3. Quick Install pushes config to FortiGate device DB. 4. Template auto-detaches (red X). 5. FortiGate real device takes over. Label: "One-time, self-removing." RIGHT PANEL "CLI Template" (pastel blue): numbered flow — 1. Admin assigns CLI template to FortiGate. 2. Template overwrites device DB (Override arrow). 3. Install Device Settings pushes to FortiGate. 4. Template stays assigned (green checkmark loop). Label: "Persistent, overrides device DB." Both panels inside matching background. No shadows, clean labels.
+
+  Save to: study-guides/Chapter 02 - Central Management/images/s4-script-languages.png
+  Prompt:  Flat five-column comparison card layout, pastel palette, bold outlines. Each column is a card for one scripting type. CLI Script (pastel blue): Language=FortiOS, Dynamic Variables=No (red X), Complexity=Varies, Use=Interact with FortiOS. CLI Template (pastel green): Language=FortiOS, Dynamic Variables=Metadata (green check), Complexity=Varies. Tcl Script (pastel purple): Language=Tcl, Dynamic Variables=Yes (green check), Complexity=Moderate. Jinja Template (pastel orange): Language=Python/Jinja2, Dynamic Variables=Metadata (green check), Complexity=Moderate. API (pastel red): Language=JSON, Dynamic Variables=Yes (green check), Complexity=High, Tools=Postman/Terraform. Clean card layout, short bold labels, no shadows.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Chapter 03 - VLANs and VDOMs
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [subtopic-01-configure-vlans.html]
+
+  Save to: study-guides/Chapter 03 - VLANs and VDOMs/images/s1-vlan-overview.png
+  Prompt:  Flat colorful illustration: FortiGate device in the center connected to Switch A via a bold labeled "dot1q trunk" cable. Two hosts — one in VLAN 5 (blue, 192.168.5.0/24) and one in VLAN 15 (green, 192.168.15.0/24) — hanging off the switch. Arrows show packet flow: VLAN 5 tag enters FortiGate, exits re-tagged as VLAN 15. Pastel palette, bold outlines, minimal text labels, no shadows.
+
+  Save to: study-guides/Chapter 03 - VLANs and VDOMs/images/s2-tagging-standards.png
+  Prompt:  Flat colorful illustration: four horizontal Ethernet frame diagrams stacked vertically — standard IPv4 (no tag), 802.1Q (one cyan tag labeled 0x8100), 802.1ad (orange S-tag + cyan C-tag), and QinQ (two cyan tags). Each frame shows Dest MAC, Src MAC, EtherType fields in distinct pastel color blocks. Labels call out the EtherType hex values. Pastel palette, bold outlines, no shadows, educational infographic style.
+
+  Save to: study-guides/Chapter 03 - VLANs and VDOMs/images/a1-vlan-nested-packages.png
+  Prompt:  Cartoon illustration in pastel style: three scenes side by side. Scene 1: a simple labeled box (802.1Q — one destination sticker "VLAN 5"). Scene 2: a box inside a bigger box — outer box has a freight label "Provider S-tag 100", inner box has "Customer C-tag 5" visible through a window (802.1ad). Scene 3: a customs officer (FortiGate, labeled in red) peeling off the outer sticker and applying a new one. Bold outlines, flat colors, short text labels, no shadows, educational infographic feel.
+
+  Save to: study-guides/Chapter 03 - VLANs and VDOMs/images/s3-vxlan-encap.png
+  Prompt:  Flat colorful illustration: horizontal frame diagram showing a VXLAN encapsulated packet. Left-to-right blocks in distinct pastel colors: "Outer Ethernet 14B" (blue), "Outer IP 20B" (green), "Outer UDP 8B" (orange), "VXLAN header 8B" (red, labeled "VNI = 24-bit"), "Inner Ethernet frame" (grey), "Payload" (light blue), "FCS". Total = 1550 bytes labeled below. An arrow points to the VXLAN header block with "16 million VNIs". Bold outlines, no shadows, educational style.
+
+  Save to: study-guides/Chapter 03 - VLANs and VDOMs/images/s4-interface-types.png
+  Prompt:  Flat colorful illustration: six icon cards arranged in a 2×3 grid, each representing a FortiGate interface type that can host VLANs: Physical (network plug icon), Aggregate/LACP (two cables merged), FortiLink (switch icon with FortiSwitch label), Hardware Switch (chip icon), Software Switch (CPU icon), Wireless SSID (wifi waves). Each card has a pastel background, bold label, and a small VLAN tag icon. No shadows, educational infographic style.
+
+  Save to: study-guides/Chapter 03 - VLANs and VDOMs/images/s5-hw-sw-compare.png
+  Prompt:  Flat colorful illustration: two-panel side-by-side comparison. Left panel: "Hardware Switch" — chip icon, labeled features: Intraswitch traffic (green check), No Wireless SSIDs (red X), STP supported (green check), Hardware offload (GPU chip icon). Right panel: "Software Switch" — CPU icon, features: Intraswitch traffic (green check, note "can be blocked"), Wireless SSIDs (green check), No STP (red X), CPU processed (warning icon). Bold outlines, pastel colors, clear labels, no shadows.
+
+
+  [subtopic-02-implement-enterprise-vdoms.html]
+
+  Save to: study-guides/Chapter 03 - VLANs and VDOMs/images/s1-vdom-overview.png
+  Prompt:  Flat colorful illustration: a FortiGate device (red box at top) partitioned into four stacked horizontal layers — "VDOM Global" (dark, top), "vdom: root" (blue), "vdom: VDOM1" (green), "vdom: VDOM2" (purple). Each layer has a small server/rack icon. Arrows labeled "management only" point to Global. A lock icon on Global reads "Super Admin only". Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 03 - VLANs and VDOMs/images/s2-vdom-global.png
+  Prompt:  Flat colorful illustration: two-panel diagram. Left panel: VDOM Global sidebar menu (dark background) showing Dashboard, Network, Security Profiles, System, Security Fabric, Log &amp; Report — with a red "X" callout box listing "No Policy &amp; Objects, No VPN, No User &amp; Authentication". Right panel: Resource allocation table with two rows — "Global Resources" (affects whole device, blue) and "VDOM Resources" (per-VDOM, green). Bold outlines, pastel colors, no shadows.
+
+  Save to: study-guides/Chapter 03 - VLANs and VDOMs/images/s3-global-objects.png
+  Prompt:  Flat colorful illustration: three stacked profile cards — Antivirus, Web Filter, Application Control — each showing two rows: "g-default" and "g-wifi-default" with a "Global" scope badge (earth/globe icon). An arrow from the Global VDOM points to all three cards simultaneously, labeled "one change = updates all VDOMs". A warning badge reads "Reserved prefix: g-". Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 03 - VLANs and VDOMs/images/s4-vdom-types.png
+  Prompt:  Flat colorful illustration: four side-by-side cards on a light background. Card 1 "Admin VDOM" (grey, lock icon) — "No user traffic, Management only, FortiGuard updates". Card 2 "Traffic NAT" (blue, shield icon) — "IP routing, Layer 3 firewall, NAT". Card 3 "Traffic Transparent" (green, ghost icon) — "Layer 2, No IP on interfaces, manageip required". Card 4 "LAN Extension" (purple, cable icon) — "IPsec + VXLAN, Network and VPN modules only". Bold outlines, pastel colors, no shadows.
+
+  Save to: study-guides/Chapter 03 - VLANs and VDOMs/images/a1-vdom-building-roles.png
+  Prompt:  Cartoon illustration in pastel style: a cross-section of a building with four labeled sections. Top-left: "Management Office" (grey, labeled "Admin VDOM") — a person at a desk with no customers. Top-right: "Storefront" (blue, labeled "Traffic NAT") — customers passing through, a door labeled "NAT". Bottom-left: "One-Way Mirror corridor" (green, labeled "Transparent VDOM") — people walking through unaware, inspector watching behind glass. Bottom-right: "Underground tunnel" (purple, labeled "LAN Extension") — cable car connecting to a satellite office labeled "Remote LAN". Bold outlines, no shadows, short text labels, educational infographic feel.
+
+  Save to: study-guides/Chapter 03 - VLANs and VDOMs/images/s5-vdom-use-cases.png
+  Prompt:  Flat colorful illustration: five horizontal scenario cards stacked vertically. Each card has a scenario number, name, VDOM type badge, and a small network topology icon. UC1: Admin VDOM (grey, management-only). UC2: Traffic NAT (blue, LAN+Internet). UC3: Inter-VDOM routing (two VDOMs connected by a virtual link arrow). UC4: Traffic Transparent (green, inline between two network segments). UC5: LAN Extension (purple, FortiExtender cable). Pastel palette, bold outlines, no shadows.
+
+
+  [subtopic-03-inter-vdom-routing.html]
+
+  Save to: study-guides/Chapter 03 - VLANs and VDOMs/images/s1-inter-vdom-use-case.png
+  Prompt:  Flat colorful illustration: vertical stack — VDOM Global (dark bar, top), below it "vdom: root" (blue box, connected to an internet cloud on the right via a "port2" arrow), below root "vdom: VDOM1" (green box, labeled "No internet access"). A dashed curved arrow labeled "Inter-VDOM Link" connects VDOM1 to root on the left side. A laptop icon below VDOM1 with "Internet access" arrow pointing up through the link to root then to internet. Pastel palette, bold outlines, no shadows, educational style.
+
+  Save to: study-guides/Chapter 03 - VLANs and VDOMs/images/a1-vdom-link-hallway.png
+  Prompt:  Cartoon illustration in pastel style: top-down floor plan of a building. Left suite labeled "VDOM Root" (blue) — has a door to outside world (internet cloud). Right suite labeled "VDOM1" (green) — no outside door. Between them: a internal connecting door labeled "Inter-VDOM Link" with a small receptionist desk blocking it labeled "Firewall Policy". An arrow flows from VDOM1 through the internal door and out to the internet via root's external door. The external wall between VDOM1 and outside has a red "X No Internet" sign. Bold outlines, pastel colors, no shadows, educational infographic style.
+
+  Save to: study-guides/Chapter 03 - VLANs and VDOMs/images/s2-vdom-link-config.png
+  Prompt:  Flat colorful illustration: two-column form diagram. Left column "Interface 0 (VDOM_Link0)" — Virtual Domain dropdown showing "root", IP/Netmask "172.16.1.253/30". Right column "Interface 1 (VDOM_Link1)" — Virtual Domain dropdown showing "VDOM4", IP/Netmask "172.16.1.254/30". Below both: a legend showing the naming rule "Base Name + 0 = first VDOM, Base Name + 1 = second VDOM". A small table below shows the resulting interface list with type "VDOM Link Interface". Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 03 - VLANs and VDOMs/images/s3-routing-vdom-link.png
+  Prompt:  Flat colorful illustration: two side-by-side boxes — "VDOM Root" (blue) and "VDOM1" (green) — connected by a horizontal "VDOM_Link" bar in the middle. In the Root box: a routing table showing "10.1.0.0/24 → VDOM_Link0" and a policy shield icon labeled "Allow from VDOM_Link0". In the VDOM1 box: routing table showing "0.0.0.0/0 → VDOM_Link1" and a policy shield icon labeled "Allow to VDOM_Link1". Arrows showing traffic flow left-to-right and right-to-left. Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 03 - VLANs and VDOMs/images/s4-vdom-comparison.png
+  Prompt:  Flat colorful illustration: a four-row comparison table with colored row headers. Row 1 "Admin" (grey): No traffic X, 1 max, Management network. Row 2 "Traffic NAT" (blue): Traffic check, 10 default, ISFW/DCFW/NGFW/DEFW. Row 3 "Traffic Transparent" (green): Traffic check, 10 default, Anywhere layer 2. Row 4 "LAN Extension" (purple): Traffic check, 10 default, ISFW/NGFW/DEFW. Columns: "Enable", "Traffic", "Default VDOMs", "Usage". Each cell has colored badges. Pastel palette, bold outlines, no shadows, educational style.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Chapter 04 - High Availability
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [subtopic-01-configure-ha-clusters.html]
+
+  Save to: study-guides/Chapter 04 - High Availability/images/s1-ha-requirements.png
+  Prompt:  Flat colorful illustration: two FortiGate devices side by side with a checklist overlay showing matching model, firmware, license, hard drive, and operating mode icons. Pastel palette (teal/coral/cream), bold outlines, minimal text labels, educational infographic feel. No shadows, no gradients.
+
+  Save to: study-guides/Chapter 04 - High Availability/images/s2-primary-election.png
+  Prompt:  Flat colorful illustration: two side-by-side diamond flowcharts labeled "Override Disabled" and "Override Enabled". Each shows decision boxes in teal for: monitored ports, HA uptime/priority, priority/HA uptime, serial number. Bold outlines, pastel palette, arrow connectors, minimal text labels. Educational infographic style.
+
+  Save to: study-guides/Chapter 04 - High Availability/images/s3-heartbeat-sync.png
+  Prompt:  Flat colorful illustration: two FortiGate boxes connected by two links labeled "Heartbeat Link" and "Session Sync Link". Above the heartbeat link, show packets labeled 0x8890 (heartbeat), 0x8891 (data sync), 0x8893 (config sync) in different colors. Bold outlines, pastel palette, minimal text. Educational infographic.
+
+  Save to: study-guides/Chapter 04 - High Availability/images/s4-virtual-mac.png
+  Prompt:  Flat colorful illustration: two-panel diagram. Left panel shows "Primary FortiGate" with virtual MAC badges on each port. Right panel shows "Failover" arrow and "New Primary" with same MAC badges, plus a "Gratuitous ARP" broadcast packet labeled. Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 04 - High Availability/images/a1-relay-race-mac.png
+  Prompt:  Cartoon flat illustration: relay race track with two runners. First runner labeled "Primary FortiGate" passing a baton labeled "Virtual MAC 00:09:..." to second runner labeled "New Primary". A scoreboard (switch) in the background shows the MAC table updating. Announcer character broadcasting "Gratuitous ARP!". Pastel palette, bold outlines, short text labels, no shadows.
+
+  Save to: study-guides/Chapter 04 - High Availability/images/s5-active-active.png
+  Prompt:  Flat colorful illustration: Client on left, Primary FortiGate in center-top, Secondary FortiGate in center-bottom, Server on right. Arrows showing all traffic arriving at primary, primary forwarding some sessions to secondary via dashed arrow (labeled 0x8891), secondary responding back through primary. Round-robin labels on sessions. Pastel palette, bold outlines.
+
+
+  [subtopic-02-fgcp-and-fgsp.html]
+
+  Save to: study-guides/Chapter 04 - High Availability/images/s1-virtual-clustering.png
+  Prompt:  Flat colorful illustration: two FortiGate devices side by side. Each device shows two VDOM boxes (VDOM A in teal, VDOM B in coral). Left device shows VDOM A labeled "Primary" (bright) and VDOM B labeled "Secondary" (dim). Right device shows VDOM A "Secondary" (dim) and VDOM B "Primary" (bright). Arrow between devices labeled "Active-Passive HA". Bold outlines, pastel palette, no shadows.
+
+  Save to: study-guides/Chapter 04 - High Availability/images/s2-fgsp-topology.png
+  Prompt:  Flat colorful illustration: internal network on left feeding into an external load balancer, which connects to two FortiGate peer devices (Peer_1 and Peer_2) labeled with IP addresses. Peer devices connect to a second load balancer and then to the internet on the right. A dashed double-headed arrow between peers labeled "Session Sync". Bold outlines, pastel palette, teal/coral colors, minimal text.
+
+  Save to: study-guides/Chapter 04 - High Availability/images/a1-fgsp-relay-team.png
+  Prompt:  Cartoon flat illustration: a relay race track with a "Coach" character (labeled "External Load Balancer") sending runners labeled "Peer_1" and "Peer_2" FortiGate devices. Each runner carries a clipboard labeled "Session Table". A double-headed sync arrow between the two runners. Bold outlines, pastel teal/coral palette, minimal text labels, no shadows.
+
+  Save to: study-guides/Chapter 04 - High Availability/images/s3-session-sync.png
+  Prompt:  Flat colorful illustration: a two-column table-style infographic. Left column "Session Type" lists: TCP (teal, default), IPsec (teal, default), UDP (coral, needs config), ICMP (coral, needs config), NAT (coral, needs config), Expectation (coral, needs config). Right column shows CLI commands in dark boxes. Bold outlines, pastel palette, minimal text.
+
+  Save to: study-guides/Chapter 04 - High Availability/images/s4-asymmetric-traffic.png
+  Prompt:  Flat colorful illustration: two-panel layout. Left panel shows Layer 2 topology with FGT_1 and FGT_2 connected via switch, return traffic arrow from FGT_2 to FGT_1 labeled "MAC forward". Right panel shows Layer 3 topology with FGT_2 sending UDP-encapsulated packet to FGT_1 via router labeled "UDP tunnel". Pastel palette, bold outlines, minimal text.
+
+  Save to: study-guides/Chapter 04 - High Availability/images/s5-fgcp-fgsp-compare.png
+  Prompt:  Flat colorful illustration: two-column comparison infographic. Left column "FGCP" with teal header showing: 2-4 devices, native load balancing, native config sync, internal heartbeat. Right column "FGSP" with coral header showing: 2-16 peers, external load balancer, optional config sync, Layer 3 peer comms. Checkmarks and X marks. Pastel palette, bold outlines.
+
+
+  [subtopic-03-vrrp.html]
+
+  Save to: study-guides/Chapter 04 - High Availability/images/s1-vrrp-overview.png
+  Prompt:  Flat colorful illustration: internal network on left connected via switch to two FortiGate devices labeled "Primary VRRP Router" and "Backup VRRP Router". Both connect to a shared Virtual IP address badge floating above them. A VRRP-compatible router is also shown in the group. Right side connects to Internet. Pastel palette, bold outlines, minimal text, no shadows.
+
+  Save to: study-guides/Chapter 04 - High Availability/images/s2-vrrp-election.png
+  Prompt:  Flat colorful illustration: primary FortiGate on left sending green VRRP advertisement packets toward backup FortiGate on right. Red X on primary's internet link. Backup device now showing "Primary" badge. Destination monitor arrow from primary pointing to 8.8.8.8 with failed connection. Pastel palette, bold outlines, minimal text.
+
+  Save to: study-guides/Chapter 04 - High Availability/images/a1-vrrp-heartbeat.png
+  Prompt:  Cartoon flat illustration: doctor character (labeled "Backup FortiGate") listening to a stethoscope on a patient labeled "Primary FortiGate". The patient's heartbeat line shows regular pulses labeled "VRRP Advertisement", then flatlines. Doctor picks up a "Virtual IP" crown. A second panel shows the patient's arm connected to the internet (labeled "vrdst 8.8.8.8 check"). Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 04 - High Availability/images/s3-vrrp-config.png
+  Prompt:  Flat colorful illustration: FortiGate device with a zoom-in box showing the interface configuration hierarchy: system interface → port10 → config vrrp → edit 200 → showing vrip, priority, adv-interval, vrdst parameters in a tree structure. Color-coded parameter names. Pastel palette, bold outlines, dark CLI boxes, minimal text.
+
+  Save to: study-guides/Chapter 04 - High Availability/images/s4-ha-protocol-compare.png
+  Prompt:  Flat colorful illustration: three-column comparison infographic. Columns labeled "FGCP" (teal), "FGSP" (coral), "VRRP" (purple). Rows: Redundancy capacity, Load balancing, Session sync, Config sync. Checkmarks (green) and X marks (red) in cells. Pastel palette, bold outlines, minimal text. Educational infographic style.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Chapter 05 - Dynamic Routing Protocols
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [subtopic-01-configure-ospf.html]
+
+  Save to: study-guides/Chapter 05 - Dynamic Routing Protocols/images/s1-ospf-overview.png
+  Prompt:  Flat colorful illustration: Five routers (R1–R5) connected with labeled-cost links, pastel blue nodes, bold outlines. Below the network diagram shows R2's OSPF shortest-path tree rooted at R2, with optimal paths highlighted in red to each destination network. Include network labels (Net 1–5). Educational infographic feel, no shadows, no gradients.
+
+  Save to: study-guides/Chapter 05 - Dynamic Routing Protocols/images/s2-ospf-areas.png
+  Prompt:  Flat colorful illustration: Central oval labeled "Area 0.0.0.0 (Backbone)" in blue. Three satellite ovals connected to it: Area 0.0.0.1 (stub, green), Area 0.0.0.2 (regular, gray), Area 0.0.0.3 (NSSA, amber). Router icons at boundaries labeled ABR (blue), ASBR (red), Backbone Router (dark). RIP cloud connected to ASBR. Bold outlines, pastel palette, educational infographic style, no shadows.
+
+  Save to: study-guides/Chapter 05 - Dynamic Routing Protocols/images/a1-ospf-hub-airport.png
+  Prompt:  Cartoon flat illustration in pastel style: Central airport hub (labeled "Area 0 / Backbone") connected by runways to four smaller regional airports. One regional airport has a "No International Flights" sign (stub area). One airport has a customs desk with a globe labeled "External Routes / ASBR". Bold outlines, pastel colors, short text labels, educational infographic feel, no shadows.
+
+  Save to: study-guides/Chapter 05 - Dynamic Routing Protocols/images/s3-ospf-network-types.png
+  Prompt:  Flat colorful illustration: Two-panel layout. Left panel: hub router connected directly to a single spoke via a labeled "Point-to-Point" link (bold green). Right panel: hub router connected to two spokes via a shared IPsec cloud labeled "net-device disabled / Point-to-Multipoint" (bold amber). Both panels show OSPF area labels. Bold outlines, pastel colors, no shadows, educational infographic style.
+
+  Save to: study-guides/Chapter 05 - Dynamic Routing Protocols/images/s4-ospf-filtering.png
+  Prompt:  Flat colorful illustration: Three-lane pipeline diagram. Lane 1 labeled "Access List" (blue) — simple filter, shows permit/deny boxes. Lane 2 labeled "Prefix List" (green) — filter with ge/le length operators added. Lane 3 labeled "Route Map" (amber) — shows match + set boxes indicating it can modify attributes. All three funneling into an OSPF routing table. Pastel palette, bold outlines, educational style, no shadows.
+
+  Save to: study-guides/Chapter 05 - Dynamic Routing Protocols/images/s5-ospf-advanced.png
+  Prompt:  Flat colorful illustration: Two-panel layout. Left panel shows ECMP: two routers (R1 and R3) in different OSPF areas both advertising the same external route to R2, with a green "ECMP" label and "RFC 1583" badge. Right panel shows virtual link: Area 0.0.0.0 on left, Area 0.0.0.3 in middle as transit, Area 0.0.0.10 on right disconnected from backbone; dashed line labeled "Virtual Link" bridges the transit area. Bold outlines, pastel palette, educational style, no shadows.
+
+
+  [subtopic-02-configure-bgp.html]
+
+  Save to: study-guides/Chapter 05 - Dynamic Routing Protocols/images/s1-bgp-overview.png
+  Prompt:  Flat colorful illustration: Three cloud-shaped AS bubbles. Left bubble: "ISP1 / AS 10". Right bubble: "ISP2 / AS 20". Center-bottom bubble: "AS 30" containing Router 1 and Router 2 with a yellow "IBGP" label between them. Red "EBGP" arrows connect AS 30 to both ISP clouds. An internet cloud above. Bold outlines, pastel palette, educational infographic style, no shadows.
+
+  Save to: study-guides/Chapter 05 - Dynamic Routing Protocols/images/s2-bgp-rib.png
+  Prompt:  Flat colorful illustration: Left-to-right pipeline flow. "BGP RX" arrow → blue box "RIB-in" → blue box "In filter" → blue box "Local RIB" → blue box "BGP info" → blue box "Out filter" → blue box "RIB-out" → "BGP TX" arrow. Below "Local RIB" a downward arrow to "Routing Table" with labels: "Connected/Static routes", "RIP", "OSPF", "IS-IS" feeding in. An orange circle "Redistribute" sits between Routing Table and Local RIB. Bold outlines, pastel blue/orange palette, educational style.
+
+  Save to: study-guides/Chapter 05 - Dynamic Routing Protocols/images/a1-bgp-rib-customs.png
+  Prompt:  Cartoon flat illustration in pastel style: A two-sided border crossing building. Left side: trucks labeled "BGP Updates" arrive at an "Inspection Booth" (In filter). An "Import Dock" on the side feeds in boxes labeled "Connected/Static Routes". In the middle: a warehouse labeled "Local RIB". Right side: trucks leave through an "Export Control" booth (Out filter) toward a "BGP Neighbor" cloud. A customs officer holds a stamp labeled "Route Map = Permit + Modify". Bold outlines, pastel colors, educational infographic, no shadows.
+
+  Save to: study-guides/Chapter 05 - Dynamic Routing Protocols/images/s3-bgp-ecmp-loopback.png
+  Prompt:  Flat colorful illustration: Two-panel layout. Left panel "ECMP": FortiGate (AS 6500) connected to a BGP peer (AS 6510) via two paths through ISP1 and ISP2; green "ECMP Load Balance" arrows on both paths with "ebgp-multipath enable" label. Right panel "Loopback Source": FortiGate with a Loopback Interface bubble (172.16.1.254) connected via dashed line labeled "update-source Loopback" to a BGP peer; a warning badge "multihop required". Bold outlines, pastel colors, educational style, no shadows.
+
+  Save to: study-guides/Chapter 05 - Dynamic Routing Protocols/images/s4-bgp-neighbor-group.png
+  Prompt:  Flat colorful illustration: Hub router at top center connected to two spoke routers below via ISP1 (red line, 10.1.0.0/24) and ISP2 (blue line, 10.2.0.0/24). Spoke 1 on left, Spoke 2 on right. A callout box near hub shows "neighbor-group: SpokeISP1" applied to ISP1 overlay, "neighbor-range: 10.1.0.0/24 → SpokeISP1". Bold outlines, pastel red/blue palette, educational style, no shadows.
+
+  Save to: study-guides/Chapter 05 - Dynamic Routing Protocols/images/s5-bgp-fortimanager.png
+  Prompt:  Flat colorful illustration: FortiManager GUI mockup. Left panel shows a BGP Template list with "HUB_BGP_Recommended" and "BRANCH_BGP_Recommended". Right panel shows a "Create New BGP Template" form with fields: Name (BGP_Spokes), Local As ($(AS_Spokes) — highlighted in amber as "metadata variable"), Router ID (172.16.1.$(BGP_Number_Spokes) — highlighted). Below shows a Neighbors table with an entry 172.16.2.1, Remote AS 65000. Bold outlines, pastel colors, educational style, no shadows.
+
+
+  [subtopic-03-route-redistribution.html]
+
+  Save to: study-guides/Chapter 05 - Dynamic Routing Protocols/images/s1-redistribution.png
+  Prompt:  Flat colorful illustration: Central router labeled "ASBR / Redistribution Point". Left cloud labeled "OSPF Domain" in blue. Right cloud labeled "BGP Domain" in green. Two arrows: one going right labeled "Redistribute OSPF → BGP" (green arrow) and one going left labeled "Redistribute BGP → OSPF" (blue arrow with a red X loop warning). Below: a "Route Map + Tag" badge as the loop-prevention tool. Bold outlines, pastel palette, educational style, no shadows.
+
+  Save to: study-guides/Chapter 05 - Dynamic Routing Protocols/images/s2-bgp-convergence.png
+  Prompt:  Flat colorful illustration: Central circle labeled "BGP Convergence" with four colored arrows pointing outward, each labeled: "Optimize RIB (in/out filters)" in blue, "Route Reflectors (reduce mesh)" in green, "BFD (fast failure &lt;1s)" in amber, "graceful-restart (HA failover)" in red. A cluster of router icons labeled "AS 6500" with BFD labeled node in the center. Bold outlines, pastel palette, educational infographic, no shadows.
+
+  Save to: study-guides/Chapter 05 - Dynamic Routing Protocols/images/a1-bgp-convergence-airport.png
+  Prompt:  Cartoon flat illustration in pastel style: Four-panel airport scene. Top-left: large "Master Flight Board" labeled "BGP RIB" with multiple connecting displays. Top-right: A gate door rapidly opening and closing labeled "Port Flapping" with cascading update arrows to all boards. Bottom-left: A filtered board showing only relevant local flights labeled "Inbound Filter / RIB Optimization". Bottom-right: A central hub display (Route Reflector) feeding smaller terminal displays — fewer connections than a full mesh. Bold outlines, pastel colors, educational style, no shadows.
+
+  Save to: study-guides/Chapter 05 - Dynamic Routing Protocols/images/s3-route-reflectors.png
+  Prompt:  Flat colorful illustration: Two-panel comparison. Left panel: "Before Route Reflectors" — six routers in AS 65000 all connected to each other in a full mesh (many crossing lines). Right panel: "After Route Reflectors" — same six routers but two central ones labeled "RR 1" and "RR 2" in blue circles, other four routers only connect to the RRs (star topology). Red dashed lines show reduced peering requirements. Bold outlines, pastel palette, educational style, no shadows.
+
+  Save to: study-guides/Chapter 05 - Dynamic Routing Protocols/images/s4-bfd.png
+  Prompt:  Flat colorful illustration: Two-panel layout. Left panel "Single-hop BFD": two directly connected routers with a green probe beam labeled "BFD &lt;1 second" between them and a BGP session arc above. Right panel "Multihop BFD": three routers in a chain; BFD probe shown as a dashed green beam traversing all three, with a "multihop-template" badge. Bold outlines, pastel green/amber palette, educational style, no shadows.
+
+  Save to: study-guides/Chapter 05 - Dynamic Routing Protocols/images/s5-graceful-restart.png
+  Prompt:  Flat colorful illustration: Two-panel timeline. Left panel "Without graceful-restart": HA cluster fails over → BGP session drops → peer removes routes → traffic blackhole (red X). Right panel "With graceful-restart": HA cluster advertises "going offline" → peer marks routes "stale but valid" → new primary reconnects → routes refreshed (green checkmark, traffic continues). Time arrow shows shorter interruption with graceful-restart. Bold outlines, pastel red/green palette, educational style, no shadows.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Chapter 06 - Security Profiles
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [subtopic-01-ssl-ssh-inspection.html]
+
+  Save to: study-guides/Chapter 06 - Security Profiles/images/s1-ssl-tls-timeline.png
+  Prompt:  Flat colorful illustration: A horizontal timeline from 1995 to 2018. Six protocol version bubbles arranged left-to-right: SSL 2.0 (grey, crossed out), SSL 3.0 (grey, crossed out), TLS 1.0 (grey, crossed out), TLS 1.1 (light grey, crossed out), TLS 1.2 (green, recommended), TLS 1.3 (bright green, recommended). Above each bubble: the RFC number in a small tag. Below: the organization (Netscape vs IETF). A red "Deprecated" bar spans SSL 2.0 to TLS 1.1. Pastel palette, bold outlines, minimal text, no shadows.
+
+  Save to: study-guides/Chapter 06 - Security Profiles/images/s2-cert-vs-full.png
+  Prompt:  Flat colorful two-panel illustration: Left panel labeled "Certificate Inspection" — client and server connected by a single encrypted tunnel arrow passing through a FortiGate icon that reads the envelope label (SNI) but doesn't open it. Right panel labeled "Full Inspection" — client connects to FortiGate (one encrypted tunnel), FortiGate connects to server (second encrypted tunnel), a small padlock with an eye icon in the center. Bold pastel colors, no shadows, minimal labels.
+
+  Save to: study-guides/Chapter 06 - Security Profiles/images/a1-envelope-inspection.png
+  Prompt:  Cartoon flat illustration in pastel style: two side-by-side scenes. Left scene: a mail carrier (labeled "FortiGate") reading the address label on a sealed envelope (labeled "HTTPS traffic") — envelope stays sealed. Right scene: same mail carrier opening the envelope, reading a letter inside, then placing it in a new envelope. Bold outlines, pastel colors, minimal text labels, no shadows, educational infographic feel.
+
+  Save to: study-guides/Chapter 06 - Security Profiles/images/s3-sni-san.png
+  Prompt:  Flat colorful two-panel illustration: Left panel labeled "SNI" — a client sending a TLS Client Hello arrow to a server icon that hosts three domain bubbles (sample.com, case.com, example.com) on the same IP address; the Client Hello has a highlighted "SNI" tag. Right panel labeled "SAN" — a certificate document icon showing three domain names listed as Subject Alternative Names, all pointing to one server icon. Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 06 - Security Profiles/images/s4-port-mapping.png
+  Prompt:  Flat colorful illustration: A user icon on the left sending traffic labeled "SMTPS port 10587" through a FortiGate firewall icon in the center. Above the firewall: a panel showing SSL/SSH Inspection settings with "Protocol Port Mapping" enabled and SMTPS toggled on with port 10587. To the right: a mail server icon. A checkmark above the firewall indicates the traffic is inspected. Pastel palette, bold outlines, no shadows.
+
+
+  [subtopic-02-web-filter-app-control.html]
+
+  Save to: study-guides/Chapter 06 - Security Profiles/images/s1-web-filter.png
+  Prompt:  Flat colorful illustration: A user icon on the left making an HTTPS request. The request arrow passes through a FortiGate firewall icon in the center. Above the firewall: a "Web Filter Profile" panel showing static URL filter table with wildcard, regex, and simple URL entries. To the right: a FortiGuard cloud icon with a two-way arrow labeled "URL rating lookup." At the bottom: a FortiManager box labeled "local FDS." Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 06 - Security Profiles/images/s2-app-control.png
+  Prompt:  Flat colorful illustration: A FortiGate firewall icon in the center. On the left: multiple application icons (video camera, chat bubble, game controller) sending traffic with distinct wave patterns representing different transmission behaviors. Inside the firewall: a magnifying glass examining the patterns against an "Application Signatures" list. On the right: traffic sorted into labeled buckets (Allow, Block, Monitor). Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 06 - Security Profiles/images/s3-isdb.png
+  Prompt:  Flat colorful illustration: A database cylinder icon labeled "ISDB" in the center with rows showing IP ranges, port numbers, and protocol columns. On the left: service icons (Microsoft 365, Google, Fortinet-DNS) with arrows pointing into the database. On the right: a routing decision node labeled "SD-WAN Rules" and "Firewall Policy" branching off. No inspection magnifying glass — just IP+port matching at Layer 3/4. Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 06 - Security Profiles/images/a1-isdb-phonebook.png
+  Prompt:  Cartoon flat illustration in pastel style: Three scenes side by side. Scene 1: An open phone book labeled "ISDB" with entries showing service names, IP addresses, and port numbers. Scene 2: A call center operator (labeled "FortiGate") looking up a number in the book, no headset (not listening — no inspection). Scene 3: A routing board showing calls being redirected to different lines labeled "SD-WAN Path A" and "SD-WAN Path B." Bold outlines, pastel colors, minimal text, no shadows.
+
+  Save to: study-guides/Chapter 06 - Security Profiles/images/s4-three-tools-comparison.png
+  Prompt:  Flat colorful three-column comparison chart: Column headers "Web Filter," "Application Control," "ISDB." Rows: OSI Layer (7 / 7 / 3+4), Inspection (Flow+Proxy / Flow only / None), Profile type (Security Profile / Security Profile / Policy & Object), SD-WAN support (No / Yes with flag / Yes native), Database location (Cloud/FDS / Local / Local). Each cell color-coded green/amber/red by capability level. Pastel palette, bold outlines, no shadows.
+
+
+  [subtopic-03-integrate-ips.html]
+
+  Save to: study-guides/Chapter 06 - Security Profiles/images/s1-ips-profile.png
+  Prompt:  Flat colorful illustration: A FortiGate "Security Profiles > Intrusion Prevention" panel. Two rows: top row labeled "Filter" with Action=Block, Target=Client+Server, Status=Enabled — shown with a broad red net catching many signature icons. Bottom row labeled "Signature" with Action=Monitor, a single specific signature highlighted in a spotlight. Left: an attacker icon; right: a server/client icon pair. Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 06 - Security Profiles/images/s2-false-positive.png
+  Prompt:  Flat colorful two-panel illustration: Left panel labeled "False Positive — Traffic Blocked": hping3 arrow from Linux server hits FortiGate, big red X blocks it, Windows PC shows broken app. Right panel labeled "Solution — Signature Monitor": same Linux server, but now inside FortiGate there are two rules stacked: top rule highlighted in green (Signature=ICMP.Oversized.Packet, Action=Monitor), below it a grey rule (Filter=Block). Arrow passes through, Windows PC shows working app. Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 06 - Security Profiles/images/s3-attack-usecases.png
+  Prompt:  Flat colorful two-panel illustration: Left panel "PHP Code Injection": Windows laptop (attacker) sending an HTTPS request with PHP code embedded in the URL arrow to a Linux Ubuntu server. FortiGate in the middle with "Protecting SSL Server" enabled — a padlock with an eye icon. A "Secure Connection Failed" browser message shows the attack was blocked. Right panel "DNS Exfiltration": A malware-infected laptop sending DNS queries with encoded subdomains (JHCMQK.example.com) through FortiGate to an attacker-controlled name server. FortiGate has a "DNSExfiltrator" IPS signature tag highlighted in red blocking the query. Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 06 - Security Profiles/images/a1-dns-postcard.png
+  Prompt:  Cartoon flat illustration in pastel style: Three-scene horizontal panel. Scene 1: A hooded "attacker" figure writing a secret code on a postcard return address field labeled "JHCMQK.example.com" — the postcard body is blank. Scene 2: A postal sorting facility (labeled "Recursive DNS Server") passing the postcard along without reading the return address meaning. Scene 3: The attacker's mailbox (labeled "NS1.example.com") receiving the postcard, and the attacker decoding "JHCMQK = password" from the return address. Bold outlines, pastel colors, minimal text labels, no shadows, educational infographic feel.
+
+  Save to: study-guides/Chapter 06 - Security Profiles/images/s4-utm-placement.png
+  Prompt:  Flat colorful network topology illustration: A hierarchical diagram from top to bottom. Top: Internet cloud. Below: NGFW icon labeled "UTMs" with colored dots showing web filter, app control, IPS. Below NGFW: DCFW icon (also labeled UTMs). Below DCFW: two ISFW icons (labeled UTMs with smaller dots — partial profile). Bottom left: Remote site with DEFW icon (labeled "no NGFW native"). Bottom right: Another ISFW and DEFW pair. Color-coded connections showing traffic flows. Pastel palette, bold outlines, no shadows.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Chapter 07 - IPsec
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [subtopic-01-configure-ipsec-tunnels.html]
+
+  Save to: study-guides/Chapter 07 - IPsec/images/s1-topology-design.png
+  Prompt:  Flat colorful illustration split into four equal panels: top-left shows Site-to-Site with two FortiGate nodes connected by a single tunnel line over a cloud labeled "Internet"; top-right shows Hub-and-Spoke with one central hub node and four branch nodes each connected by a separate tunnel to the hub; bottom-left shows Dual Hub-and-Spoke with two hub nodes at center and branches connecting to both; bottom-right shows Full Mesh ADVPN with every node connected to every other node. Pastel palette, bold outlines, short labels, no shadows, educational infographic feel.
+
+  Save to: study-guides/Chapter 07 - IPsec/images/s2-dpd-selectors.png
+  Prompt:  Flat colorful illustration in two panels: left panel shows three rows each with HQ FortiGate on left, IPsec cloud in middle, Branch FortiGate on right — top row has green arrows labeled "On-demand", middle row has blue arrows labeled "On-idle", bottom row has gray dotted line labeled "Disabled"; right panel shows a Phase 2 selector table with rows listing local subnet, remote subnet, and example values. Pastel palette, bold outlines, educational infographic feel.
+
+  Save to: study-guides/Chapter 07 - IPsec/images/s3-tunnel-aggregation.png
+  Prompt:  Flat illustration showing two FortiGate boxes connected by two parallel tunnel lines labeled "Tunnel1" and "Tunnel2"; both tunnel lines converge into a single virtual interface labeled "IPSEC_AGG" on the left FortiGate. Below the diagram, a small table shows five load balancing algorithm names: round-robin, L3, L4, redundant, weighted-round-robin. Pastel blue and green palette, bold outlines, minimal text, educational infographic feel.
+
+  Save to: study-guides/Chapter 07 - IPsec/images/a1-tunnel-aggregation-highway.png
+  Prompt:  Cartoon flat illustration of a multi-lane highway: two parallel roads labeled "Tunnel 1" and "Tunnel 2" merge into a single road labeled "IPSEC_AGG". At the merge point stands a cartoon traffic cop holding a directional sign. On the dual-lane road, cars are labeled with different IP addresses. To the right of the merge, the single road continues toward a FortiGate device icon. One lane has a flashing orange cone labeled "Redundant / Standby". Pastel orange, blue, and green palette, bold outlines, short text labels, educational infographic feel, no shadows.
+
+  Save to: study-guides/Chapter 07 - IPsec/images/s4-overlapping-routes.png
+  Prompt:  Flat colorful illustration showing a central hub FortiGate connected to two spoke FortiGates on the right; both spokes have cloud labels reading "192.168.1.0/24" in red indicating conflict; arrows from each spoke point to the hub; at the hub, a decision diamond labeled "route-overlap?" branches into three options: "use-new", "use-old", "allow". Pastel palette, bold outlines, short labels, educational infographic feel.
+
+  Save to: study-guides/Chapter 07 - IPsec/images/s5-scep-enrollment.png
+  Prompt:  Flat colorful illustration showing a numbered flow diagram with 6 steps: Step 1 shows FortiGate icon generating a CSR with a dotted arrow; Step 2 shows CSR sent to FortiAuthenticator proxy icon; Step 3 shows FortiAuthenticator forwarding to CA server icon; Step 4 shows CA signing and returning certificate; Step 5 shows signed cert returned through FortiAuthenticator to FortiGate; Step 6 shows FortiGate with a green shield icon labeled "Operational use". Pastel blue and teal palette, numbered circles at each step, bold outlines, no shadows, educational infographic feel.
+
+
+  [subtopic-02-ike-and-phase-negotiation.html]
+
+  Save to: study-guides/Chapter 07 - IPsec/images/s1-ikev1-vs-ikev2.png
+  Prompt:  Flat colorful two-column comparison table illustration: left column header "IKEv1" in orange, right column header "IKEv2" in teal. Rows labeled: Encryption algorithms (DES/3DES/AES-CBC vs AES-GCM/ChaCha20P), DH groups (Group 1/2/5 vs Group 14/15/16/19/20), Authentication (PSK/Digital Sigs vs EAP/PSK/Digital Sigs), Integrity (HMAC-MD5/SHA1 vs HMAC-SHA2/AES-XCBC), Mode Config (checkmark both). Each row has a small icon. Pastel palette, bold outlines, educational infographic feel.
+
+  Save to: study-guides/Chapter 07 - IPsec/images/s2-dh-groups.png
+  Prompt:  Flat colorful illustration of a data table with four columns: DH Group number, Group Name, Key Length, Security Level. Rows include: Group 1 MODP 768 Weak (red cell), Group 2 MODP 1024 Moderate, Group 5 MODP 1536 Strong, Group 14 MODP 2048 Very Strong (green), Group 15 MODP 3072, Group 19 ECP 256 Strong Efficient (teal highlight), Group 20 ECP 384 Very Strong Efficient. An inset box on the left side shows a small elliptic curve diagram vs a prime number grid to illustrate MODP vs ECP. Pastel palette, bold outlines, educational infographic feel.
+
+  Save to: study-guides/Chapter 07 - IPsec/images/a1-modp-vs-ecp-safe.png
+  Prompt:  Cartoon flat illustration in two panels side by side: left panel shows a large old-fashioned combination safe labeled "MODP" with a combination dial showing many digits, a cartoon thief sweating while spinning the dial labeled "Must try millions of combos"; right panel shows a sleek modern biometric scanner labeled "ECP" with a fingerprint glyph, the same cartoon thief looking confused labeled "Fundamentally harder pattern". Below each panel: MODP label "Big key needed, linear difficulty growth" vs ECP label "Short key, exponential difficulty". Pastel orange and teal palette, bold outlines, no shadows, educational infographic feel.
+
+  Save to: study-guides/Chapter 07 - IPsec/images/s3-pfs-rekeying.png
+  Prompt:  Flat illustration in two panels: left panel labeled "PFS Enabled" shows Phase 1 key at top, then three independent DH arrows below each pointing to separate Phase 2 session keys labeled SA1, SA2, SA3 — none connected to each other; right panel labeled "PFS Disabled" shows Phase 1 key at top with a single derivation arrow branching into SA1, SA2, SA3 all linked to the same Phase 1 key. A red "compromised" icon over Phase 1 in right panel shows all SAs are at risk. Pastel green (left) and red-orange (right) color coding, bold outlines, educational infographic feel.
+
+  Save to: study-guides/Chapter 07 - IPsec/images/s4-fmg-ipsec-templates.png
+  Prompt:  Flat colorful illustration showing a 4-step numbered workflow from left to right: Step 1 labeled "Create & Assign Template" shows a template icon inside a Device Layer box; Step 2 labeled "Install Device Settings" shows a CLI Template box with arrow to FortiGate icon; Step 3 labeled "Create Zone" shows an ADOM box with zone interface; Step 4 labeled "Push Policy Package" shows a Policy Layer box with document icon. Arrows connect each step left to right. Hub and Spoke labels on top. Pastel teal, blue and orange palette, bold outlines, educational infographic feel.
+
+
+  [subtopic-03-ipsec-troubleshooting.html]
+
+  Save to: study-guides/Chapter 07 - IPsec/images/s1-fragmentation-mtu.png
+  Prompt:  Flat colorful illustration showing a left-to-right packet flow: Host sends a large blue packet labeled "TCP 1500B" through port1 into a FortiGate box; inside the FortiGate an MTU label reads "1400 bytes"; two smaller packets emerge from port2 — one labeled "1400B" and one labeled "100B" — traveling to a Server on the right. Below the FortiGate, a TCP acknowledgement arrow returns from Server to Host. Pastel blue and orange palette, bold outlines, clear size labels, educational infographic feel.
+
+  Save to: study-guides/Chapter 07 - IPsec/images/s2-df-bit-flags.png
+  Prompt:  Flat colorful illustration of the 3-bit IP flags field: three boxes in a row labeled bit 0 (Reserved, always 0, gray), bit 1 (DF - Don't Fragment, blue, with an X over a broken packet), bit 2 (MF - More Fragments, orange, with a packet chain icon). Below the bit field, two rows: first row "DF=1 MF=0" shows a single intact packet being blocked at a router with a drop icon and ICMP arrow going back; second row "DF=0 MF=1" shows a packet being split into multiple fragments with arrows continuing to destination. Pastel palette, bold outlines, educational infographic feel.
+
+  Save to: study-guides/Chapter 07 - IPsec/images/s3-pmtud-mtu-sizing.png
+  Prompt:  Flat colorful illustration in two panels: left panel shows a FortiGate pinging with DF bit set and a 1472-byte payload — green check and reply arrives; right panel shows same FortiGate pinging with 1500-byte payload — red X and "sendmsg failed" error appears. Below each panel, packet size breakdowns: "1472 data + 28 header = 1500 total — fits MTU" and "1500 data + 28 header = 1528 total — exceeds MTU". An MTU bar diagram sits between panels showing the 1500-byte limit line. Pastel green and red palette, bold outlines, educational infographic feel.
+
+  Save to: study-guides/Chapter 07 - IPsec/images/a1-pmtud-truck-bridges.png
+  Prompt:  Cartoon flat illustration of a road with three bridges at different heights. A truck is driving from left to right: at bridge 1 (tall clearance, labeled "Hop 1 MTU 9000") the truck passes easily; at bridge 2 (medium clearance, labeled "Hop 2 MTU 1500") the truck just fits; at bridge 3 (low clearance, labeled "Hop 3 MTU 1200") the truck is too tall and a red X appears. A bridge officer in a small booth holds a radio labeled "ICMP". An inset shows a second scenario where the officer's radio is crossed out (labeled "Firewall blocks ICMP") and an endless queue of oversized trucks labeled "PMTUD Black Hole". Pastel orange and teal palette, bold outlines, short labels, educational infographic feel.
+
+  Save to: study-guides/Chapter 07 - IPsec/images/s4-mss-fec.png
+  Prompt:  Flat colorful illustration in two panels: left panel shows a packet frame breakdown: Ethernet header (14B), IP header (20B), TCP header (20B), Payload labeled "TCP MSS" with a double-headed arrow; right panel shows FEC flow: sending FortiGate generates packets A, B, C, D plus a redundant green packet; receiving FortiGate receives A, X (lost/corrupted), C, D and the redundant packet; arrow shows reconstruction to A, B, C, D. Labels: "Lost in transit" over X, "Reconstructed" over recovered B. Pastel blue and green palette, bold outlines, educational infographic feel.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Chapter 08 - Auto-Discovery VPN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [subtopic-01-configure-advpn.html]
+
+  Save to: study-guides/Chapter 08 - Auto-Discovery VPN/images/s1-advpn-topology.png
+  Prompt:  Flat colorful illustration split into two panels. Left panel labeled "Traditional Hub-and-Spoke" shows a central hub node with three spoke nodes connected by dashed lines, all traffic arrows routing through the hub. Right panel labeled "ADVPN Full Mesh" shows the same hub and three spokes but with bold green arrows going directly between spokes, bypassing the hub. Pastel palette, bold outlines, minimal text labels, no shadows, educational infographic feel.
+
+  Save to: study-guides/Chapter 08 - Auto-Discovery VPN/images/a1-airport-hub-analogy.png
+  Prompt:  Cartoon illustration in pastel style: a central large airport terminal labeled "Hub FortiGate" with three smaller airport terminals labeled "Spoke 1", "Spoke 2", "Spoke 3". Dashed black arrows show initial traffic going through the hub. Bold green arrows then show direct flights between spokes bypassing the hub, labeled "Shortcut Tunnel". A small reservation-board labeled "Overlay Network" floats above the hub. Bold outlines, no shadows, flat pastel colors, educational infographic feel.
+
+  Save to: study-guides/Chapter 08 - Auto-Discovery VPN/images/s2-ikev2-comparison.png
+  Prompt:  Flat colorful illustration: three vertical swim-lanes labeled "IKEv1 Aggressive (6 msgs)", "IKEv1 Main Mode (9 msgs)", and "IKEv2 (4 msgs)". Each lane shows numbered message arrows going back and forth. IKEv2 lane is highlighted in green with a checkmark. A callout box on the IKEv2 lane says "network-id support". Pastel palette, bold outlines, no shadows, educational infographic feel.
+
+  Save to: study-guides/Chapter 08 - Auto-Discovery VPN/images/s3-hub-spoke-config.png
+  Prompt:  Flat colorful illustration: two side-by-side CLI terminal boxes. Left box labeled "Hub FortiGate" shows key config lines highlighted in red: ike-version 2, add-route disable, auto-discovery-sender enable. Right box labeled "Spoke FortiGate" shows: ike-version 2, auto-discovery-receiver enable, net-device enable. Arrows between them labeled "Shortcut Offer" and "Shortcut Accept". Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 08 - Auto-Discovery VPN/images/s4-overlay-network.png
+  Prompt:  Flat colorful illustration: a hub node connected to two spoke nodes. Two colored layers shown: a lower "Underlay" layer with ISP IP addresses (100.65.x.x) on each device, and an upper "Overlay" layer with private IP addresses (172.16.1.x) on the IPsec virtual interfaces. Arrows between spokes labeled "Shortcut Tunnel (underlay)" and "BGP routing (overlay)". Pastel palette, bold outlines, no shadows, educational feel.
+
+  Save to: study-guides/Chapter 08 - Auto-Discovery VPN/images/s5-non-advpn-spokes.png
+  Prompt:  Flat colorful illustration: a hub connected to two spokes. Left spoke (Spoke 1) has a FortiGate logo and shows green shortcut arrows to the hub and a label "ADVPN Shortcuts: YES". Right spoke (Spoke 2) has a generic router icon and shows a label "ADVPN Shortcuts: NO". A text box near Spoke 2 shows "Overlay_advertisement phase2 / add-route enable / dst-subnet 172.16.1.0/24". Pastel palette, bold outlines, no shadows.
+
+
+  [subtopic-02-advpn-shortcuts.html]
+
+  Save to: study-guides/Chapter 08 - Auto-Discovery VPN/images/s1-trigger-ondemand.png
+  Prompt:  Flat colorful illustration: a hub at the top connected to Spoke 1 (bottom left) and Spoke 2 (bottom right). A client device is to the left of Spoke 1. Numbered arrows show the data flow: 1) Client to Spoke 1 (unencrypted), 2) Spoke 1 to Hub (encrypted, blue dashed), 3) Hub to Spoke 2 (encrypted, blue dashed), 4) Spoke 2 to destination device (decrypted). Small config boxes show auto-discovery-sender on hub and auto-discovery-receiver on spoke. Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 08 - Auto-Discovery VPN/images/s2-shortcut-interchange.png
+  Prompt:  Flat colorful illustration: hub node at top, Spoke 1 at bottom left, Spoke 2 at bottom right. Six numbered arrows between nodes: 1) hub→Spoke1 labeled "Offer", 2) Spoke1→hub labeled "Query", 3) hub→Spoke2 labeled "Forward Query", 4) Spoke2→hub labeled "Reply + WAN IP (100.65.3.113)", 5) hub→Spoke1 labeled "Forward Reply", 6) Spoke1↔Spoke2 direct arrow labeled "IKE Negotiation". Pastel palette, bold outlines, no shadows, labels clearly visible.
+
+  Save to: study-guides/Chapter 08 - Auto-Discovery VPN/images/a1-matchmaker-shortcut.png
+  Prompt:  Cartoon illustration in pastel style: a party scene with three characters. Center character labeled "Hub (Matchmaker)" wears a bow tie and holds numbered message envelopes (1-5). Left character labeled "Spoke 1" looks eager. Right character labeled "Spoke 2" holds a business card. Final panel shows Spoke 1 and Spoke 2 shaking hands directly (step 6) while the matchmaker steps aside. Bold outlines, no shadows, flat pastel colors, numbered steps visible on the envelopes.
+
+  Save to: study-guides/Chapter 08 - Auto-Discovery VPN/images/s3-shortcut-established.png
+  Prompt:  Flat colorful illustration: hub at top (faded/greyed out), Spoke 1 and Spoke 2 at bottom with a bold green arrow directly between them labeled "Shortcut Tunnel (active)". A routing table excerpt shown near Spoke 1: "172.20.3.0/24 via 172.16.1.3 (HUB1-VPN1_0_0)". Hub still shows dashed lines to spokes but traffic arrow bypasses it. Overlay network cloud shown between spokes with IPs labeled. Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 08 - Auto-Discovery VPN/images/s4-sdwan-stickiness.png
+  Prompt:  Flat colorful illustration: hub at top connected to Spoke 1 (left) via ISP1 (blue line) and to Spoke 2 (right) via ISP2 and ISP3. Shortcut tunnel arrow shown between Spoke 1 and Spoke 2 via ISP3 (yellow line, locked). A warning callout says "Overlay Stickiness: shortcut locked to ISP3 path regardless of better options". A lock icon on the shortcut arrow. Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 08 - Auto-Discovery VPN/images/s5-advpn2-edge-discovery.png
+  Prompt:  Flat colorful illustration: hub at top, Spoke 1 and Spoke 2 at bottom. Edge discovery: bi-directional arrows between spokes labeled "WAN IP / Transport Group / Link Quality / Link Cost (every 5s)". Path management: a magnifying glass icon near Spoke 1 with a decision table showing ISP1, ISP2, ISP3 with quality scores. Best path arrow highlighted in green to Spoke 2. "No overlay stickiness" label. Pastel palette, bold outlines, no shadows.
+
+
+  [subtopic-03-advpn-with-bgp.html]
+
+  Save to: study-guides/Chapter 08 - Auto-Discovery VPN/images/s1-ibgp-hub.png
+  Prompt:  Flat colorful illustration: hub node at center with a "Route Reflector" crown icon. Three spoke nodes around it. Arrows from each spoke to hub labeled "Spoke route received". Arrows from hub to all other spokes labeled "Route reflected to peers". A "neighbor-range 172.16.1.0/24" label on the hub. Split-horizon rule shown crossed out with an X. Pastel palette, bold outlines, no shadows, educational infographic feel.
+
+  Save to: study-guides/Chapter 08 - Auto-Discovery VPN/images/a1-route-reflector-memo.png
+  Prompt:  Cartoon illustration in pastel style: an office setting. Center character labeled "Hub (Route Reflector)" sits at a manager's desk with a crown. Three desk characters around labeled "Spoke 1", "Spoke 2", "Spoke 3". Spoke 1 sends a memo envelope to the hub. The hub's character then shows three copies of the memo being sent to Spokes 2 and 3. A crossed-out direct arrow between Spoke 1 and Spoke 2 labeled "iBGP Split-Horizon blocks this". Bold outlines, flat pastel colors, no shadows.
+
+  Save to: study-guides/Chapter 08 - Auto-Discovery VPN/images/s2-spoke-bgp.png
+  Prompt:  Flat colorful illustration: two side-by-side CLI terminal boxes labeled "Spoke 1 BGP" and "Spoke 2 BGP". Each shows: set as 65100, set router-id (172.16.1.2 and 172.16.1.3), single neighbor "172.16.1.1" (hub), network prefix (172.20.2.0/24 and 172.20.3.0/24). Hub node shown at top receiving routes from both spokes. Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 08 - Auto-Discovery VPN/images/s3-multiregion-ebgp.png
+  Prompt:  Flat colorful illustration: two regional clouds side by side. Left cloud labeled "Region 1 / AS 65100 / 172.16.1.0/24" with Hub A and two spokes. Right cloud labeled "Region 2 / AS 65200 / 172.16.2.0/24" with Hub B and two spokes. Bold eBGP arrow between Hub A and Hub B labeled "eBGP + attribute-unchanged next-hop + multihop". iBGP arrows within each region labeled "iBGP route-reflector". Cross-region shortcut arrows between spokes shown as green dashed lines. Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 08 - Auto-Discovery VPN/images/s4-bgp-loopback.png
+  Prompt:  Flat colorful illustration: two panels side by side. Left panel labeled "Without Loopback": hub connected to Spoke 1 and Spoke 2 with three separate BGP arrows per spoke (ISP1, ISP2, ISP3 overlay IPs). Label "9 BGP peers". Right panel labeled "With Loopback": same hub and spokes but each spoke has one loopback icon and a single BGP arrow. Label "3 BGP peers". Scale comparison arrows show left=complex, right=simple. Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 08 - Auto-Discovery VPN/images/s5-fortimgr-templates.png
+  Prompt:  Flat colorful illustration: FortiManager GUI mockup with two panels. Left panel shows "IPsec Templates" list with HUB_IPsec_Recommended and BRANCH_IPsec_Recommended. Right panel shows an "Activate ADVPN" form with "Enable ADVPN" toggle highlighted in blue, and fields for Outgoing Interface, Hub Start IP, Port Dst IP. A "Preview CLI Configuration" button shown. Pastel palette, bold outlines, no shadows, GUI-style illustration.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Chapter 09 - Security Fabric
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [subtopic-01-configure-security-fabric.html]
+
+  Save to: study-guides/Chapter 09 - Security Fabric/images/s1-sf-overview.png
+  Prompt:  Flat colorful illustration: FortiOS firewall icon at center of a circular hub, six sectors radiating outward labeled Network Access, Fabric Management Center, Open Fabric Ecosystem, Cloud Infrastructure, Applications, Security Operations, Secure WLAN/LAN. Each sector connected by bold arrows. Pastel palette (coral, teal, slate), bold outlines, no shadows, educational infographic style.
+
+  Save to: study-guides/Chapter 09 - Security Fabric/images/s2-logging.png
+  Prompt:  Flat illustration: left-to-right flow, Client-1 laptop → ISFW box → NGFW box → DCFW box → Corporate File Server, with FortiAnalyzer appliance below connected to all three FortiGates by dashed arrows. ISFW labeled "creates traffic log". NGFW labeled "adds NAT log". DCFW labeled "adds UTM/IPS log". FortiAnalyzer labeled "correlates all". Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 09 - Security Fabric/images/s3-fortindr.png
+  Prompt:  Flat illustration: numbered sequence 1–5, left to right: (1) laptop downloads suspicious file from internet cloud; (2) FortiGate firewall holds session, shown as pause icon; (3) file sent to FortiNDR brain icon; (4) FortiNDR returns verdict (green checkmark or red X); (5) FortiGate releases file or terminates session. Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 09 - Security Fabric/images/s4-fortinac.png
+  Prompt:  Flat illustration: two-panel. Left panel: FortiNAC appliance icon. Center: three arrows labeled "Device IP address", "FortiNAC group", "Firewall tags" flowing right. Right panel: FortiGate firewall icon. Below both: user device laptop icon pointing to FortiNAC labeled "User logs in". Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 09 - Security Fabric/images/s5-saml.png
+  Prompt:  Flat illustration: root FortiGate firewall in center labeled "IdP (Identity Provider)". Three arrows pointing outward to: downstream FortiGate labeled "SP", FortiAnalyzer labeled "SP", FortiManager labeled "SP". Admin icon at top-left clicking "Sign in with Security Fabric". Single login badge icon showing "SSO". Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 09 - Security Fabric/images/a1-saml-hotel.png
+  Prompt:  Cartoon flat illustration: left side — hotel front desk clerk labeled "Root FortiGate (IdP)" handing keycard to admin figure. Right side — three doors labeled "Downstream FGT", "FortiAnalyzer", "FortiManager" with green checkmarks as keycard is inserted. Bottom caption: "Same browser session = one keycard opens all doors". Pastel palette, bold outlines, no shadows, educational infographic style.
+
+
+  [subtopic-02-fabric-connectors.html]
+
+  Save to: study-guides/Chapter 09 - Security Fabric/images/s1-connector-types.png
+  Prompt:  Flat illustration: two-column split panel. Left column labeled "Fabric Connectors" (coral background) showing FortiAnalyzer, EMS, Central Management icons. Right column labeled "External Connectors" (teal background) showing AWS cloud, Kubernetes wheel, FSSO figure, threat feed document icons. Both columns under a FortiGate umbrella at the top. Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 09 - Security Fabric/images/s2-external-feeds.png
+  Prompt:  Flat illustration: two-panel. Left: FortiGate pulling from external URI (labeled "External Feed - HTTP/HTTPS/STIX poll"). Right: external system pushing webhook to FortiGate REST API (labeled "Push API"). Center: FortiGate icon creating "Resource Object". Arrow from resource object to firewall policy icon labeled "Policy enforcement". Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 09 - Security Fabric/images/s3-sdn-connectors.png
+  Prompt:  Flat illustration: FortiGate in center. Left branch: "Public SDN" with AWS and GCP cloud icons connected by sync arrows. Right branch: "Private SDN" with Kubernetes wheel, VMware V-logo, SAP diamond connected by sync arrows. Below FortiGate: "Dynamic Address Objects" auto-updating. Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 09 - Security Fabric/images/a1-sdn-flight-board.png
+  Prompt:  Cartoon flat illustration: two-panel comparison. Left panel: confused traveler holding a crumpled paper map labeled "Static Address Object" while gates change around them. Right panel: same traveler confidently following a glowing live departure board labeled "SDN Connector" that auto-updates. Cloud icons (AWS, Kubernetes) feed into the board with arrows. Pastel palette, bold outlines, no shadows, educational infographic style.
+
+  Save to: study-guides/Chapter 09 - Security Fabric/images/s4-sso-identity.png
+  Prompt:  Flat illustration: user logs into Windows AD (left), FSSO agent reads event and forwards user-IP mapping to FortiGate (center), FortiGate applies identity-based policy (right, showing different rules for "Engineer" vs "Guest"). Arrow flow left to right. Pastel palette, bold outlines, no shadows.
+
+
+  [subtopic-03-automation-stitches.html]
+
+  Save to: study-guides/Chapter 09 - Security Fabric/images/s1-stitch-overview.png
+  Prompt:  Flat illustration: three sequential boxes connected by right-facing arrows. Box 1 (blue): lightning bolt icon labeled "Trigger — define the event condition". Box 2 (teal): gear icon labeled "Action — define the response". Box 3 (coral): chain link icon labeled "Stitch — bind trigger to action". Labels below each box: "Security Fabric > Automation > Trigger", "Security Fabric > Automation > Action", "Security Fabric > Automation > Stitch". Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 09 - Security Fabric/images/a1-stitch-home-automation.png
+  Prompt:  Cartoon flat illustration: three-panel. Left: motion sensor labeled "Trigger Object" with alarm bell. Center: smart home phone app showing "Turn on lights" and "Send alert" labeled "Action Objects". Right: chain/link icon labeled "Stitch — binds them together". Below: timeline showing "Motion detected → lights ON → 30s delay → alert sent". Pastel palette, bold outlines, no shadows, educational style.
+
+  Save to: study-guides/Chapter 09 - Security Fabric/images/s2-high-cpu.png
+  Prompt:  Flat illustration: vertical stitch builder UI. Top box: blue square icon "Trigger: High CPU (threshold 90%)". Arrow down. Middle box: cyan square ">_ Collect_Diagnostics_Action - CLI Script". Clock icon "30 second delay". Arrow down. Bottom box: email icon "Email_Diagnostics_Action - sends output via %%results%%". Text label "Sequential execution". Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 09 - Security Fabric/images/s3-config-backup.png
+  Prompt:  Flat illustration: left side — calendar/clock icon labeled "Schedule Trigger" with dropdown options "Once, Hourly, Daily, Weekly, Monthly". Arrow right to center: FortiGate icon with gear labeled "Automatic Backup (preconfigured action)". Arrow right to: document stack icon labeled "Configuration > Revisions" with timestamp "daemon_admin 2025/03/08 Autod backup by stitch". Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 09 - Security Fabric/images/s4-ioc-quarantine.png
+  Prompt:  Flat illustration: circular numbered flow. (1) Laptop labeled "FortiClient" with malicious site detected, sends log arrow. (2) FortiAnalyzer icon "discovers IoC, notifies FortiGate". (3) FortiGate "verifies endpoint, sends quarantine request to EMS". (4) FortiClient EMS "sends quarantine command to endpoint". (5) Laptop with red X "endpoint quarantines itself, blocks all traffic". Center: "FortiGate + FortiAnalyzer + FortiClient EMS + FortiClient" requirement list. Pastel palette, bold outlines, no shadows.
+
+  Save to: study-guides/Chapter 09 - Security Fabric/images/s5-stitch-deployment.png
+  Prompt:  Flat illustration: tree topology. Root FortiGate at top labeled "Stitch configured here only". Arrows pointing down to three leaf FortiGate boxes labeled "Stitch pushed to leaves". Text callout: "Root offline → leaf stitches keep running". Sequential vs Parallel toggle shown as two-button UI element. Pastel palette, bold outlines, no shadows.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Chapter 10 - Hardware Acceleration
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [subtopic-01-np-and-cp-processors.html]
+
+  Save to: study-guides/Chapter 10 - Hardware Acceleration/images/s1-spu-architecture.png
+  Prompt:  Flat colorful illustration: two-panel architecture diagram. Center: a CPU chip labeled "FortiOS CPU." Left side: NP chip labeled "Network Processor" with arrows showing packets flowing in from a network interface and out to a fast path. Right side: CP chip labeled "Content Processor" with arrows showing IPS/SSL tasks offloaded. Both NP and CP connect to CPU with double-headed arrows labeled "offload." Pastel palette (blue for NP, orange for CP, grey for CPU), bold outlines, minimal text, no shadows, educational infographic feel.
+
+  Save to: study-guides/Chapter 10 - Hardware Acceleration/images/s2-np7-offload.png
+  Prompt:  Flat colorful illustration: left-to-right conveyor belt metaphor. A packet enters from the left. First, it passes through a "CPU slow path" lane colored yellow — labeled "TCP 3-way handshake / UDP first packet." Then a fork: subsequent packets bypass the CPU and enter a green "NP7 fast path" lane at bottom, bypassing the CPU. Two lanes clearly labeled. At the end of the fast path, packet exits to the right interface. Bold outlines, pastel palette, no shadows, educational infographic style.
+
+  Save to: study-guides/Chapter 10 - Hardware Acceleration/images/s3-cp-offload.png
+  Prompt:  Flat colorful illustration: a CPU chip in the center with a "CP10" chip to its right. Three labeled arrows point from CPU to CP10: "SSL/TLS decrypt," "IPS pattern match," "Application ID." A fourth arrow (re-encrypt) points back from CP10 to CPU. Below: a lock icon represents SSL inspection. Pastel palette (orange for CP10, grey for CPU), bold outlines, minimal text, no shadows, educational infographic.
+
+  Save to: study-guides/Chapter 10 - Hardware Acceleration/images/s4-sp5-soc5.png
+  Prompt:  Flat colorful illustration: two-column comparison. Left column titled "Enterprise" shows two separate chips: NP7 (blue) and CP10 (orange). Right column titled "Entry/Mid-Range" shows a single chip SP5 (teal) containing both "NP light" and "CP light" sections divided by a dashed line. Arrow from each column points to a sample FortiGate model name. Pastel palette, bold outlines, no shadows, educational infographic.
+
+  Save to: study-guides/Chapter 10 - Hardware Acceleration/images/s5-np-direct-nturbo.png
+  Prompt:  Flat colorful illustration: two-panel side-by-side. Left panel: "Standard Architecture" — front ports → ISF (grey box) → NP7 → CPU. Right panel: "NP Direct" — front ports connect directly to NP7, ISF is crossed out with a red X. Below both: NTurbo diagram showing NP7 sending packets to IPS engine (CPU-based) via NTurbo driver then returning to NP7. Blue for NP7, yellow for ISF, green for IPS engine. Pastel palette, bold outlines, educational infographic style.
+
+  Save to: study-guides/Chapter 10 - Hardware Acceleration/images/a1-nturbo-highway.png
+  Prompt:  Cartoon illustration in pastel style: a wide highway labeled "NP7 Fast Path" with trucks labeled "Packets" driving on it. A short exit ramp loops off to a small building labeled "IPS Engine (Weigh Station)" where an officer inspects the truck. Another ramp leads back to the highway. City streets in the background labeled "CPU Slow Path" — much fewer vehicles, congested. NTurbo driver shown as a green on-ramp/off-ramp sign. Bold outlines, pastel palette (blue highway, yellow building, green ramps), no shadows, educational infographic style.
+
+
+  [subtopic-02-offloading-configuration.html]
+
+  Save to: study-guides/Chapter 10 - Hardware Acceleration/images/s1-vdom-link.png
+  Prompt:  Flat colorful illustration: two boxes at top labeled "VDOM A" (blue) and "VDOM B" (green). Below them, a large NP7 chip. Two virtual wire pairs labeled "npu_vlink0" and "npu_vlink1" connect each VDOM to the NP7. Traffic arrows show flow going from VDOM A, through NP7 (fast path), to VDOM B. A crossed-out CPU labeled "No CPU for offloaded traffic." Pastel palette, bold outlines, no shadows, educational infographic style.
+
+  Save to: study-guides/Chapter 10 - Hardware Acceleration/images/s2-dvlan-vxlan.png
+  Prompt:  Flat colorful illustration: Ethernet frame breakdown from left to right. Sections labeled: "Dest MAC" (grey), "Src MAC" (grey), "S-Tag 0x88A8" (orange, wider, labeled "Provider VLAN"), "C-Tag 0x8100" (blue, labeled "Customer VLAN"), "EtherType" (grey), "Payload" (green). Below the frame, a label "802.1AD (Q-in-Q)." NP7 chip icon with an arrow labeled "offloads double-tag processing." Pastel palette, bold outlines, no shadows, educational infographic.
+
+  Save to: study-guides/Chapter 10 - Hardware Acceleration/images/s3-ipsec-npu-flag.png
+  Prompt:  Flat colorful illustration: horizontal progression timeline. Four numbered stages: Stage 1 labeled "npu_flag=00" shows SA in CPU/kernel (grey). Stage 2 "npu_flag=01" shows outbound SA copied to NP (blue arrow pointing right to NP chip). Stage 3 "npu_flag=02" shows inbound SA copied (arrow pointing left back). Stage 4 "npu_flag=03" shows both SAs in NP (green checkmark). A separate red box shows "npu_flag=20 — Unsupported cipher, no offload possible." Pastel palette, bold outlines, educational infographic.
+
+  Save to: study-guides/Chapter 10 - Hardware Acceleration/images/s4-nturbo-ipsa.png
+  Prompt:  Flat colorful illustration: NP7 chip at top left sending packets via NTurbo arrows to multiple "IPS Engine" CPU cores. Each IPS engine box has a small arrow pointing right to a CP10 chip labeled "Pattern Matching (IPSA)." The CP10 offloads pattern matching, returning results to IPS engines. Two labels: "np-accel-mode = basic/none" near NTurbo arrows, "cp-accel-mode = basic/advanced/none" near IPSA arrows. Pastel palette, bold outlines, no shadows, educational infographic.
+
+  Save to: study-guides/Chapter 10 - Hardware Acceleration/images/s5-best-practices.png
+  Prompt:  Flat colorful illustration: three rows, each showing a firewall policy scenario. Row 1: "Flow-based only" → NP7 fast path (green checkmark). Row 2: "Proxy-based only" → CPU path (yellow warning). Row 3: "Mixed (flow + proxy)" → CPU path (red X, label "Never offloaded"). Each row shows a traffic arrow and the destination (NP chip vs CPU chip). Pastel palette, bold outlines, no shadows, educational infographic.
+
+
+  [subtopic-03-performance-monitoring.html]
+
+  Save to: study-guides/Chapter 10 - Hardware Acceleration/images/s1-fast-slow-path.png
+  Prompt:  Flat colorful illustration: left-to-right conveyor belt style. Input interface on the left sends a packet stream. Top lane (yellow, labeled "CPU Slow Path"): handles TCP 3-way handshake, policy lookup, session creation, FIN/RST teardown. Bottom lane (green, labeled "NP7 Fast Path"): handles established data packets — bypasses CPU, goes directly to egress interface on the right. A fork in the road at "Session Established?" decision point. Pastel palette, bold outlines, no shadows, educational infographic.
+
+  Save to: study-guides/Chapter 10 - Hardware Acceleration/images/a1-fast-path-airport.png
+  Prompt:  Cartoon illustration in pastel style: two airport customs lanes side by side. Left lane (yellow, slow): a full customs desk with an officer checking passports and bags, labeled "CPU Slow Path — First Packets, Session Setup." Right lane (green, fast): a simple badge scanner with people walking quickly through, labeled "NP Fast Path — Established Sessions." A sign at the entry says "First visit = full inspection. Trusted traveler = fast lane." A separate small panel shows a person saying goodbye (FIN/RST) heading back to the full inspection desk. Bold outlines, pastel palette, no shadows, educational infographic.
+
+  Save to: study-guides/Chapter 10 - Hardware Acceleration/images/s2-life-of-packet.png
+  Prompt:  Flat colorful illustration: three horizontal rows, each showing a different packet scenario. Row 1 labeled "Initial Session Packets" — full flow: interface → NP (ACL, HPE, IP check) → CPU kernel → UTM/NGFW → egress interface. Row 2 labeled "Offloaded Non-UTM" — short flow: interface → NP (IP check, IPsec, traffic shaping) → egress. All CPU and UTM stages greyed out with "skipped" label. Row 3 labeled "NTurbo/Flow-Based UTM" — medium flow: NP → IPS engine (CPU + IPSA) → NP → egress. Pastel palette, bold outlines, educational infographic.
+
+  Save to: study-guides/Chapter 10 - Hardware Acceleration/images/s3-session-list.png
+  Prompt:  Flat colorful illustration: a terminal/CLI window with two session list outputs. First session highlighted in green showing "npu info: offload=9/9" with a callout bubble labeled "NP7 accelerated — both directions." Second session highlighted in red showing "npu_state=0x000001 no_offload" and "no_ofld_reason: disabled-by-policy" with a callout bubble labeled "CPU slow path — policy has auto-asic-offload disabled." Both outputs on dark background, callout bubbles in pastel colors. Bold outlines, educational infographic.
+
+  Save to: study-guides/Chapter 10 - Hardware Acceleration/images/s4-proxy-utm.png
+  Prompt:  Flat colorful illustration: left-to-right packet flow. Stage 1: NP chip (blue) — ACL, IP integrity check, IPsec decrypt (labeled "NP handles even in proxy path"). Stage 2: IPS Engine (CPU, yellow) — single-pass IPS, application control, botnet check. Stage 3: FortiOS Proxy (CPU, red box) — VoIP, DLP, antispam, web filtering, antivirus. Stage 4 (optional): CP chip (orange) — SSL/TLS decrypt and re-encrypt (labeled "CP offloads SSL if deep inspection enabled"). Stage 5: Egress. Arrows connecting each stage. Pastel palette, bold outlines, educational infographic.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Total images: 159
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

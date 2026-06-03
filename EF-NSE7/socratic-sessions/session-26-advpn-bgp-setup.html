@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){if(sessionStorage.getItem('pt'))document.documentElement.style.opacity='0';})()</script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Session 26 — ADVPN with BGP Setup · EF-NSE7</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:#0a0101;color:#e8ddd5;line-height:1.6;transition:opacity .25s ease;opacity:1}
+:root{
+  --session-color:#52b4c4;
+  --bg:#0a0101;--surface:#140808;--border:#2a1515;
+  --text:#e8ddd5;--text-dim:#b09090;--muted:#7a6060
+}
+
+/* ── Reset & base ── */
+a{color:var(--session-color);text-decoration:none}
+a:hover{text-decoration:underline}
+p{margin-bottom:1rem}
+p:last-child{margin-bottom:0}
+
+/* ── Header ── */
+header{background:#1a0606;border-bottom:1px solid #2a1515;padding-bottom:2rem}
+.header-inner{max-width:1100px;margin:0 auto;padding:1.5rem 2rem 0}
+.breadcrumb{font-size:.8rem;color:var(--muted);margin-bottom:1rem}
+.breadcrumb a{color:var(--muted);text-decoration:none;transition:color .15s}
+.breadcrumb a:hover{color:var(--session-color)}
+.breadcrumb span{margin:0 .4rem;opacity:.5}
+.eyebrow{display:inline-flex;align-items:center;gap:.5rem;font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--session-color);margin-bottom:.6rem}
+.session-chip{background:rgba(82,180,196,.15);border:1px solid rgba(82,180,196,.3);border-radius:20px;padding:.2rem .7rem;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--session-color)}
+header h1{font-family:'Fraunces',serif;font-size:2.6rem;font-weight:700;color:#fff;line-height:1.15;margin-bottom:.6rem}
+header h1 em{color:var(--session-color);font-style:italic}
+header .tagline{color:var(--text-dim);font-size:1.05rem;max-width:600px;line-height:1.5}
+
+/* ── Story section ── */
+.story-section{background:linear-gradient(135deg,#0a1218,#080e12);border-top:3px solid var(--session-color);border-bottom:1px solid #2a1515;padding:3rem 0}
+.story-inner{max-width:1100px;margin:0 auto;padding:0 2rem}
+.story-label{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--session-color);margin-bottom:.75rem;opacity:.9}
+.story-section h2{font-family:'Fraunces',serif;font-size:1.9rem;font-weight:700;color:#fff;line-height:1.2;margin-bottom:1.5rem}
+.story-section p{color:#c8bab0;font-size:.97rem;line-height:1.75;max-width:820px}
+.story-section p+p{margin-top:1rem}
+
+/* ── Main grid ── */
+main{max-width:1100px;margin:0 auto;padding:2.5rem 2rem}
+.pr-grid{display:grid;grid-template-columns:1fr 300px;gap:2rem;align-items:start}
+@media(max-width:820px){.pr-grid{grid-template-columns:1fr}}
+
+/* ── Left column ── */
+.left-col{}
+.section-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.5rem;margin-bottom:1.5rem}
+.section-block h3{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:600;color:#fff;margin-bottom:.9rem;padding-bottom:.6rem;border-bottom:1px solid var(--border)}
+.section-block p{font-size:.93rem;color:var(--text-dim);line-height:1.7}
+.section-block p+p{margin-top:.75rem}
+
+/* ── Image placeholder ── */
+.img-placeholder{background:#0e0404;border:2px dashed #2a1515;border-radius:10px;min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;padding:2rem;margin-bottom:1.5rem;text-align:center}
+.img-placeholder .img-icon{font-size:2rem;opacity:.4}
+.img-placeholder .img-label{font-size:.8rem;color:var(--muted);max-width:380px;line-height:1.5}
+.img-placeholder .img-prompt{font-size:.75rem;color:#5a4040;font-style:italic;max-width:420px;line-height:1.5;margin-top:.25rem}
+
+/* ── Target questions ── */
+.questions-list{list-style:none;padding:0;margin:0}
+.questions-list li{display:flex;gap:.75rem;padding:.75rem 0;border-bottom:1px solid #1e0e0e;font-size:.92rem;color:var(--text-dim);line-height:1.6}
+.questions-list li:last-child{border-bottom:none}
+.q-num{flex-shrink:0;width:1.6rem;height:1.6rem;background:rgba(82,180,196,.12);border:1px solid rgba(82,180,196,.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:var(--session-color);margin-top:.1rem}
+
+/* ── Right sidebar ── */
+.sidebar{}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin-bottom:1.25rem}
+.card h4{font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;padding-bottom:.6rem;border-bottom:1px solid var(--border)}
+.detail-row{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;padding:.35rem 0;border-bottom:1px solid #1a0a0a;font-size:.85rem}
+.detail-row:last-child{border-bottom:none}
+.detail-key{color:var(--muted);font-size:.8rem}
+.detail-val{color:var(--text);font-weight:500;text-align:right;font-size:.83rem}
+.detail-val a{color:var(--session-color);font-size:.8rem}
+
+.prereq-list{list-style:none;padding:0;margin:0}
+.prereq-list li{display:flex;align-items:flex-start;gap:.5rem;padding:.4rem 0;font-size:.85rem;color:var(--text-dim);border-bottom:1px solid #1a0a0a}
+.prereq-list li:last-child{border-bottom:none}
+.prereq-list li::before{content:'·';color:var(--session-color);font-weight:700;margin-top:.05rem;flex-shrink:0}
+
+.notes-label{font-size:.78rem;color:var(--muted);margin-bottom:.4rem;display:block;font-weight:600;letter-spacing:.05em}
+textarea.notes-area{width:100%;background:#0e0606;border:1px solid #2a1515;border-radius:6px;color:var(--text);font-family:'Inter',sans-serif;font-size:.83rem;line-height:1.55;padding:.65rem .75rem;resize:vertical;min-height:90px;outline:none;transition:border-color .15s}
+textarea.notes-area::placeholder{color:#4a3030}
+textarea.notes-area:focus{border-color:rgba(82,180,196,.4)}
+.notes-gap{height:.85rem}
+
+/* ── Page nav ── */
+.page-nav{border-top:1px solid #2a1515;margin-top:2rem;padding:1.25rem 2rem;max-width:1100px;margin-left:auto;margin-right:auto;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
+.nav-link{display:flex;flex-direction:column;gap:.2rem;text-decoration:none;padding:.6rem .9rem;border:1px solid var(--border);border-radius:8px;background:var(--surface);transition:all .15s;max-width:200px}
+.nav-link:hover{border-color:var(--session-color);background:#1a0808}
+.nav-direction{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+.nav-title{font-size:.85rem;color:var(--text);font-weight:500}
+.nav-link.hub{align-items:center;text-align:center}
+.nav-link.hub .nav-title{color:var(--session-color)}
+
+/* ── Footer ── */
+footer{text-align:center;padding:2rem;font-size:.78rem;color:var(--muted);border-top:1px solid #1a0808;margin-top:1rem}
+</style>
+<style>
+/* ── Light theme override ── */
+body{background:#faf7f5;color:#1a0606}
+header{background:#fff;border-bottom-color:#e8d5cc}
+header h1,h1{color:#1a0606}
+header .tagline,header p.tagline{color:#7a5050}
+.breadcrumb a{color:#9a6060}
+.eyebrow-label{color:#9a6060}
+/* Cards and surfaces */
+.content-section,.sidebar-card,.copy-block,.session-card,
+details.how-to,.how-to,.img-placeholder{background:#fff;border-color:#e8d5cc}
+.copy-block-header{background:#fdf5f0;border-bottom-color:#e8d5cc}
+.copy-block pre{background:#fdf5f0;color:#4a2020}
+.how-to-body{background:#fff}
+.flow-box{background:#fdf5f0;border-color:#e8d5cc}
+.flow-chip{background:#f0e5e0;color:#7a5050}
+/* Sidebar */
+.sidebar-textarea{background:#fdf5f0;border-color:#e8d5cc;color:#3a2020}
+.sidebar-textarea::placeholder{color:#c09090}
+.sidebar-textarea:focus{border-color:var(--session-color)}
+.card-hint,.sidebar-hint{color:#9a6060}
+/* Typography — scoped away from story section */
+.chapter-name,.session-title,.content-section h2,.target-qs h2,
+.overview-block h2,.sidebar-card-title+h2{color:#1a0606}
+.sidebar-card-title,.copy-block-label,.prereqs-label,.img-label,
+.session-meta,.flow-box h4,.chapter-label,.progress-label,.detail-row .dl,
+.eyebrow-label{color:#9a6060}
+.chapter-name{color:#1a0606}
+.prereqs li,.prereq-list li,.detail-row .dv{color:#5a3030}
+.target-intro,.section-sub{color:#9a6060}
+.step-text strong{color:#1a0606}
+.step-text p,.how-to-body p{color:#5a3030}
+.overview-block p,.content-section p{color:#5a3030}
+/* Borders and dividers */
+.chapter-header{border-bottom-color:#e8d5cc}
+.detail-row{border-bottom-color:#f0e0d8}
+.detail-row .dl{color:#9a6060}
+.q-list li{color:#5a3030;border-bottom-color:#f0e0d8}
+.prereq-list li{border-bottom-color:#f0e0d8;color:#5a3030}
+.divider{border-top-color:#e8d5cc}
+/* Page nav */
+.page-nav{border-top-color:#e8d5cc}
+.nav-link{color:#9a6060;border-color:#e8d5cc}
+.nav-link:hover{color:var(--session-color);border-color:var(--session-color)}
+.nav-link.hub{color:#7a5050}
+.nav-disabled{color:#c0a8a0}
+footer{color:#9a7070;border-top-color:#e8d5cc}
+/* Progress and status */
+.days-badge{background:#fff;border-color:#e8d5cc}
+.progress-bar-bg{background:#f0ddd8}
+.status-none{background:#f5ecec;color:#9a7070}
+.status-started{background:#fdf5e0;color:#8a6a20}
+/* Buttons */
+.btn-prereading{background:#fdf5f0;border-color:#e8d5cc;color:#4a2020}
+.btn-prereading:hover{background:#f5e8e0;border-color:var(--session-color);color:#1a0606}
+.btn-sg{background:#faf5f5;border-color:#ede0d8;color:#7a5050}
+.btn-sg:hover{border-color:#c0a098}
+.btn-done-toggle{border-color:#e8d5cc;color:#9a7070}
+.btn-done-toggle:hover{border-color:var(--session-color);color:var(--session-color)}
+.btn-done-toggle.is-done{border-color:var(--green,#5ab288);color:var(--green,#5ab288);background:#f0f8f0}
+.session-card:hover{border-color:#c8a898}
+.session-card.done{opacity:.5}
+/* Image prompt */
+.img-prompt-text{background:#fdf5f0;border-color:#e8d5cc;color:#7a5050}
+.img-placeholder{border-color:#e8d5cc}
+.img-icon{opacity:.25}
+.sg-link{background:#fdf5f0;border-color:#e8d5cc}
+.sg-link:hover{background:#f5e8e0;border-color:var(--session-color)}
+/* Preserve story section darkness */
+.story-section{background:linear-gradient(135deg,#1a0a08,#120606)!important}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <nav class="breadcrumb">
+      <a href="../study-guides/nse7-ef-study-guide-hub.html">EF-NSE7 Hub</a>
+      <span>›</span>
+      <a href="index.html">Socratic Plan</a>
+      <span>›</span>
+      <span>Session 26</span>
+    </nav>
+    <div class="eyebrow">
+      <span class="session-chip">Session 26</span>
+      Chapter 08 — Auto-Discovery VPN
+    </div>
+    <h1>ADVPN with BGP — <em>Setup</em></h1>
+    <p class="tagline">Why BGP is the ideal routing protocol for ADVPN, and how to configure the hub-and-spoke BGP topology.</p>
+  </div>
+</header>
+
+<section class="story-section">
+  <div class="story-inner">
+    <div class="story-label">Before You Begin · Real-World Scenario</div>
+    <h2>The Manual Route Table That Couldn't Keep Up</h2>
+    <p>Stonebridge Logistics had spent eighteen months building a clean ADVPN overlay connecting 30 spoke locations across the continental United States. The network team was proud of the deployment: hub-and-spoke IPsec tunnels, shortcut formation configured correctly on every device, FortiManager managing policy centrally. They had chosen to use static routes for spoke prefix distribution — a decision made early in the project by an engineer who was comfortable with static routing and skeptical of adding BGP complexity to an already involved deployment. Each spoke had a static route on the hub pointing to that spoke's LAN prefix via the spoke's tunnel interface. Each spoke had static routes pointing to all other spokes' prefixes via the hub. It worked — for the 30 spokes that were online at launch. The problem became apparent when the growth phase began.</p>
+    <p>When 8 new branches went live simultaneously in a four-week window, the routing operations team faced a combinatorial problem: each new spoke needed a static route on the hub, and each existing spoke needed a static route pointing to each new spoke's LAN prefix. Thirty existing spokes times eight new prefixes equals 240 static route additions on existing devices, plus 8 new hub entries, plus routes on each new spoke for all 30 existing spokes plus the other 7 new spokes. The team used FortiManager to push the routes, but the prefix spreadsheet had errors — two of the eight new branch subnets had been entered incorrectly during the planning phase. The routes were pushed with wrong prefixes. Traffic to two of the eight new branches was silently black-holed at approximately 18 spokes each. Help desk tickets from branch managers accumulated for two days before the network team traced the source. Fixing the incorrect prefix entries and re-pushing took another four hours. The total impact window was 54 hours across multiple branch locations.</p>
+    <p>The post-incident review produced a single clear recommendation: replace the static routing model with BGP. With BGP, the hub would peer with each spoke and advertise all spoke prefixes automatically. A new branch coming online would establish a BGP session with the hub, advertise its local prefix, and the hub would immediately reflect that prefix to all other existing BGP-peered spokes. No manual intervention, no spreadsheets, no risk of entry errors. The BGP configuration on a new spoke would be identical to every other spoke — the same peer address, the same AS number, the same network statement. The routing team completed the BGP migration in a weekend maintenance window. The next wave of 12 new branches was onboarded without a single routing incident.</p>
+  </div>
+</section>
+
+<main>
+  <div class="pr-grid">
+
+    <!-- LEFT COLUMN -->
+    <div class="left-col">
+
+      <div class="section-block">
+        <h3>Overview</h3>
+        <p>BGP is the preferred routing protocol for ADVPN deployments because its topology model — explicitly configured peer relationships rather than link-state flooding or distance-vector broadcasts — aligns well with the hub-and-spoke overlay structure. In ADVPN, the hub FortiGate serves as the BGP focal point: every spoke forms a BGP session with the hub, not with each other. The hub receives each spoke's local prefix via BGP and advertises all spoke prefixes back to all other spokes. This is functionally a route reflector model: the hub reflects routes between peers that do not have direct BGP sessions with each other. The spokes do not need to form a full mesh of BGP sessions — the hub handles the redistribution centrally.</p>
+        <p>The choice between iBGP and eBGP in ADVPN depends on the AS numbering strategy. In iBGP deployments, hub and all spokes share a single AS number. iBGP requires either a full mesh of sessions between all BGP speakers or a route reflector — the hub naturally serves as the route reflector, making iBGP viable without full-mesh complexity. In eBGP deployments, each spoke is assigned a unique AS number and the hub is in a separate AS. eBGP does not have the iBGP loop-prevention restriction that prevents a BGP speaker from advertising iBGP-learned routes to other iBGP peers without a route reflector, so some engineers prefer eBGP for its simpler next-hop handling. Both designs are supported in FortiGate ADVPN; the NSE7 curriculum covers the iBGP route-reflector model as the primary design pattern.</p>
+        <p>A critical configuration element on the hub is the BGP neighbor definition for each spoke peer. The <code>set next-hop-self enable</code> directive on the hub's BGP neighbor configuration causes the hub to rewrite the BGP next-hop attribute for all routes it advertises to that spoke to be the hub's own ADVPN overlay IP. Without this, the BGP next-hop for a spoke's prefix as advertised from the hub might be the originating spoke's overlay IP — an address that the receiving spoke cannot reach directly without a shortcut. With next-hop-self, every spoke sees the hub as the BGP next-hop for all remote prefixes, ensuring traffic routes correctly via the hub until a shortcut is established. When shortcuts form, the routing layer must then update these next-hops — a topic covered in Session 27.</p>
+      </div>
+
+      <div class="img-placeholder">
+        <img src="images/session-26-advpn-bgp-setup.png" alt="Session 26 concept illustration" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 1rem;object-fit:cover;" onerror="this.style.display='none'">
+
+        <div class="img-icon">&#128444;</div>
+        <div class="img-label"><strong>Image Placeholder — Session 26</strong><br/>ADVPN with BGP hub-and-spoke setup diagram</div>
+        <div class="img-prompt">Flat illustration of ADVPN with BGP setup: hub FortiGate at top center with BGP peering session lines (dashed with BGP icon) going to 4 spoke FortiGates below. BGP UPDATE packets shown flowing from hub to spokes (route advertisement icons). Each spoke has a routing table showing routes learned via BGP. Hub labeled "Route Reflector" with a reflect symbol. Pastel teal/blue palette.</div>
+      </div>
+
+      <div class="section-block">
+        <h3>Target Questions</h3>
+        <p style="font-size:.83rem;color:var(--muted);margin-bottom:1rem;">These are the questions your Socratic session will explore. Read them before you start — they tell you what understanding to look for while reviewing the study guide.</p>
+        <ul class="questions-list">
+          <li><span class="q-num">1</span>Why is BGP preferred over OSPF as the routing protocol for ADVPN deployments?</li>
+          <li><span class="q-num">2</span>What BGP role does the hub play in ADVPN — what routes does it advertise, and to whom?</li>
+          <li><span class="q-num">3</span>What is the difference between using iBGP vs eBGP when connecting spokes to the hub in ADVPN?</li>
+          <li><span class="q-num">4</span>How is the BGP peer configured on a spoke when the hub IP is the ADVPN overlay address?</li>
+          <li><span class="q-num">5</span>Why must <code>set next-hop-self enable</code> often be configured on the hub BGP peer definition?</li>
+          <li><span class="q-num">6</span>What is a BGP route reflector — can the ADVPN hub serve as a route reflector for spokes?</li>
+          <li><span class="q-num">7</span>How are BGP sessions between hub and spoke affected when an ADVPN shortcut forms between two spokes?</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- RIGHT SIDEBAR -->
+    <aside class="sidebar">
+
+      <div class="card">
+        <h4>Session Details</h4>
+        <div class="detail-row"><span class="detail-key">Session</span><span class="detail-val">26</span></div>
+        <div class="detail-row"><span class="detail-key">Chapter</span><span class="detail-val">08 — Auto-Discovery VPN</span></div>
+        <div class="detail-row"><span class="detail-key">Format</span><span class="detail-val">Socratic (Claude-led)</span></div>
+        <div class="detail-row"><span class="detail-key">Est. time</span><span class="detail-val">25–35 min</span></div>
+        <div class="detail-row"><span class="detail-key">Study guide</span><span class="detail-val"><a href="../study-guides/Chapter 08 - Auto-Discovery VPN/subtopic-03-advpn-with-bgp.html">Open ↗</a></span></div>
+      </div>
+
+      <div class="card">
+        <h4>Prerequisites</h4>
+        <ul class="prereq-list">
+          <li>Sessions 14–15 (BGP required)</li>
+          <li>Sessions 24–25 (ADVPN required)</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h4>My Questions</h4>
+        <span class="notes-label">Capture questions before your session</span>
+        <textarea class="notes-area" id="myQs" placeholder="What am I unsure about going in?&#10;What confused me in the study guide?&#10;What do I want Claude to push me on?"></textarea>
+        <div class="notes-gap"></div>
+        <span class="notes-label">My Notes</span>
+        <textarea class="notes-area" id="myNotes" placeholder="Key concepts to remember...&#10;Things that clicked during pre-reading..."></textarea>
+      </div>
+
+    </aside>
+
+  </div>
+</main>
+
+<nav class="page-nav">
+  <a class="nav-link" href="session-25-advpn-shortcuts.html">
+    <span class="nav-direction">← Previous</span>
+    <span class="nav-title">Session 25</span>
+  </a>
+  <a class="nav-link hub" href="index.html">
+    <span class="nav-direction">Socratic Plan</span>
+    <span class="nav-title">Hub</span>
+  </a>
+  <a class="nav-link" href="session-27-advpn-bgp-routes.html">
+    <span class="nav-direction">Next →</span>
+    <span class="nav-title">Session 27</span>
+  </a>
+</nav>
+
+<footer>EF-NSE7 · Socratic Plan · Session 26 — ADVPN with BGP — Setup</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-pr-s26';
+['myQs','myNotes'].forEach(id=>{
+  const el=document.getElementById(id); if(!el)return;
+  const saved=localStorage.getItem(PAGE_KEY+'-'+id);
+  if(saved)el.value=saved;
+  el.addEventListener('input',()=>localStorage.setItem(PAGE_KEY+'-'+id,el.value));
+});
+window.addEventListener('load',()=>{document.body.style.opacity='1';if(sessionStorage.getItem('pt'))sessionStorage.removeItem('pt');});
+document.querySelectorAll('a[href]').forEach(a=>{
+  if(!a.getAttribute('href').startsWith('#'))a.addEventListener('click',()=>sessionStorage.setItem('pt','1'));
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Performance Monitoring — EF-NSE7 Ch10 Sub03</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#fff5f5;--surface:#ffffff;--surface-2:#fef2f2;--border:#f0c8c8;--border-dim:#fde8e8;
+  --text:#1a0606;--text-soft:#4a1212;--text-muted:#8a3a3a;
+  --red:#c0392b;--red-vivid:#e03e2d;--red-glow:rgba(192,57,43,0.07);--red-dim:#f8b4b4;
+  --red-deep:#7f1d1d;--red-light:#fef2f2;--red-border:#f8b4b4;
+  --green:#1a7c4a;--green-light:#d4f0e0;--green-border:#a7e0c0;
+  --amber:#b45309;--amber-light:#fef9c3;--amber-border:#fde68a;
+}
+html{scroll-behavior:smooth;}
+html.pt-init body{opacity:0;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+header{padding:48px 60px 36px;background:#1a0606;display:flex;align-items:flex-end;gap:32px;}
+.header-left{flex:1;}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);letter-spacing:0.08em;margin-bottom:12px;flex-wrap:wrap;}
+.breadcrumb a{color:#e87070;text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.breadcrumb-sep{color:rgba(232,112,112,0.35);}
+.header-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(232,112,112,0.1);border:1px solid rgba(232,112,112,0.25);padding:5px 14px;border-radius:20px;font-size:11px;color:#e87070;letter-spacing:0.08em;margin-bottom:14px;}
+.dot-live{width:6px;height:6px;background:#e87070;border-radius:50%;display:inline-block;animation:blink 2.4s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+header h1{font-family:'Fraunces',serif;font-size:44px;font-weight:700;line-height:1.0;color:#fff;margin-bottom:10px;}
+header h1 em{font-style:italic;font-weight:400;color:#e87070;}
+header p{font-size:13px;color:rgba(255,255,255,0.42);margin-top:10px;line-height:1.7;}
+.motivation-banner{padding:20px 60px;min-height:84px;display:flex;flex-direction:column;justify-content:center;border-bottom:1px solid var(--border);background:var(--surface);}
+.motivation-text{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--text);}
+.motivation-text em{font-style:italic;color:var(--red);}
+.motivation-sub{font-size:12px;color:var(--text-muted);line-height:1.7;margin-top:4px;}
+.top-panels{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+.top-panels .qpanel{border-bottom:none;border-right:1px solid var(--border);}
+.top-panels .qpanel-header{padding-left:32px;padding-right:32px;}
+.top-panels .qpanel-body{padding-left:32px;padding-right:32px;}
+.qpanel{background:var(--surface);}
+.qpanel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 20px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.qpanel-header:hover,.qpanel-header.open{background:var(--surface-2);}
+.qpanel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.qpanel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.qpanel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.qpanel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.qpanel-body{display:none;padding:0 20px 22px;}
+.qpanel-body.open{display:block;}
+.notes-panel{background:var(--surface);}
+.notes-panel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 32px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.notes-panel-header:hover,.notes-panel-header.open{background:var(--surface-2);}
+.notes-panel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.notes-panel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.notes-panel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.notes-panel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.notes-panel-body{display:none;padding:0 32px 22px;}
+.notes-panel-body.open{display:block;}
+.q-group{margin-bottom:16px;}
+.q-group-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+.q-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-dim);}
+.q-item:last-child{border-bottom:none;}
+.q-num{font-size:10px;font-weight:700;color:var(--red);min-width:16px;margin-top:2px;}
+.q-text{font-size:12px;color:var(--text-soft);line-height:1.5;flex:1;}
+.q-del{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 4px;margin-top:1px;}
+.q-del:hover{color:var(--red);}
+.no-questions{font-size:12px;color:var(--text-muted);padding:8px 0;}
+.btn-add-q{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-q:hover{opacity:0.85;}
+.section-nav{position:sticky;top:0;z-index:90;display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);padding:0 32px;overflow-x:auto;}
+.nav-tab{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:12px 18px;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--red);border-bottom-color:var(--red);}
+main{display:grid;grid-template-columns:1fr 320px;gap:0;align-items:start;max-width:1200px;margin:0 auto;padding:0;}
+.main-content{padding:36px 40px 60px 60px;}
+.sidebar{padding:32px 24px 60px 20px;position:sticky;top:57px;max-height:calc(100vh - 57px);overflow-y:auto;}
+.section-block{margin-bottom:48px;}
+.section-label{font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.section-block h2{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1.15;margin-bottom:16px;padding-left:16px;border-left:3px solid var(--red);}
+.section-block h2 em{font-style:italic;font-weight:400;color:var(--red);}
+.section-block p{font-size:14px;line-height:1.8;color:var(--text-soft);margin-bottom:14px;}
+.section-block p strong{color:var(--text);font-weight:600;}
+.section-block p em{color:var(--red);font-style:italic;}
+.section-block ul,.section-block ol{padding-left:22px;margin-bottom:14px;}
+.section-block li{font-size:14px;line-height:1.75;color:var(--text-soft);margin-bottom:4px;}
+.section-block li strong{color:var(--text);font-weight:600;}
+.callout{border-left:3px solid var(--red-border);background:var(--red-light);border-radius:0 10px 10px 0;padding:12px 18px;margin:16px 0;font-size:13.5px;line-height:1.65;color:var(--text-soft);}
+.callout strong{color:var(--text);}
+.callout-green{border-left-color:var(--green-border);background:var(--green-light);}
+.callout-amber{border-left-color:var(--amber-border);background:var(--amber-light);}
+.section-img-wrap{margin:0 0 20px;display:flex;flex-direction:column;align-items:center;}
+.section-img{width:260px;max-width:100%;border-radius:12px;cursor:zoom-in;transition:width 0.3s ease;border:1px solid var(--border);display:block;}
+.section-img.si-expanded{width:100%;cursor:zoom-out;border-radius:16px;}
+.si-placeholder{display:none;width:260px;max-width:100%;border:2px dashed var(--border);border-radius:12px;background:var(--surface-2);padding:14px 16px;flex-direction:column;align-items:flex-start;gap:8px;}
+.si-placeholder.si-show{display:flex;}
+.si-filename{font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+.code-block{background:#1a0606;border-radius:12px;padding:20px 24px;margin:16px 0;overflow-x:auto;}
+.code-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#e87070;margin-bottom:10px;}
+.code-block pre{margin:0;}
+.code-block code{font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:rgba(255,255,255,0.82);}
+.socratic-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:16px;border-top:3px solid var(--red);}
+.socratic-header{display:flex;align-items:center;gap:8px;margin-bottom:0;cursor:pointer;user-select:none;}
+.socratic-header::after{content:'▸ Expand';margin-left:auto;font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'Inter',sans-serif;}
+.socratic-block.soc-open .socratic-header{margin-bottom:10px;}
+.socratic-block.soc-open .socratic-header::after{content:'▾ Collapse';}
+.socratic-block:not(.soc-open) .socratic-insight,
+.socratic-block:not(.soc-open) .socratic-questions,
+.socratic-block:not(.soc-open) .answer-area{display:none;}
+.socratic-icon{font-size:17px;flex-shrink:0;}
+.socratic-label{font-size:9px;font-weight:700;letter-spacing:0.18em;color:var(--text-muted);}
+.socratic-insight{font-size:13px;color:var(--text-soft);line-height:1.75;margin-bottom:12px;border-left:3px solid var(--border);padding-left:12px;font-style:italic;}
+.socratic-questions{list-style:none;padding:0;margin:0;}
+.socratic-questions li{font-size:12.5px;color:var(--text);padding:7px 0 7px 22px;position:relative;border-bottom:1px solid var(--border-dim);line-height:1.6;}
+.socratic-questions li:last-child{border-bottom:none;}
+.socratic-questions li::before{content:'?';position:absolute;left:0;font-weight:700;font-size:12px;top:8px;color:var(--red);}
+.answer-area{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.answer-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.answer-textarea:focus{border-color:var(--text);}
+.answer-textarea:disabled{opacity:0.7;background:var(--surface-2);cursor:default;}
+.answer-buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.btn-add-answer{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-answer:hover:not(:disabled){opacity:0.85;}
+.btn-add-answer:disabled{opacity:0.5;cursor:default;}
+.btn-see-answer{background:var(--surface);color:var(--text-muted);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-see-answer:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-see-answer:not(:disabled){color:var(--red);border-color:var(--red);}
+.btn-see-answer:hover:not(:disabled){background:var(--red-glow);}
+.model-answers{margin-top:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.model-answer-item{padding:10px 0;border-bottom:1px solid var(--border-dim);}
+.model-answer-item:first-child{padding-top:0;}
+.model-answer-item:last-child{border-bottom:none;padding-bottom:0;}
+.model-answer-q{font-size:9px;font-weight:700;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:4px;}
+.model-answer-text{font-size:13px;color:var(--text-soft);line-height:1.7;}
+.mental-note-block{border-radius:10px;padding:12px 16px;margin:16px 0;display:flex;gap:10px;align-items:flex-start;background:rgba(192,57,43,0.07);border:1px solid var(--border);}
+.mental-note-block-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.mental-note-block-inner{flex:1;}
+.mental-note-block-label{font-size:9px;font-weight:700;letter-spacing:0.16em;color:var(--red);margin-bottom:3px;}
+.mental-note-block-text{font-size:13px;font-weight:600;line-height:1.55;color:var(--text);}
+.analogy-box{background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #b45309;border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0;}
+.analogy-label{display:flex;align-items:center;gap:6px;user-select:none;cursor:pointer;font-size:9px;font-weight:700;letter-spacing:0.16em;color:#b45309;margin-bottom:4px;}
+.analogy-label::after{content:'▾  Reveal illustration';margin-left:auto;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:none;opacity:0.75;}
+.analogy-label:hover::after{opacity:1;}
+.analogy-box.expanded > .analogy-label::after{content:'▴  Hide illustration';}
+.analogy-text{font-size:13px;color:#78350f;line-height:1.65;font-style:italic;}
+.analogy-box > .analogy-img{display:none;}
+.analogy-box.expanded > .analogy-img{display:block;}
+.analogy-img img{max-width:360px;width:100%;cursor:zoom-in;transition:max-width 0.25s ease;border-radius:8px;margin-top:10px;}
+.analogy-img img.zoomed{max-width:100%;cursor:zoom-out;}
+.prompt-toggle{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:10px;font-weight:600;letter-spacing:0.08em;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;text-transform:uppercase;}
+.prompt-toggle:hover{color:var(--text);border-color:var(--text);}
+.prompt-content{margin-top:10px;padding:10px 14px;background:rgba(0,0,0,0.04);border-radius:8px;font-size:11.5px;color:var(--text-muted);font-style:italic;line-height:1.65;text-align:left;}
+.prompt-content[hidden]{display:none;}
+.lesson-tools{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:40px;}
+.lesson-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.tool-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.tool-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.tool-textarea:focus{border-color:var(--red);}
+.tool-row{margin-top:8px;display:flex;gap:8px;}
+.sidebar-section{margin-bottom:28px;}
+.sidebar-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;}
+.ssnav{display:flex;flex-direction:column;gap:2px;margin-top:4px;}
+.ssnav-item{font-size:12px;color:var(--text-soft);padding:6px 10px;border-radius:6px;text-decoration:none;line-height:1.4;display:block;transition:background 0.15s,color 0.15s;}
+.ssnav-item:hover,.ssnav-item.active{background:var(--red-glow);color:var(--red);}
+.hub-link{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);margin-bottom:16px;transition:color 0.15s,border-color 0.15s,background 0.15s;}
+.hub-link:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);}
+.check-item{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;}
+.check-input{accent-color:var(--red);width:14px;height:14px;flex-shrink:0;cursor:pointer;}
+.check-label{font-size:12px;color:var(--text-soft);line-height:1.4;}
+.check-item:has(.check-input:checked) .check-label{color:var(--text-muted);text-decoration:line-through;}
+.quick-ref{background:#1a0606;border-radius:10px;padding:12px 16px;margin-bottom:8px;}
+.quick-ref-term{font-size:10px;font-weight:700;letter-spacing:0.12em;color:#e87070;margin-bottom:3px;text-transform:uppercase;}
+.quick-ref-def{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;}
+.page-nav{display:flex;border-top:2px solid var(--border);background:var(--surface);}
+.page-nav-btn{flex:1;display:flex;flex-direction:column;gap:4px;padding:16px 28px;text-decoration:none;transition:background 0.15s;cursor:pointer;}
+.page-nav-btn:hover:not(.page-nav-disabled){background:var(--surface-2);}
+.page-nav-prev{border-right:1px solid var(--border);}
+.page-nav-next{text-align:right;}
+.page-nav-disabled{opacity:0.3;pointer-events:none;}
+.page-nav-label{font-size:10px;font-weight:600;letter-spacing:0.14em;color:var(--text-muted);display:block;}
+.page-nav-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;color:var(--red);display:block;}
+footer{font-size:11px;letter-spacing:0.12em;color:var(--text-muted);text-transform:uppercase;padding:20px 60px;border-top:1px solid var(--border);}
+footer span{color:var(--red);}
+.img-caption{font-size:11px;color:var(--text-muted);text-align:center;margin-top:6px;line-height:1.4;font-style:italic;}
+.analogy-summary{font-style:normal;font-weight:600;color:#92400e;margin-bottom:10px;}
+.analogy-text ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;}
+.analogy-text li{padding-left:18px;position:relative;}
+.analogy-text li::before{content:'•';position:absolute;left:0;font-weight:700;color:#b45309;}
+.data-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;}
+.data-table th{background:#1a0606;color:#e87070;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:10px 14px;text-align:left;}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-soft);line-height:1.55;vertical-align:top;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:nth-child(even) td{background:var(--surface-2);}
+.data-table td strong{color:var(--text);font-weight:600;}
+.img-missing-msg{font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;}
+@media(max-width:1000px){main{grid-template-columns:1fr;}.sidebar{position:static;max-height:none;padding:0 40px 40px;}}
+@media(max-width:720px){header{padding:28px 24px 24px;}header h1{font-size:32px;}.motivation-banner{padding:16px 24px;}.main-content{padding:24px 24px 40px;}.section-nav{padding:0 16px;}.top-panels{grid-template-columns:1fr;}.top-panels .qpanel{border-right:none;border-bottom:1px solid var(--border);}.lesson-tools-grid{grid-template-columns:1fr;}footer{padding:16px 24px;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="breadcrumb">
+      <a href="../nse7-ef-study-guide-hub.html">EF-NSE7</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="index.html">Chapter 10 — Hardware Acceleration</a>
+      <span class="breadcrumb-sep">›</span>
+      Subtopic 03
+    </div>
+    <div class="header-eyebrow"><span class="dot-live"></span> Study Guide · EF-NSE7</div>
+    <h1>Performance <em>Monitoring</em></h1>
+    <p>Verify hardware offload is working — trace the life of a packet through fast and slow paths, read session list offload flags, and diagnose why sessions may not be accelerating.</p>
+  </div>
+</header>
+
+<div class="motivation-banner">
+  <div class="motivation-text">Configuring offload is only half the work — you must be able to <em>prove it is happening</em> and diagnose when it isn't.</div>
+  <p class="motivation-sub">The exam tests your ability to interpret diagnose sys session list output, identify the fast path vs. slow path, and explain the life-of-a-packet for different session types.</p>
+</div>
+
+<div class="top-panels">
+  <div class="qpanel" id="qpanel">
+    <button class="qpanel-header" onclick="toggleQPanel()" id="qpanel-header">
+      <span class="qpanel-title">MY QUESTIONS</span>
+      <span class="qpanel-count" id="qpanel-count">0</span>
+      <span class="qpanel-hint">— click to expand</span>
+      <span class="qpanel-chevron" id="qpanel-chevron">▾</span>
+    </button>
+    <div class="qpanel-body" id="qpanel-body"></div>
+  </div>
+  <div class="notes-panel" id="notes-panel">
+    <button class="notes-panel-header" onclick="toggleNotesPanel()" id="notes-panel-header">
+      <span class="notes-panel-title">MY NOTES</span>
+      <span class="notes-panel-count" id="notes-panel-count">0</span>
+      <span class="notes-panel-hint">— click to expand</span>
+      <span class="notes-panel-chevron" id="notes-panel-chevron">▾</span>
+    </button>
+    <div class="notes-panel-body" id="notes-panel-body"></div>
+  </div>
+</div>
+
+<nav class="section-nav" id="section-nav">
+  <a class="nav-tab active" href="#section-fast-slow-path">Fast vs. Slow Path</a>
+  <a class="nav-tab" href="#section-life-of-packet">Life of a Packet</a>
+  <a class="nav-tab" href="#section-session-list">Session List Diagnostics</a>
+  <a class="nav-tab" href="#section-proxy-utm">Proxy-Based UTM Flow</a>
+</nav>
+
+<main>
+  <div class="main-content">
+
+    <!-- ═══ SECTION 1 ═══ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · FAST VS. SLOW PATH</span>
+      </div>
+      <p class="socratic-insight">FortiGate uses the term "fast path" for NP-offloaded traffic and "slow path" for CPU-handled traffic. The terminology is relative — both paths deliver the same outcome (packet arrives at the destination), but the fast path does it without consuming CPU cycles. The critical insight is that the CPU <em>always</em> starts a session before the NP can take over.</p>
+      <ul class="socratic-questions">
+        <li>Why must the FortiGate CPU always process the first part of a session (TCP handshake or first UDP packet) even when NP offload is available? Why can't the NP start the session itself?</li>
+        <li>What happens to FIN and RST packets in an offloaded TCP session — does the NP handle them, or does the CPU?</li>
+      </ul>
+      <div class="answer-area" data-section="fast-slow-path">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">The CPU must start sessions because the NP has no IKE, no policy lookup engine, no user authentication, and no session management logic — those are kernel functions. The CPU performs stateful inspection/policy lookup, creates the session table entry, installs the session key into the NP's hardware table, and only then can the NP take over forwarding. The NP is a packet forwarder, not a session manager — it needs a session key already installed before it can act on any packet.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">FIN and RST packets are handled by the CPU, not the NP. These are session teardown signals that require the CPU to update the session table and release resources. The NP's job is to forward data packets within an established session — session lifecycle events (setup and teardown) always require CPU involvement regardless of whether the session is otherwise offloaded.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="section-fast-slow-path">
+      <div class="section-label">SECTION 01</div>
+      <h2>Fast Path vs. <em>Slow Path</em> — The Two Routes</h2>
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s1-fast-slow-path.png" alt="FortiGate fast path NP7 vs slow path CPU diagram" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg" style="display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;">📷 <strong>images/s1-fast-slow-path.png</strong></div>
+        <p class="img-caption">CPU slow path (yellow) for session setup + teardown; NP7 fast path (green) for established session data packets.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration: left-to-right conveyor belt style. Input interface on the left sends a packet stream. Top lane (yellow, labeled "CPU Slow Path"): handles TCP 3-way handshake, policy lookup, session creation, FIN/RST teardown. Bottom lane (green, labeled "NP7 Fast Path"): handles established data packets — bypasses CPU, goes directly to egress interface on the right. A fork in the road at "Session Established?" decision point. Pastel palette, bold outlines, no shadows, educational infographic.</div>
+      </div>
+
+      <p>FortiGate uses <strong>parallel path processing</strong> to route packets through different processing pipelines. The two fundamental paths are:</p>
+
+      <ul>
+        <li><strong>Slow path (CPU path)</strong> — All packets that cannot be offloaded, plus session setup and teardown for all sessions regardless of acceleration</li>
+        <li><strong>Fast path (NP path)</strong> — Data packets in established sessions where all offload conditions are met; the NP forwards these without CPU involvement</li>
+      </ul>
+
+      <p>The <strong>basic NP offload session flow</strong> follows these steps:</p>
+      <ol>
+        <li>The FortiGate CPU processes the first part of the session: for <strong>TCP</strong> — the full three-way handshake; for <strong>UDP</strong> — the first packet</li>
+        <li>The CPU checks whether offload conditions are met (no proxy profiles, no session helpers, supported traffic type)</li>
+        <li>If eligible, the CPU installs the session key into the NP processor's session table</li>
+        <li>Subsequent data packets bypass the CPU entirely and are forwarded by the NP at hardware speed</li>
+        <li>FIN and RST teardown packets always return to the CPU for session cleanup</li>
+      </ol>
+
+      <div class="analogy-box">
+        <div class="analogy-label">Analogy</div>
+        <div class="analogy-text">
+          <p class="analogy-summary">The fast path/slow path is like customs at an airport — the first crossing requires a full inspection, but a trusted traveler program then lets you use the fast lane for future trips.</p>
+          <ul>
+            <li><strong>First session packets (CPU)</strong> — Full customs check: identity verified, policy reviewed, biometrics registered, clearance given</li>
+            <li><strong>NP session key installation</strong> — Enrolling in the trusted traveler program (pre-clearance)</li>
+            <li><strong>Subsequent data packets (NP fast path)</strong> — Trusted traveler lane: scan badge, walk through — no full inspection every time</li>
+            <li><strong>FIN/RST (CPU)</strong> — Deregistering from the trusted traveler program when the traveler departs permanently</li>
+          </ul>
+        </div>
+        <div class="analogy-img" style="margin-top:14px;background:rgba(255,255,255,0.5);border-radius:10px;padding:14px;text-align:center;">
+          <img src="images/a1-fast-path-airport.png" alt="Airport trusted traveler fast lane analogy"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='block';" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 10px;">
+          <div class="img-missing-msg" style="display:none;font-size:12px;color:#92400e;padding:8px;background:rgba(146,64,14,0.1);border-radius:6px;">📷 <strong>images/a1-fast-path-airport.png</strong> — add this image to the folder</div>
+          <button class="prompt-toggle" onclick="togglePrompt(this)" type="button">▾ Show analogy image prompt</button>
+          <div class="prompt-content" hidden>Cartoon illustration in pastel style: two airport customs lanes side by side. Left lane (yellow, slow): a full customs desk with an officer checking passports and bags, labeled "CPU Slow Path — First Packets, Session Setup." Right lane (green, fast): a simple badge scanner with people walking quickly through, labeled "NP Fast Path — Established Sessions." A sign at the entry says "First visit = full inspection. Trusted traveler = fast lane." A separate small panel shows a person saying goodbye (FIN/RST) heading back to the full inspection desk. Bold outlines, pastel palette, no shadows, educational infographic.</div>
+        </div>
+      </div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Fast path = NP forwarding (no CPU). Slow path = CPU forwarding. TCP: CPU handles full 3-way handshake. UDP: CPU handles first packet only. FIN/RST: always CPU, always. Session key must be installed in NP table before fast path activates.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-section-fast-slow-path" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('section-fast-slow-path','Fast vs. Slow Path')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-section-fast-slow-path" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('section-fast-slow-path')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SECTION 2 ═══ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · LIFE OF A PACKET</span>
+      </div>
+      <p class="socratic-insight">The "life of a packet" diagram in the study guide shows every processing stage a packet can traverse — from ACL and HPE at the NP, through kernel functions (routing, NAT, session management), through UTM/NGFW inspection, to egress. Not all stages are mandatory — which ones fire depends on the policy configuration, traffic type, and whether it's the first or subsequent packet of a session.</p>
+      <ul class="socratic-questions">
+        <li>Which three early checks are performed by the NP (before packets reach the kernel CPU) during the initial session setup, and why is performing these early beneficial?</li>
+        <li>For an offloaded non-UTM session, which processing steps does the NP handle for subsequent packets, and which kernel steps does it skip entirely?</li>
+      </ul>
+      <div class="answer-area" data-section="life-of-packet">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">The three early NP checks are: (1) Access Control List (ACL), (2) Host Protection Engine (HPE), and (3) IP integrity header checking. These run before packets reach the CPU kernel, which is why they are effective at protecting the CPU from malformed or unwanted traffic — they act as a hardware-level pre-filter. Dropping bad packets in the NP prevents them from consuming any CPU cycles at all.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">For offloaded non-UTM sessions, the NP handles: IP integrity header checking, IPsec VPN decryption (inbound), IPsec VPN encryption (outbound), traffic shaping, and forwarding via the egress interface. The NP completely skips: kernel routing, NAT, stateful inspection/policy lookup, session helpers, user authentication, device identification, SSL VPN, and all UTM/NGFW inspection stages. These are bypassed because the session key was already installed and no security profiles requiring those stages are configured.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="section-life-of-packet">
+      <div class="section-label">SECTION 02</div>
+      <h2>Life of a Packet — <em>Three Scenarios</em></h2>
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s2-life-of-packet.png" alt="Three life-of-a-packet scenarios: initial, offloaded non-UTM, NTurbo flow-based UTM" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg" style="display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;">📷 <strong>images/s2-life-of-packet.png</strong></div>
+        <p class="img-caption">Three packet scenarios: initial session (full CPU path), offloaded non-UTM (NP bypass), NTurbo flow-based UTM (NP + IPS loop).</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration: three horizontal rows, each showing a different packet scenario. Row 1 labeled "Initial Session Packets" — full flow: interface → NP (ACL, HPE, IP check) → CPU kernel → UTM/NGFW → egress interface. Row 2 labeled "Offloaded Non-UTM" — short flow: interface → NP (IP check, IPsec, traffic shaping) → egress. All CPU and UTM stages greyed out with "skipped" label. Row 3 labeled "NTurbo/Flow-Based UTM" — medium flow: NP → IPS engine (CPU + IPSA) → NP → egress. Pastel palette, bold outlines, educational infographic.</div>
+      </div>
+
+      <p>Understanding the full packet processing pipeline requires knowing three distinct scenarios based on traffic type and session state:</p>
+
+      <p><strong>Scenario 1 — Initial Session Packets (all sessions, first packets)</strong></p>
+      <p>Every session's first packets pass through the full processing pipeline. The NP handles early checks (ACL, HPE, IP integrity header check, IPsec VPN decryption). Then the kernel CPU handles: destination NAT, routing, RPF check, SD-WAN, stateful inspection/policy lookup, session management, session helpers, user authentication, device identification, SSL VPN, and local management traffic. Then optional UTM/NGFW: flow-based inspection (NP/CP assisted), proxy-based inspection (CPU/FortiOS proxy), and botnet checking. Finally egress: forwarding, source NAT, IPsec encryption, traffic shaping, WAN optimization.</p>
+
+      <p><strong>Scenario 2 — Offloaded Non-UTM Sessions (subsequent packets, no security profiles)</strong></p>
+      <p>After the session key is installed in the NP, subsequent packets for sessions without security profiles skip the CPU entirely. The NP handles: IP integrity header check, IPsec VPN decryption, IPsec VPN encryption, traffic shaping, and forwarding via the egress interface. The kernel routing, NAT, and all UTM stages are bypassed.</p>
+
+      <p><strong>Scenario 3 — NTurbo/Flow-Based UTM Sessions (subsequent packets, flow-based profiles)</strong></p>
+      <p>When flow-based security profiles are configured, the NP still handles session forwarding but UTM/NGFW inspection is still required. NTurbo bridges this: the NP sends packets to the IPS engine via the NTurbo driver. IPSA offloads IPS pattern matching to the CP. After inspection, packets return to the NP for egress forwarding. The kernel routing stages are still bypassed — only UTM inspection remains in the path.</p>
+
+      <div class="callout callout-amber"><strong>Exam tip:</strong> Virtual FortiGate devices have no SPU. For virtual appliances, packet processing for ALL scenarios is identical to Scenario 1 — there is no fast path, and the CPU handles every stage of every packet.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">3 scenarios: (1) Initial — full CPU path always. (2) Offloaded non-UTM — NP only, CPU skipped entirely. (3) NTurbo flow-based — NP + IPS engine loop, kernel routing skipped. NP early checks: ACL, HPE, IP integrity header check. VM FortiGate = always Scenario 1.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-section-life-of-packet" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('section-life-of-packet','Life of a Packet')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-section-life-of-packet" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('section-life-of-packet')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SECTION 3 ═══ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · SESSION LIST DIAGNOSTICS</span>
+      </div>
+      <p class="socratic-insight">The diagnose sys session list command is the primary tool for verifying hardware offload. The npu_info line within each session entry contains critical fields: the offload code tells you which NP is handling it, and if offload is disabled it shows the reason. Knowing how to read these fields is essential for troubleshooting performance problems.</p>
+      <ul class="socratic-questions">
+        <li>In the session list output, what does "offload=9/9" tell you, and what number would you expect to see for an NP6 offloaded session?</li>
+        <li>When you see "no_offload_reason: disabled-by-policy" in the session list, what does that tell you about the firewall policy configuration?</li>
+      </ul>
+      <div class="answer-area" data-section="session-list">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">offload=9/9 means both the ingress (9) and egress (9) sides of the session are handled by NP7. The number 9 is the code for NP7. For NP6 sessions, you would expect to see offload=7/7. The format is offload=&lt;ingress-code&gt;/&lt;egress-code&gt;, and matching codes confirm the same NP is handling both directions — required for NP Direct architecture correctness.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">"disabled-by-policy" means the firewall policy that matched this session has auto-asic-offload set to "disable." This is intentional configuration — typically done temporarily for troubleshooting to allow packet capture on the offloaded interfaces. It confirms the session is being processed by the CPU and should prompt you to re-enable auto-asic-offload once troubleshooting is complete.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="section-session-list">
+      <div class="section-label">SECTION 03</div>
+      <h2>Session List <em>Diagnostics</em> — Reading Offload Status</h2>
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s3-session-list.png" alt="diagnose sys session list output annotated" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg" style="display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;">📷 <strong>images/s3-session-list.png</strong></div>
+        <p class="img-caption">Session list output annotated: npu info line, offload=9/9 (NP7), and disabled-by-policy no_offload_reason.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration: a terminal/CLI window with two session list outputs. First session highlighted in green showing "npu info: offload=9/9" with a callout bubble labeled "NP7 accelerated — both directions." Second session highlighted in red showing "npu_state=0x000001 no_offload" and "no_ofld_reason: disabled-by-policy" with a callout bubble labeled "CPU slow path — policy has auto-asic-offload disabled." Both outputs on dark background, callout bubbles in pastel colors. Bold outlines, educational infographic.</div>
+      </div>
+
+      <p>The primary diagnostic command for verifying hardware offload is <code>diagnose sys session list</code>. Each session entry includes an <strong>npu_info</strong> line that contains the offload status.</p>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Session List Offload Verification</div>
+        <pre><code># Show all sessions with NPU info
+diagnose sys session list
+
+# Example output for an NP7-offloaded session:
+...
+npu info: flag=0x81/0x91, offload=9/9, ips_offload=0/0, epid=128/166, ipid=166/128, vlan=0x0000/0x0000
+...
+
+# offload=9/9 → code 9 = NP7, both ingress and egress on NP7
+# offload=7/7 → code 7 = NP6 (older hardware)
+# offload=0/0 → not offloaded to NP
+
+# Example output for a session blocked from offloading:
+npu_state=0x000001 no_offload
+no_ofld_reason:  disabled-by-policy
+
+# diagnose sys session list filter can narrow results:
+diagnose sys session filter src 192.168.1.100
+diagnose sys session list</code></pre>
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr><th>offload Value</th><th>Meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>9/9</strong></td><td>NP7 handling both ingress and egress — fully hardware-accelerated</td></tr>
+          <tr><td><strong>7/7</strong></td><td>NP6 handling both directions — hardware-accelerated</td></tr>
+          <tr><td><strong>0/0</strong></td><td>No NP offload — session handled by CPU</td></tr>
+        </tbody>
+      </table>
+
+      <p><strong>Common no_ofld_reason values and their meanings:</strong></p>
+      <ul>
+        <li><strong>disabled-by-policy</strong> — auto-asic-offload is set to disable in the firewall policy</li>
+        <li><strong>proxy-mode-policy</strong> — the policy uses a proxy-based security profile</li>
+        <li><strong>session-helper</strong> — the session requires a FortiOS session helper (e.g., SIP, FTP ALG)</li>
+        <li><strong>tunnel-mode</strong> — traffic is on a tunneled interface (SSL VPN, GRE)</li>
+      </ul>
+
+      <div class="callout callout-green"><strong>Note:</strong> For VDOM link validation specifically, check the npu_info field for sessions traversing npu_vlink interfaces. The offload code 9/9 in those sessions confirms the inter-VDOM traffic is being accelerated by the NP7 processor and is not hitting the CPU.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">diagnose sys session list → look for npu info line. offload=9/9 = NP7 accelerated. offload=0/0 = CPU only. no_ofld_reason tells you WHY: disabled-by-policy, proxy-mode-policy, session-helper, or tunnel-mode. Use filter to narrow: diagnose sys session filter src &lt;IP&gt;.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-section-session-list" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('section-session-list','Session List Diagnostics')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-section-session-list" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('section-session-list')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SECTION 4 ═══ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · PROXY-BASED UTM FLOW</span>
+      </div>
+      <p class="socratic-insight">Proxy-based UTM sessions are the most complex packet flow on FortiGate. The network processor still performs early security checks and can handle IPsec tunnel decryption, but once proxy inspection begins, the CPU takes full control — running the FortiOS proxy for DLP, web filtering, antivirus, and VoIP inspection. The CP can still assist with SSL decryption/encryption if SSL deep inspection is configured.</p>
+      <ul class="socratic-questions">
+        <li>In a proxy-based UTM session with SSL deep inspection, how many times is the SSL/TLS traffic decrypted and re-encrypted, and which component handles each operation?</li>
+        <li>Why does the network processor still appear in the proxy-based UTM packet flow even though it cannot offload the session?</li>
+      </ul>
+      <div class="answer-area" data-section="proxy-utm">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">SSL/TLS traffic is decrypted and re-encrypted twice in a proxy-based UTM session with SSL deep inspection. First decryption: the IPS engine triggers a proxy handoff, the proxy decrypts the SSL/TLS packet — this operation is offloaded to the CP hardware. The proxy then sends the decrypted content to the IPS engine for application control and proxy-based inspection. After inspection, the proxy re-encrypts the packet — again using the CP hardware — before forwarding. So: 1 decrypt (CP), 1 re-encrypt (CP), both offloaded to content processor.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">The NP still handles early, mandatory security functions before the proxy gets involved: ACL enforcement, IP integrity header checking, and IPsec VPN decryption if the traffic arrives via an IPsec tunnel. These NP tasks happen before the kernel decides the session needs proxy inspection. The NP acts as a hardware pre-filter that reduces malformed or unauthorized traffic reaching the CPU — even though the session itself cannot be NP-offloaded for forwarding.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="section-proxy-utm">
+      <div class="section-label">SECTION 04</div>
+      <h2>Proxy-Based UTM — <em>Full CPU Path</em> and CP Assist</h2>
+      <div class="section-img-wrap" style="width:260px;cursor:zoom-in;transition:width 0.3s ease;" onclick="this.style.width=this.style.width==='100%'?'260px':'100%';this.style.cursor=this.style.cursor==='zoom-out'?'zoom-in':'zoom-out';">
+        <img src="images/s4-proxy-utm.png" alt="Proxy-based UTM flow with SSL inspection and CP assist" style="width:100%;border-radius:8px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+        <div class="img-missing-msg" style="display:none;font-size:12px;color:#666;padding:8px;background:#f5f5f5;border-radius:6px;text-align:center;">📷 <strong>images/s4-proxy-utm.png</strong></div>
+        <p class="img-caption">Proxy-based UTM: NP handles early checks, CPU proxy handles inspection, CP handles SSL decrypt/re-encrypt for deep inspection.</p>
+        <button class="prompt-toggle" onclick="event.stopPropagation();togglePrompt(this)" type="button">▾ Show image prompt</button>
+        <div class="prompt-content" hidden>Flat colorful illustration: left-to-right packet flow. Stage 1: NP chip (blue) — ACL, IP integrity check, IPsec decrypt (labeled "NP handles even in proxy path"). Stage 2: IPS Engine (CPU, yellow) — single-pass IPS, application control, botnet check. Stage 3: FortiOS Proxy (CPU, red box) — VoIP, DLP, antispam, web filtering, antivirus. Stage 4 (optional): CP chip (orange) — SSL/TLS decrypt and re-encrypt (labeled "CP offloads SSL if deep inspection enabled"). Stage 5: Egress. Arrows connecting each stage. Pastel palette, bold outlines, educational infographic.</div>
+      </div>
+
+      <p>When a <strong>proxy-based security profile</strong> is configured on a firewall policy, the session is always processed by the FortiGate CPU — but the processing pipeline is more complex than a simple CPU-only path. Several components collaborate:</p>
+
+      <p>The <strong>NP processor</strong> still handles early mandatory functions even for proxy-based sessions:</p>
+      <ul>
+        <li>Access Control List (ACL) enforcement</li>
+        <li>IP integrity header checking</li>
+        <li>IPsec VPN decryption (if traffic arrives via IPsec tunnel)</li>
+      </ul>
+
+      <p>After the NP early checks, the <strong>IPS engine (CPU)</strong> handles single-pass IPS, application control, and botnet checking. The <strong>FortiOS proxy (CPU)</strong> then handles the full set of proxy-based inspection features:</p>
+      <ul>
+        <li>VoIP inspection</li>
+        <li>Data loss prevention (DLP)</li>
+        <li>Antispam</li>
+        <li>Web filtering</li>
+        <li>Antivirus scanning</li>
+      </ul>
+
+      <p>If <strong>SSL deep inspection</strong> is also configured, the CP processor offloads the SSL/TLS decryption and re-encryption operations. The flow for SSL-inspected proxy traffic:</p>
+      <ol>
+        <li>IPS engine determines the session needs SSL decryption</li>
+        <li>IPS engine sends the packet to the proxy</li>
+        <li>Proxy decrypts SSL/TLS — <em>offloaded to CP hardware</em></li>
+        <li>Proxy sends decrypted packet to IPS engine for application control</li>
+        <li>IPS sends decrypted packet back to proxy for proxy-based inspection</li>
+        <li>Proxy re-encrypts SSL/TLS — <em>offloaded to CP hardware</em></li>
+        <li>NP handles IPsec encryption on egress if applicable</li>
+      </ol>
+
+      <div class="callout callout-amber"><strong>Exam tip:</strong> Even in proxy-based sessions, the CP accelerates SSL operations if SSL deep inspection is enabled. This is why CP hardware still matters for proxy-mode traffic — it doesn't accelerate the forwarding, but it dramatically accelerates the crypto operations that would otherwise consume the most CPU time.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Proxy-based = CPU always, no NP forwarding offload. But: NP still does ACL + IP integrity + IPsec decrypt early. CP still handles SSL decrypt/re-encrypt if deep inspection enabled. Proxy inspection: VoIP, DLP, antispam, web filter, AV — all CPU-bound (no NP). SSL in proxy path = 2x crypto ops, both CP-offloaded.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-section-proxy-utm" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('section-proxy-utm','Proxy-Based UTM Flow')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-section-proxy-utm" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('section-proxy-utm')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">ON THIS PAGE</div>
+      <nav class="ssnav">
+        <a class="ssnav-item" href="#section-fast-slow-path">Fast vs. Slow Path</a>
+        <a class="ssnav-item" href="#section-life-of-packet">Life of a Packet</a>
+        <a class="ssnav-item" href="#section-session-list">Session List Diagnostics</a>
+        <a class="ssnav-item" href="#section-proxy-utm">Proxy-Based UTM Flow</a>
+      </nav>
+    </div>
+
+    <a class="hub-link" href="index.html">← Chapter 10 Hub</a>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">PROGRESS</div>
+      <div class="checklist" id="checklist">
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="section-fast-slow-path" onchange="toggleDone(this)">
+          <span class="check-label">Fast vs. Slow Path</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="section-life-of-packet" onchange="toggleDone(this)">
+          <span class="check-label">Life of a Packet</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="section-session-list" onchange="toggleDone(this)">
+          <span class="check-label">Session List Diagnostics</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="section-proxy-utm" onchange="toggleDone(this)">
+          <span class="check-label">Proxy-Based UTM Flow</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">QUICK REFERENCE</div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Fast Path</div>
+        <div class="quick-ref-def">NP-offloaded forwarding for established session data packets. No CPU involvement for forwarding decisions.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Slow Path</div>
+        <div class="quick-ref-def">CPU-handled forwarding. Used for session setup, teardown, and all non-offloadable sessions.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">diagnose sys session list</div>
+        <div class="quick-ref-def">Primary tool for verifying hardware offload. Look for npu_info line: offload=9/9 = NP7, offload=0/0 = CPU.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">offload=9/9</div>
+        <div class="quick-ref-def">Both ingress and egress sides of the session handled by NP7 processor — fully hardware-accelerated.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">no_ofld_reason</div>
+        <div class="quick-ref-def">Session list field explaining why a session is not offloaded: disabled-by-policy, proxy-mode-policy, session-helper, or tunnel-mode.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">NP Early Checks</div>
+        <div class="quick-ref-def">ACL, Host Protection Engine (HPE), and IP integrity header check — performed by NP on ALL traffic before it reaches the kernel CPU.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">FIN / RST</div>
+        <div class="quick-ref-def">TCP teardown packets always handled by CPU even in offloaded sessions. NP never handles session teardown.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Parallel Path Processing</div>
+        <div class="quick-ref-def">FortiOS selects the optimal processing path for each packet from a group of parallel options (fast path, slow path, NTurbo, proxy).</div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="page-nav">
+  <a class="page-nav-btn page-nav-prev" href="subtopic-02-offloading-configuration.html">
+    <span class="page-nav-label">← PREVIOUS</span>
+    <span class="page-nav-title">Offloading Configuration</span>
+  </a>
+  <a class="page-nav-btn page-nav-next" href="index.html">
+    <span class="page-nav-label">BACK TO HUB →</span>
+    <span class="page-nav-title">Chapter 10 Hub</span>
+  </a>
+</div>
+
+<footer>
+  EF-NSE7<span>.</span> Chapter 10<span>.</span> Subtopic 03<span>.</span> Performance Monitoring
+</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-ch10-sub03-performance-monitoring';
+
+const SECTIONS = {
+  'section-fast-slow-path': 'Fast vs. Slow Path',
+  'section-life-of-packet': 'Life of a Packet',
+  'section-session-list': 'Session List Diagnostics',
+  'section-proxy-utm': 'Proxy-Based UTM Flow',
+};
+
+document.querySelectorAll('.socratic-header').forEach(function(h) {
+  h.addEventListener('click', function() { h.closest('.socratic-block').classList.toggle('soc-open'); });
+});
+
+function getQArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-qs') || '[]'); }
+function saveQArr(qs) { localStorage.setItem(PAGE_KEY+'-qs', JSON.stringify(qs)); }
+function addQuestion(key, name) {
+  const ta = document.getElementById('q-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const qs = getQArr(); qs.push({id: Date.now(), section: key, sectionName: name, text});
+  saveQArr(qs); ta.value = ''; renderQPanel();
+  if (!document.getElementById('qpanel-body').classList.contains('open')) toggleQPanel();
+}
+function deleteQ(id) { saveQArr(getQArr().filter(q => q.id !== id)); renderQPanel(); }
+function toggleQPanel() {
+  const body = document.getElementById('qpanel-body');
+  const header = document.getElementById('qpanel-header');
+  const chevron = document.getElementById('qpanel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-qpanel-open', open);
+}
+function renderQPanel() {
+  const qs = getQArr();
+  const count = document.getElementById('qpanel-count');
+  if (count) { count.textContent = qs.length; count.style.display = qs.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.qpanel-hint');
+  if (hint) hint.textContent = qs.length ? `— ${qs.length} question${qs.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('qpanel-body'); if (!body) return;
+  if (!qs.length) { body.innerHTML = '<p class="no-questions">No questions yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  qs.forEach(q => { if (groups[q.section]) groups[q.section].push(q); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(q => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${q.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteQ(${q.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+function getNotesArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-notes') || '[]'); }
+function saveNotesArr(ns) { localStorage.setItem(PAGE_KEY+'-notes', JSON.stringify(ns)); }
+function addNote(key) {
+  const ta = document.getElementById('note-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const ns = getNotesArr(); ns.push({id: Date.now(), section: key, sectionName: SECTIONS[key]||key, text});
+  saveNotesArr(ns); ta.value = ''; renderNotesPanel();
+  if (!document.getElementById('notes-panel-body').classList.contains('open')) toggleNotesPanel();
+}
+function deleteNote(id) { saveNotesArr(getNotesArr().filter(n => n.id !== id)); renderNotesPanel(); }
+function toggleNotesPanel() {
+  const body = document.getElementById('notes-panel-body');
+  const header = document.getElementById('notes-panel-header');
+  const chevron = document.getElementById('notes-panel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-notes-panel-open', open);
+}
+function renderNotesPanel() {
+  const ns = getNotesArr();
+  const count = document.getElementById('notes-panel-count');
+  if (count) { count.textContent = ns.length; count.style.display = ns.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.notes-panel-hint');
+  if (hint) hint.textContent = ns.length ? `— ${ns.length} note${ns.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('notes-panel-body'); if (!body) return;
+  if (!ns.length) { body.innerHTML = '<p class="no-questions">No notes yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  ns.forEach(n => { if (groups[n.section]) groups[n.section].push(n); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(n => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteNote(${n.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+function toggleDone(input) { localStorage.setItem(PAGE_KEY+'-check-'+input.dataset.key, input.checked); }
+function initChecks() {
+  document.querySelectorAll('.check-input').forEach(function(inp) {
+    inp.checked = localStorage.getItem(PAGE_KEY+'-check-'+inp.dataset.key) === 'true';
+  });
+}
+function saveSocAnswer(btn) {
+  const area = btn.closest('.answer-area');
+  const ta = area.querySelector('.answer-textarea');
+  if (!ta.value.trim()) { ta.focus(); return; }
+  const key = PAGE_KEY+'-socans-'+area.dataset.section;
+  try { localStorage.setItem(key, ta.value); } catch(e) {}
+  ta.disabled = true; btn.textContent = '✓ Answer saved'; btn.disabled = true;
+  const seeBtn = area.querySelector('.btn-see-answer');
+  seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+}
+function revealSocAnswer(btn) {
+  if (btn.disabled) return;
+  const answers = btn.closest('.answer-area').querySelector('.model-answers');
+  const isHidden = answers.style.display === 'none' || !answers.style.display;
+  answers.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '▲ Hide Model Answer' : '💡 See Model Answer';
+}
+function togglePrompt(btn) {
+  const c = btn.nextElementSibling;
+  const isHidden = c.hasAttribute('hidden');
+  if (isHidden) { c.removeAttribute('hidden'); btn.textContent = '▴ Hide image prompt'; }
+  else { c.setAttribute('hidden', ''); btn.textContent = '▾ Show image prompt'; }
+}
+if (sessionStorage.getItem('pt')) { document.body.style.opacity = '1'; sessionStorage.removeItem('pt'); }
+document.querySelectorAll('a[href]').forEach(function(a) { a.addEventListener('click', function() { sessionStorage.setItem('pt', '1'); }); });
+document.addEventListener('DOMContentLoaded', function() {
+  renderQPanel(); renderNotesPanel(); initChecks();
+  if (localStorage.getItem(PAGE_KEY+'-qpanel-open') === 'true') toggleQPanel();
+  if (localStorage.getItem(PAGE_KEY+'-notes-panel-open') === 'true') toggleNotesPanel();
+  document.querySelectorAll('.answer-area').forEach(function(area) {
+    const key = PAGE_KEY+'-socans-'+area.dataset.section;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const ta = area.querySelector('.answer-textarea'); ta.value = saved; ta.disabled = true;
+        const addBtn = area.querySelector('.btn-add-answer'); addBtn.textContent = '✓ Answer saved'; addBtn.disabled = true;
+        const seeBtn = area.querySelector('.btn-see-answer'); seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+      }
+    } catch(e) {}
+  });
+  document.querySelectorAll('.analogy-box').forEach(function(box) {
+    if (box.dataset.collapsibleInit) return;
+    box.dataset.collapsibleInit = '1';
+    box.classList.add('expanded');
+    const label = box.querySelector(':scope > .analogy-label');
+    if (label) label.addEventListener('click', () => box.classList.toggle('expanded'));
+  });
+  document.querySelectorAll('.analogy-img img').forEach(function(img) {
+    if (img.dataset.zoomInit) return;
+    img.dataset.zoomInit = '1';
+    img.addEventListener('click', () => img.classList.toggle('zoomed'));
+  });
+  document.querySelectorAll('.section-img').forEach(function(img) {
+    img.addEventListener('click', () => img.classList.toggle('si-expanded'));
+  });
+});
+(function() {
+  var items = document.querySelectorAll('.ssnav-item');
+  if (!items.length) return;
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      var lnk = document.querySelector('.ssnav-item[href="#'+e.target.id+'"]');
+      if (lnk) lnk.classList.toggle('active', e.isIntersecting);
+    });
+  }, { rootMargin: '-10% 0% -70% 0%' });
+  document.querySelectorAll('.section-block[id]').forEach(function(el) { obs.observe(el); });
+})();
+</script>
+</body>
+</html>

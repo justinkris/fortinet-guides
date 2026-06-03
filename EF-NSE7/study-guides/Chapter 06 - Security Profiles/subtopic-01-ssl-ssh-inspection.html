@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSL/SSH Inspection Profiles — EF-NSE7 Ch06</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+html{scroll-behavior:smooth;}
+html.pt-init body{opacity:0;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+:root{
+  --bg:#fff5f5;--surface:#ffffff;--surface-2:#fef2f2;--border:#f0c8c8;--border-dim:#fde8e8;
+  --text:#1a0606;--text-soft:#4a1212;--text-muted:#8a3a3a;
+  --red:#c0392b;--red-vivid:#e03e2d;--red-glow:rgba(192,57,43,0.07);--red-dim:#f8b4b4;
+  --red-deep:#7f1d1d;--red-light:#fef2f2;--red-border:#f8b4b4;
+  --green:#1a7c4a;--green-light:#d4f0e0;--green-border:#a7e0c0;
+  --amber:#b45309;--amber-light:#fef9c3;--amber-border:#fde68a;
+}
+/* PAGE TRANSITION */
+.pt-overlay{display:none;}
+/* HEADER */
+header{padding:48px 60px 36px;background:#1a0606;display:flex;align-items:flex-end;gap:32px;}
+.header-left{flex:1;}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);letter-spacing:0.08em;margin-bottom:12px;flex-wrap:wrap;}
+.breadcrumb a{color:#e87070;text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.breadcrumb-sep{color:rgba(232,112,112,0.35);}
+.header-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(232,112,112,0.1);border:1px solid rgba(232,112,112,0.25);padding:5px 14px;border-radius:20px;font-size:11px;color:#e87070;letter-spacing:0.08em;margin-bottom:14px;}
+.dot-live{width:6px;height:6px;background:#e87070;border-radius:50%;display:inline-block;animation:blink 2.4s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+header h1{font-family:'Fraunces',serif;font-size:44px;font-weight:700;line-height:1.0;color:#fff;margin-bottom:10px;}
+header h1 em{font-style:italic;font-weight:400;color:#e87070;}
+header p{font-size:13px;color:rgba(255,255,255,0.42);margin-top:10px;line-height:1.7;}
+/* MOTIVATION BANNER */
+.motivation-banner{padding:20px 60px;min-height:84px;display:flex;flex-direction:column;justify-content:center;border-bottom:1px solid var(--border);background:var(--surface);}
+.motivation-text{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--text);}
+.motivation-text em{font-style:italic;color:var(--red);}
+.motivation-sub{font-size:12px;color:var(--text-muted);line-height:1.7;margin-top:4px;}
+/* TOP PANELS */
+.top-panels{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+.top-panels .qpanel{border-bottom:none;border-right:1px solid var(--border);}
+.top-panels .qpanel-header{padding-left:32px;padding-right:32px;}
+.top-panels .qpanel-body{padding-left:32px;padding-right:32px;}
+.qpanel{background:var(--surface);}
+.qpanel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 20px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.qpanel-header:hover,.qpanel-header.open{background:var(--surface-2);}
+.qpanel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.qpanel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.qpanel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.qpanel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.qpanel-body{display:none;padding:0 20px 22px;}
+.qpanel-body.open{display:block;}
+.notes-panel{background:var(--surface);}
+.notes-panel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 32px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.notes-panel-header:hover,.notes-panel-header.open{background:var(--surface-2);}
+.notes-panel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.notes-panel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.notes-panel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.notes-panel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.notes-panel-body{display:none;padding:0 32px 22px;}
+.notes-panel-body.open{display:block;}
+.q-group{margin-bottom:16px;}
+.q-group-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+.q-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-dim);}
+.q-item:last-child{border-bottom:none;}
+.q-num{font-size:10px;font-weight:700;color:var(--red);min-width:16px;margin-top:2px;}
+.q-text{font-size:12px;color:var(--text-soft);line-height:1.5;flex:1;}
+.q-del{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 4px;margin-top:1px;}
+.q-del:hover{color:var(--red);}
+.no-questions{font-size:12px;color:var(--text-muted);padding:8px 0;}
+.btn-add-q{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-q:hover{opacity:0.85;}
+/* STICKY SECTION NAV */
+.section-nav{position:sticky;top:0;z-index:90;display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);padding:0 32px;overflow-x:auto;}
+.nav-tab{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:12px 18px;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--red);border-bottom-color:var(--red);}
+/* MAIN GRID */
+main{display:grid;grid-template-columns:1fr 320px;gap:0;align-items:start;max-width:1200px;margin:0 auto;padding:0;}
+.main-content{padding:36px 40px 60px 60px;}
+.sidebar{padding:32px 24px 60px 20px;position:sticky;top:57px;max-height:calc(100vh - 57px);overflow-y:auto;}
+/* SECTION BLOCK */
+.section-block{margin-bottom:48px;}
+.section-label{font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.section-block h2{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1.15;margin-bottom:16px;padding-left:16px;border-left:3px solid var(--red);}
+.section-block h2 em{font-style:italic;font-weight:400;color:var(--red);}
+.section-block p{font-size:14px;line-height:1.8;color:var(--text-soft);margin-bottom:14px;}
+.section-block p strong{color:var(--text);font-weight:600;}
+.section-block p em{color:var(--red);font-style:italic;}
+.section-block ul,.section-block ol{padding-left:22px;margin-bottom:14px;}
+.section-block li{font-size:14px;line-height:1.75;color:var(--text-soft);margin-bottom:4px;}
+.section-block li strong{color:var(--text);font-weight:600;}
+/* CALLOUTS */
+.callout{border-left:3px solid var(--red-border);background:var(--red-light);border-radius:0 10px 10px 0;padding:12px 18px;margin:16px 0;font-size:13.5px;line-height:1.65;color:var(--text-soft);}
+.callout strong{color:var(--text);}
+.callout-green{border-left-color:var(--green-border);background:var(--green-light);}
+.callout-amber{border-left-color:var(--amber-border);background:var(--amber-light);}
+/* SECTION IMAGE */
+.section-img-wrap{margin:0 0 20px;display:flex;flex-direction:column;align-items:center;}
+.section-img{width:260px;max-width:100%;border-radius:12px;cursor:zoom-in;transition:width 0.3s ease;border:1px solid var(--border);display:block;}
+.section-img.si-expanded{width:100%;cursor:zoom-out;border-radius:16px;}
+.si-placeholder{display:none;width:260px;max-width:100%;border:2px dashed var(--border);border-radius:12px;background:var(--surface-2);padding:14px 16px;flex-direction:column;align-items:flex-start;gap:8px;}
+.si-placeholder.si-show{display:flex;}
+.si-filename{font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+/* CODE BLOCK */
+.code-block{background:#1a0606;border-radius:12px;padding:20px 24px;margin:16px 0;overflow-x:auto;}
+.code-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#e87070;margin-bottom:10px;}
+.code-block pre{margin:0;}
+.code-block code{font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:rgba(255,255,255,0.82);}
+/* SOCRATIC */
+.socratic-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:16px;border-top:3px solid var(--red);}
+.socratic-header{display:flex;align-items:center;gap:8px;margin-bottom:0;cursor:pointer;user-select:none;}
+.socratic-header::after{content:'▸ Expand';margin-left:auto;font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'Inter',sans-serif;}
+.socratic-block.soc-open .socratic-header{margin-bottom:10px;}
+.socratic-block.soc-open .socratic-header::after{content:'▾ Collapse';}
+.socratic-block:not(.soc-open) .socratic-insight,
+.socratic-block:not(.soc-open) .socratic-questions,
+.socratic-block:not(.soc-open) .answer-area{display:none;}
+.socratic-icon{font-size:17px;flex-shrink:0;}
+.socratic-label{font-size:9px;font-weight:700;letter-spacing:0.18em;color:var(--text-muted);}
+.socratic-insight{font-size:13px;color:var(--text-soft);line-height:1.75;margin-bottom:12px;border-left:3px solid var(--border);padding-left:12px;font-style:italic;}
+.socratic-questions{list-style:none;padding:0;margin:0;}
+.socratic-questions li{font-size:12.5px;color:var(--text);padding:7px 0 7px 22px;position:relative;border-bottom:1px solid var(--border-dim);line-height:1.6;}
+.socratic-questions li:last-child{border-bottom:none;}
+.socratic-questions li::before{content:'?';position:absolute;left:0;font-weight:700;font-size:12px;top:8px;color:var(--red);}
+.answer-area{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.answer-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.answer-textarea:focus{border-color:var(--text);}
+.answer-textarea:disabled{opacity:0.7;background:var(--surface-2);cursor:default;}
+.answer-buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.btn-add-answer{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-answer:hover:not(:disabled){opacity:0.85;}
+.btn-add-answer:disabled{opacity:0.5;cursor:default;}
+.btn-see-answer{background:var(--surface);color:var(--text-muted);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-see-answer:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-see-answer:not(:disabled){color:var(--red);border-color:var(--red);}
+.btn-see-answer:hover:not(:disabled){background:var(--red-glow);}
+.model-answers{margin-top:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.model-answer-item{padding:10px 0;border-bottom:1px solid var(--border-dim);}
+.model-answer-item:first-child{padding-top:0;}
+.model-answer-item:last-child{border-bottom:none;padding-bottom:0;}
+.model-answer-q{font-size:9px;font-weight:700;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:4px;}
+.model-answer-text{font-size:13px;color:var(--text-soft);line-height:1.7;}
+/* MENTAL NOTE */
+.mental-note-block{border-radius:10px;padding:12px 16px;margin:16px 0;display:flex;gap:10px;align-items:flex-start;background:rgba(192,57,43,0.07);border:1px solid var(--border);}
+.mental-note-block-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.mental-note-block-inner{flex:1;}
+.mental-note-block-label{font-size:9px;font-weight:700;letter-spacing:0.16em;color:var(--red);margin-bottom:3px;}
+.mental-note-block-text{font-size:13px;font-weight:600;line-height:1.55;color:var(--text);}
+/* ANALOGY BOX */
+.analogy-box{background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #b45309;border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0;}
+.analogy-label{display:flex;align-items:center;gap:6px;user-select:none;cursor:pointer;font-size:9px;font-weight:700;letter-spacing:0.16em;color:#b45309;margin-bottom:4px;}
+.analogy-label::after{content:'▾  Reveal illustration';margin-left:auto;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:none;opacity:0.75;}
+.analogy-label:hover::after{opacity:1;}
+.analogy-box.expanded>.analogy-label::after{content:'▴  Hide illustration';}
+.analogy-text{font-size:13px;color:#78350f;line-height:1.65;font-style:italic;}
+.analogy-box>.analogy-img{display:none;}
+.analogy-box.expanded>.analogy-img{display:block;}
+.analogy-img img{max-width:360px;width:100%;cursor:zoom-in;transition:max-width 0.25s ease;border-radius:8px;margin-top:10px;}
+.analogy-img img.zoomed{max-width:100%;cursor:zoom-out;}
+.prompt-toggle{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:10px;font-weight:600;letter-spacing:0.08em;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;text-transform:uppercase;}
+.prompt-toggle:hover{color:var(--text);border-color:var(--text);}
+.prompt-content{margin-top:10px;padding:10px 14px;background:rgba(0,0,0,0.04);border-radius:8px;font-size:11.5px;color:var(--text-muted);font-style:italic;line-height:1.65;text-align:left;}
+.prompt-content[hidden]{display:none;}
+/* LESSON TOOLS */
+.lesson-tools{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:40px;}
+.lesson-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.tool-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.tool-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.tool-textarea:focus{border-color:var(--red);}
+.tool-row{margin-top:8px;display:flex;gap:8px;}
+/* SIDEBAR */
+.sidebar-section{margin-bottom:28px;}
+.sidebar-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;}
+.ssnav{display:flex;flex-direction:column;gap:2px;margin-top:4px;}
+.ssnav-item{font-size:12px;color:var(--text-soft);padding:6px 10px;border-radius:6px;text-decoration:none;line-height:1.4;display:block;transition:background 0.15s,color 0.15s;}
+.ssnav-item:hover,.ssnav-item.active{background:var(--red-glow);color:var(--red);}
+.hub-link{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);margin-bottom:16px;transition:color 0.15s,border-color 0.15s,background 0.15s;}
+.hub-link:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);}
+.check-item{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;}
+.check-input{accent-color:var(--red);width:14px;height:14px;flex-shrink:0;cursor:pointer;}
+.check-label{font-size:12px;color:var(--text-soft);line-height:1.4;}
+.check-item:has(.check-input:checked) .check-label{color:var(--text-muted);text-decoration:line-through;}
+.quick-ref{background:#1a0606;border-radius:10px;padding:12px 16px;margin-bottom:8px;}
+.quick-ref-term{font-size:10px;font-weight:700;letter-spacing:0.12em;color:#e87070;margin-bottom:3px;text-transform:uppercase;}
+.quick-ref-def{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;}
+/* PAGE NAV */
+.page-nav{display:flex;border-top:2px solid var(--border);background:var(--surface);}
+.page-nav-btn{flex:1;display:flex;flex-direction:column;gap:4px;padding:16px 28px;text-decoration:none;transition:background 0.15s;cursor:pointer;}
+.page-nav-btn:hover:not(.page-nav-disabled){background:var(--surface-2);}
+.page-nav-prev{border-right:1px solid var(--border);}
+.page-nav-next{text-align:right;}
+.page-nav-disabled{opacity:0.3;pointer-events:none;}
+.page-nav-label{font-size:10px;font-weight:600;letter-spacing:0.14em;color:var(--text-muted);display:block;}
+.page-nav-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;color:var(--red);display:block;}
+/* FOOTER */
+footer{font-size:11px;letter-spacing:0.12em;color:var(--text-muted);text-transform:uppercase;padding:20px 60px;border-top:1px solid var(--border);}
+footer span{color:var(--red);}
+/* EXTRA */
+.img-caption{font-size:11px;color:var(--text-muted);text-align:center;margin-top:6px;line-height:1.4;font-style:italic;}
+.analogy-summary{font-style:normal;font-weight:600;color:#92400e;margin-bottom:10px;}
+.analogy-text ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;}
+.analogy-text li{padding-left:18px;position:relative;}
+.analogy-text li::before{content:'•';position:absolute;left:0;font-weight:700;color:#b45309;}
+.data-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;}
+.data-table th{background:#1a0606;color:#e87070;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:10px 14px;text-align:left;}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-soft);line-height:1.55;vertical-align:top;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:nth-child(even) td{background:var(--surface-2);}
+.data-table td strong{color:var(--text);font-weight:600;}
+/* RESPONSIVE */
+@media(max-width:1000px){main{grid-template-columns:1fr;}.sidebar{position:static;max-height:none;padding:0 40px 40px;}}
+@media(max-width:720px){header{padding:28px 24px 24px;}header h1{font-size:32px;}.motivation-banner{padding:16px 24px;}.main-content{padding:24px 24px 40px;}.section-nav{padding:0 16px;}.top-panels{grid-template-columns:1fr;}.top-panels .qpanel{border-right:none;border-bottom:1px solid var(--border);}.lesson-tools-grid{grid-template-columns:1fr;}footer{padding:16px 24px;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="breadcrumb">
+      <a href="../nse7-ef-study-guide-hub.html">EF-NSE7</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="index.html">Chapter 06 — Security Profiles</a>
+      <span class="breadcrumb-sep">›</span>
+      Subtopic 01
+    </div>
+    <div class="header-eyebrow"><span class="dot-live"></span> Study Guide · EF-NSE7</div>
+    <h1>SSL/SSH <em>Inspection Profiles</em></h1>
+    <p>Master the difference between certificate and full inspection, TLS version control, SNI, SAN, and protocol port mapping — the foundation every other security profile in FortiGate depends on.</p>
+  </div>
+</header>
+
+<div class="motivation-banner">
+  <div class="motivation-text">You can't inspect what you can't <em>see</em> — and most enterprise traffic is encrypted.</div>
+  <p class="motivation-sub">SSL/SSH inspection profiles are the lens FortiGate uses to peer inside TLS. Every UTM feature depends on choosing the right inspection mode for the right use case.</p>
+</div>
+
+<div class="top-panels">
+  <div class="qpanel" id="qpanel">
+    <button class="qpanel-header" onclick="toggleQPanel()" id="qpanel-header">
+      <span class="qpanel-title">MY QUESTIONS</span>
+      <span class="qpanel-count" id="qpanel-count">0</span>
+      <span class="qpanel-hint">— click to expand</span>
+      <span class="qpanel-chevron" id="qpanel-chevron">▾</span>
+    </button>
+    <div class="qpanel-body" id="qpanel-body"></div>
+  </div>
+  <div class="notes-panel" id="notes-panel">
+    <button class="notes-panel-header" onclick="toggleNotesPanel()" id="notes-panel-header">
+      <span class="notes-panel-title">MY NOTES</span>
+      <span class="notes-panel-count" id="notes-panel-count">0</span>
+      <span class="notes-panel-hint">— click to expand</span>
+      <span class="notes-panel-chevron" id="notes-panel-chevron">▾</span>
+    </button>
+    <div class="notes-panel-body" id="notes-panel-body"></div>
+  </div>
+</div>
+
+<nav class="section-nav" id="section-nav">
+  <a class="nav-tab active" href="#s1">SSL to TLS</a>
+  <a class="nav-tab" href="#s2">Cert vs Full Inspection</a>
+  <a class="nav-tab" href="#s3">SNI &amp; SAN</a>
+  <a class="nav-tab" href="#s4">Port Mapping &amp; TLS Versions</a>
+</nav>
+
+<main>
+  <div class="main-content">
+
+    <!-- ═══════════════════════════════ SECTION 1 ═══════════════════════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · SSL TO TLS</span>
+      </div>
+      <p class="socratic-insight">SSL and TLS are both "secure transport" protocols, but they are not the same thing. SSL has known vulnerabilities and has been deprecated — yet the industry still calls things "SSL inspection." Understanding why TLS replaced SSL, and which versions are safe, helps you make real configuration decisions.</p>
+      <ul class="socratic-questions">
+        <li>SSL 2.0, 3.0, TLS 1.0, and TLS 1.1 are all deprecated. Why does FortiGate still need to know about them, and what risk does supporting them introduce?</li>
+        <li>HTTP/3 uses TLS 1.3 by default over UDP (QUIC). How does this affect a firewall's ability to inspect web traffic compared to HTTP/2 over TCP?</li>
+      </ul>
+      <div class="answer-area" data-section="ssl-to-tls">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">FortiGate must recognize deprecated TLS versions so it can actively block them when configured with <code>unsupported-ssl-version block</code> and <code>min-allowed-ssl-version</code>. Supporting them introduces downgrade attacks and known cipher weaknesses — an attacker can force negotiation to a broken version if the firewall silently allows it through.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">HTTP/3 runs over QUIC (UDP port 443), which is encrypted end-to-end. Traditional deep packet inspection works on TCP streams, so HTTP/3 traffic can bypass inspection unless the firewall explicitly handles QUIC. This is why many enterprise firewalls block QUIC, forcing browsers to fall back to HTTP/2 over TCP where full SSL inspection can apply.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s1">
+      <div class="section-label">SECTION 01</div>
+      <h2>SSL to TLS — <em>The Evolution of Secure Transport</em></h2>
+
+      <div class="section-img-wrap">
+        <img src="images/s1-ssl-tls-timeline.png" class="section-img" alt="Timeline showing SSL 2.0 through TLS 1.3 with deprecated versions marked"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s1-ssl-tls-timeline.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: A horizontal timeline from 1995 to 2018. Six protocol version bubbles arranged left-to-right: SSL 2.0 (grey, crossed out), SSL 3.0 (grey, crossed out), TLS 1.0 (grey, crossed out), TLS 1.1 (light grey, crossed out), TLS 1.2 (green, recommended), TLS 1.3 (bright green, recommended). Above each bubble: the RFC number in a small tag. Below: the organization (Netscape vs IETF). A red "Deprecated" bar spans SSL 2.0 to TLS 1.1. Pastel palette, bold outlines, minimal text, no shadows.</div>
+        </div>
+        <p class="img-caption">SSL versions are deprecated; TLS 1.2 and 1.3 are the only versions FortiGate should allow in production.</p>
+      </div>
+
+      <p>Common application protocols — HTTP, SMTP, and FTP — have encrypted counterparts known as <strong>HTTPS</strong>, <strong>SMTPS</strong>, and <strong>FTPS</strong>. The "S" suffix indicates the protocol is secured using <strong>TLS (Transport Layer Security)</strong>, the modern successor to SSL.</p>
+
+      <p>SSL has multiple known cryptographic vulnerabilities and is deprecated. <strong>TLS 1.2</strong> (RFC 5246, 2008) is recommended for broad compatibility, while <strong>TLS 1.3</strong> (RFC 8446, 2018) offers improved security and faster connection setup by reducing round trips. SSL 2.0, SSL 3.0, TLS 1.0, and TLS 1.1 should never be used in enterprise environments.</p>
+
+      <p>A <strong>TLS cipher suite</strong> bundles four algorithms in one string: the protocol, key exchange algorithm, authentication algorithm, encryption algorithm, and hash algorithm. For example: <em>TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256</em> identifies each component. The TCP three-way handshake (SYN → SYN-ACK → ACK) must complete before the TLS handshake begins.</p>
+
+      <p>In <strong>HTTP/3</strong>, TLS 1.3 is mandatory and runs over QUIC (UDP) rather than TCP. HTTP/1 treats TLS as optional, HTTP/2 treats it as optional but common, and HTTP/3 enforces it by default. For enterprise firewalls, this layering matters: flow-based and proxy-based inspection operate on TCP sessions, so HTTP/3 over UDP may bypass inspection.</p>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Set Admin HTTPS TLS Versions</div>
+        <pre><code>config system global
+    set admin-https-ssl-versions tlsv1-2 tlsv1-3
+end
+
+# Display all TLS-related settings
+show full | grep -f tls</code></pre>
+      </div>
+
+      <div class="callout callout-amber"><strong>Exam tip:</strong> TLS version control via <code>min-allowed-ssl-version</code> and <code>unsupported-ssl-version</code> can only be configured through the CLI, not the GUI. Settings also apply to SMTPS, POP3S, IMAPS, and FTPS — not just HTTPS.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">4 deprecated versions to memorize: SSL 2.0 (1995), SSL 3.0 (1996), TLS 1.0 (1999), TLS 1.1 (2006). TLS 1.2 = recommended; TLS 1.3 = best. HTTP/3 uses TLS 1.3 over UDP — traditional TCP inspection doesn't apply.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s1" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s1','SSL to TLS')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s1" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s1')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════ SECTION 2 ═══════════════════════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · CERT VS FULL INSPECTION</span>
+      </div>
+      <p class="socratic-insight">FortiGate offers two SSL inspection modes that look similar on paper but behave completely differently. One reads the envelope; the other opens it. The tradeoff is always resource cost vs. visibility depth.</p>
+      <ul class="socratic-questions">
+        <li>SSL certificate inspection does not decrypt traffic. How can it still enforce web filtering and application control, and what does it rely on instead of decrypted content?</li>
+        <li>When would you choose certificate inspection over full inspection in an enterprise network, and what security capability do you give up by doing so?</li>
+      </ul>
+      <div class="answer-area" data-section="cert-vs-full">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Certificate inspection reads the SNI from the TLS Client Hello and extracts the URL from the certificate's CN or SAN fields — all without decrypting the payload. This metadata is enough for web filtering and application control to make an allow/block decision based on domain and application signature patterns visible in the handshake.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Choose certificate inspection when CPU/RAM conservation is the priority and the use case doesn't require inspecting encrypted payloads — for example, protecting clients browsing external HTTPS sites where only domain-level filtering is needed. You give up traffic decryption, inspection of encrypted payloads, SSL proxying, and full protection from HTTPS-based attacks like code injection embedded in the encrypted body.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s2">
+      <div class="section-label">SECTION 02</div>
+      <h2>Certificate Inspection <em>vs Full SSL Inspection</em></h2>
+
+      <div class="section-img-wrap">
+        <img src="images/s2-cert-vs-full.png" class="section-img" alt="Diagram comparing certificate inspection flow vs full SSL inspection with FortiGate acting as man-in-the-middle"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s2-cert-vs-full.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful two-panel illustration: Left panel labeled "Certificate Inspection" — client and server connected by a single encrypted tunnel arrow passing through a FortiGate icon that reads the envelope label (SNI) but doesn't open it. Right panel labeled "Full Inspection" — client connects to FortiGate (one encrypted tunnel), FortiGate connects to server (second encrypted tunnel), a small padlock with an eye icon in the center. Bold pastel colors, no shadows, minimal labels.</div>
+        </div>
+        <p class="img-caption">Certificate inspection reads TLS metadata only; full inspection acts as an SSL proxy — decrypting, inspecting, and re-encrypting.</p>
+      </div>
+
+      <p>FortiGate provides two inspection modes, each with different capabilities and resource requirements.</p>
+
+      <p><strong>SSL Certificate Inspection</strong> does not decrypt traffic. It inspects the TLS handshake fields: SSL handshake inspection, <strong>SNI parsing</strong>, server certificate validation, URL extraction from SNI, and URL extraction from the certificate. This is sufficient for web filtering and application control. It conserves CPU and RAM but cannot inspect encrypted payloads, cannot perform SSL proxying, and provides only limited protection against HTTPS-based attacks.</p>
+
+      <p><strong>Full SSL Inspection</strong> makes FortiGate an SSL proxy. It terminates the client's TLS session (Client → FortiGate), inspects the decrypted content, then creates a new TLS session to the server (FortiGate → Server). This enables traffic decryption, inspection of encrypted payloads, SSL proxying, and full HTTPS-based attack protection. It uses more CPU and RAM.</p>
+
+      <table class="data-table">
+        <tr><th>Feature</th><th>Certificate Inspection</th><th>Full SSL Inspection</th></tr>
+        <tr><td>Traffic Decryption</td><td>No</td><td><strong>Yes</strong></td></tr>
+        <tr><td>SSL Handshake Inspection</td><td>Yes</td><td>Yes</td></tr>
+        <tr><td>SNI Parsing</td><td>Yes</td><td>Yes</td></tr>
+        <tr><td>Web Filtering / App Control</td><td>Yes</td><td>Yes</td></tr>
+        <tr><td>Inspection of Encrypted Payload</td><td>No</td><td><strong>Yes</strong></td></tr>
+        <tr><td>SSL Proxying</td><td>No</td><td><strong>Yes</strong></td></tr>
+        <tr><td>Protection from HTTPS Attacks</td><td>Limited</td><td><strong>Yes</strong></td></tr>
+      </table>
+
+      <div class="analogy-box">
+        <div class="analogy-label">Analogy</div>
+        <div class="analogy-text">
+          <p class="analogy-summary">Certificate inspection is like reading the address on a sealed envelope; full inspection is like opening the envelope, reading the letter, resealing it, and forwarding it.</p>
+          <ul>
+            <li><strong>SNI / Certificate CN</strong> — maps to the name and address written on the envelope's outside</li>
+            <li><strong>Full SSL decryption</strong> — maps to opening the envelope, reading the contents, then resealing it in a new envelope from FortiGate</li>
+            <li><strong>CPU/RAM cost</strong> — maps to the extra labor required to open, inspect, and reseal every piece of mail</li>
+          </ul>
+        </div>
+        <div class="analogy-img" style="margin-top:14px;background:rgba(255,255,255,0.5);border-radius:10px;padding:14px;text-align:center;">
+          <img src="images/a1-envelope-inspection.png" alt="Envelope inspection analogy"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='block';" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 10px;">
+          <div class="img-missing-msg" style="display:none;font-size:12px;color:#92400e;padding:8px;background:rgba(146,64,14,0.1);border-radius:6px;">📷 <strong>images/a1-envelope-inspection.png</strong> — add this image to the folder</div>
+          <button class="prompt-toggle" onclick="togglePrompt(this)" type="button">▾ Show analogy image prompt</button>
+          <div class="prompt-content" hidden>Cartoon flat illustration in pastel style: two side-by-side scenes. Left scene: a mail carrier (labeled "FortiGate") reading the address label on a sealed envelope (labeled "HTTPS traffic") — envelope stays sealed. Right scene: same mail carrier opening the envelope, reading a letter inside, then placing it in a new envelope. Bold outlines, pastel colors, minimal text labels, no shadows, educational infographic feel.</div>
+        </div>
+      </div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Certificate inspection = lighter, reads TLS metadata only, no payload decryption. Full inspection = heavier, FortiGate is the SSL proxy, required for payload inspection and HTTPS attack protection. Only full inspection can catch injected malware inside encrypted content.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s2" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s2','Cert vs Full Inspection')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s2" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s2')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════ SECTION 3 ═══════════════════════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · SNI &amp; SAN</span>
+      </div>
+      <p class="socratic-insight">Before virtual hosting, one IP address hosted one website. SNI and SAN both solve the problem of multiple domains sharing infrastructure — but they do it at different layers of the TLS certificate system.</p>
+      <ul class="socratic-questions">
+        <li>Both SNI and SAN allow multiple domains on one IP, but SNI operates during the handshake while SAN is embedded in the certificate. What is the practical difference in how FortiGate uses each one for URL extraction?</li>
+        <li>SAN supports wildcard entries; SNI does not. Why does this make SAN certificates more flexible for large organizations managing many subdomains?</li>
+      </ul>
+      <div class="answer-area" data-section="sni-san">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">FortiGate reads SNI from the Client Hello message — it is sent in plaintext before encryption begins, making it available even with certificate inspection. SAN is embedded in the server's X.509 certificate delivered later in the handshake. In certificate inspection mode, FortiGate uses SNI first; if SNI is absent, it falls back to URL extraction from the certificate's SAN/CN field. Full inspection has access to both.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">SAN wildcard entries (e.g. <code>*.example.com</code>) cover all subdomains under a parent domain with a single certificate, eliminating the need to issue individual certificates for each subdomain. This dramatically reduces certificate management overhead. SNI only identifies which certificate to serve — it cannot substitute for having the certificate itself cover additional names.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s3">
+      <div class="section-label">SECTION 03</div>
+      <h2>SNI and SAN — <em>Multiple Domains, One IP</em></h2>
+
+      <div class="section-img-wrap">
+        <img src="images/s3-sni-san.png" class="section-img" alt="Diagram showing SNI TLS handshake flow and SAN certificate covering multiple domains"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s3-sni-san.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful two-panel illustration: Left panel labeled "SNI" — a client sending a TLS Client Hello arrow to a server icon that hosts three domain bubbles (sample.com, case.com, example.com) on the same IP address; the Client Hello has a highlighted "SNI" tag. Right panel labeled "SAN" — a certificate document icon showing three domain names listed as Subject Alternative Names, all pointing to one server icon. Pastel palette, bold outlines, no shadows.</div>
+        </div>
+        <p class="img-caption">SNI selects which certificate to serve during the handshake; SAN lets one certificate cover multiple domains.</p>
+      </div>
+
+      <p><strong>Server Name Indication (SNI)</strong> was introduced in 2003 as a TLS extension. It enables a client to specify the hostname it wants to connect to in the <strong>Client Hello</strong> message, before encryption begins. This allows a server at a single IP address to host multiple HTTPS domains — each with its own certificate — by selecting the correct certificate based on the SNI value. FortiGate reads SNI during certificate inspection to extract the URL for web filtering decisions.</p>
+
+      <p>The TLS handshake with SNI follows four stages: (1) Client sends Client Hello with SNI, (2) Server replies with Server Hello (may include SNI response), (3) Server sends authentication details required by SNI request, (4) Server sends Server Hello Done. SNI is critical in cloud computing where thousands of customers share infrastructure at the same IP address.</p>
+
+      <p><strong>Subject Alternative Name (SAN)</strong> was introduced in 1999 as an X.509 certificate extension. Unlike traditional certificates covering only a single CN (Common Name), SAN allows one certificate to cover multiple domain names or host names. A SAN certificate for <code>fortinet.com</code> might also cover <code>www.fortinet.com</code> and <code>pub.kb.fortinet.com</code> — all under the same certificate. SAN also supports wildcard entries (e.g. <code>*.example.com</code>), which SNI does not, making SAN certificates more versatile for large organizations.</p>
+
+      <div class="callout"><strong>Exam tip:</strong> In certificate inspection mode, FortiGate extracts the URL from SNI first. If SNI is not present, it falls back to extracting the URL from the certificate's SAN/CN field. Full inspection has access to both regardless.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">SNI = TLS handshake extension (2003), client sends the target hostname in Client Hello, allows one IP to serve multiple certificates. SAN = X.509 certificate extension (1999), one certificate covers multiple domains, supports wildcards. FortiGate reads SNI first for URL extraction.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s3" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s3','SNI and SAN')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s3" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s3')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════ SECTION 4 ═══════════════════════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · PORT MAPPING &amp; TLS VERSIONS</span>
+      </div>
+      <p class="socratic-insight">A firewall rule that allows "HTTPS on port 443" does not automatically inspect "HTTPS on port 8443." Nonstandard ports are a common evasion technique — services running on unexpected ports bypass inspection unless protocol port mapping is enabled.</p>
+      <ul class="socratic-questions">
+        <li>Protocol port mapping is only applicable to proxy-based inspections, not flow-based. Why would flow-based inspection not need it, and what does flow-based inspect instead?</li>
+        <li>Enabling protocol port mapping and full SSL inspection together increases CPU usage significantly. What operational steps should an administrator take before enabling both in production?</li>
+      </ul>
+      <div class="answer-area" data-section="port-mapping">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Flow-based inspection assesses all ports by default — it inspects whatever traffic passes through regardless of port number. Proxy-based inspection uses protocol definitions that map protocol names to specific well-known ports, so without port mapping, SMTPS on port 10587 would not be recognized as SMTPS and would bypass inspection. Protocol port mapping extends proxy-based protocol recognition to nonstandard ports.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Before enabling both, an administrator should review baseline CPU and memory utilization, consider enabling only the specific nonstandard ports actually seen in network logs, monitor logs closely after enabling (particularly for nonstandard ports), and avoid enabling all port-mapping options simultaneously. Fortinet recommends activating these selectively to avoid unexpected firewall resource saturation.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s4">
+      <div class="section-label">SECTION 04</div>
+      <h2>Protocol Port Mapping <em>&amp; TLS Version Control</em></h2>
+
+      <div class="section-img-wrap">
+        <img src="images/s4-port-mapping.png" class="section-img" alt="Diagram showing SMTPS traffic on nonstandard port 10587 being inspected via protocol port mapping"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s4-port-mapping.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: A user icon on the left sending traffic labeled "SMTPS port 10587" through a FortiGate firewall icon in the center. Above the firewall: a panel showing SSL/SSH Inspection settings with "Protocol Port Mapping" enabled and SMTPS toggled on with port 10587. To the right: a mail server icon. A checkmark above the firewall indicates the traffic is inspected. Pastel palette, bold outlines, no shadows.</div>
+        </div>
+        <p class="img-caption">Protocol port mapping lets FortiGate inspect standard services running on nonstandard ports — a common evasion technique.</p>
+      </div>
+
+      <p><strong>Protocol port mapping</strong> solves the problem of standard services running on nonstandard ports ("deep inspection"). For example, HTTPS normally runs on port 443, but if it runs on port 8443, FortiGate will not inspect it by default in proxy mode. With port mapping enabled, FortiGate recognizes the protocol regardless of port number.</p>
+
+      <p>Protocol port mapping requires three conditions to be active: (1) SSL inspection must be enabled for multiple clients connecting to multiple servers, (2) full SSL inspection must be used, and (3) the appropriate protocol port-mapping settings must be configured. It is <em>only applicable to proxy-based inspections</em> — flow-based inspections already assess all ports regardless of port-mapping settings.</p>
+
+      <p><strong>TLS version control</strong> allows FortiGate to block connections based on TLS version. The settings <code>unsupported-ssl-version block</code> and <code>min-allowed-ssl-version tls-1.2</code> block TLS 1.0 and 1.1 while accepting 1.2 and 1.3. This is configured per SSL/SSH profile and applies to HTTPS, SMTPS, POP3S, IMAPS, and FTPS protocols.</p>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — TLS Version Control in SSL/SSH Profile</div>
+        <pre><code>config firewall ssl-ssh-profile
+    edit "ssl_ssh_profile"
+        config https
+            set unsupported-ssl-version block
+            set min-allowed-ssl-version tls-1.2
+        end
+    next
+end</code></pre>
+      </div>
+
+      <div class="callout callout-amber"><strong>Exam tip:</strong> Protocol port mapping can only be activated with an outbound policy. It requires full SSL inspection (not certificate inspection) and is proxy-only. Flow-based mode inspects all ports by default — port mapping is not needed there.</div>
+
+      <div class="callout callout-green"><strong>Note:</strong> To find TLS settings quickly in the CLI: <code>show full | grep -f tls</code>. This displays all TLS-related configurations across the system.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Protocol port mapping = proxy-only, requires full SSL inspection + multiple-client mode + outbound policy. Flow-based inspects all ports automatically. TLS version control is CLI-only and applies across HTTPS, SMTPS, POP3S, IMAPS, FTPS.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s4" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s4','Port Mapping & TLS Versions')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s4" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s4')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">ON THIS PAGE</div>
+      <nav class="ssnav">
+        <a class="ssnav-item" href="#s1">SSL to TLS Evolution</a>
+        <a class="ssnav-item" href="#s2">Cert vs Full Inspection</a>
+        <a class="ssnav-item" href="#s3">SNI &amp; SAN</a>
+        <a class="ssnav-item" href="#s4">Port Mapping &amp; TLS Versions</a>
+      </nav>
+    </div>
+
+    <a class="hub-link" href="index.html">← Chapter 06 Hub</a>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">PROGRESS</div>
+      <div class="checklist" id="checklist">
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s1" onchange="toggleDone(this)">
+          <span class="check-label">SSL to TLS Evolution</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s2" onchange="toggleDone(this)">
+          <span class="check-label">Cert vs Full Inspection</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s3" onchange="toggleDone(this)">
+          <span class="check-label">SNI &amp; SAN</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s4" onchange="toggleDone(this)">
+          <span class="check-label">Port Mapping &amp; TLS Versions</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">QUICK REFERENCE</div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">TLS 1.3</div>
+        <div class="quick-ref-def">Latest TLS version (RFC 8446, 2018). Mandatory in HTTP/3. Faster handshake, improved security.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Certificate Inspection</div>
+        <div class="quick-ref-def">Inspects TLS handshake metadata (SNI, certificate) only. No decryption. Lower CPU cost.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Full SSL Inspection</div>
+        <div class="quick-ref-def">FortiGate acts as SSL proxy — decrypts, inspects payload, re-encrypts. Required for payload-level threat detection.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">SNI</div>
+        <div class="quick-ref-def">TLS extension (2003) — client sends target hostname in Client Hello. Enables multiple certs on one IP. No wildcard support.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">SAN</div>
+        <div class="quick-ref-def">X.509 certificate extension (1999) — one cert covers multiple domain names. Supports wildcards (*.example.com).</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Protocol Port Mapping</div>
+        <div class="quick-ref-def">Proxy-only feature — inspects standard protocols on nonstandard ports. Requires full SSL + multiple-client mode.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Cipher Suite</div>
+        <div class="quick-ref-def">Bundle of 4 algorithms: protocol + key exchange + authentication + encryption + hash. Negotiated during TLS handshake.</div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="page-nav">
+  <a class="page-nav-btn page-nav-prev" href="index.html">
+    <span class="page-nav-label">← BACK TO HUB</span>
+    <span class="page-nav-title">Chapter 06 Hub</span>
+  </a>
+  <a class="page-nav-btn page-nav-next" href="subtopic-02-web-filter-app-control.html">
+    <span class="page-nav-label">NEXT →</span>
+    <span class="page-nav-title">Web Filter, App Control &amp; ISDB</span>
+  </a>
+</div>
+
+<footer>
+  EF-NSE7<span>.</span> Chapter 06<span>.</span> Subtopic 01<span>.</span> SSL/SSH Inspection Profiles
+</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-ch06-sub01-ssl-ssh-inspection';
+
+const SECTIONS = {
+  's1': 'SSL to TLS',
+  's2': 'Cert vs Full Inspection',
+  's3': 'SNI and SAN',
+  's4': 'Port Mapping & TLS Versions',
+};
+
+document.querySelectorAll('.socratic-header').forEach(function(h) {
+  h.addEventListener('click', function() { h.closest('.socratic-block').classList.toggle('soc-open'); });
+});
+
+function getQArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-qs') || '[]'); }
+function saveQArr(qs) { localStorage.setItem(PAGE_KEY+'-qs', JSON.stringify(qs)); }
+function addQuestion(key, name) {
+  const ta = document.getElementById('q-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const qs = getQArr(); qs.push({id: Date.now(), section: key, sectionName: name, text});
+  saveQArr(qs); ta.value = ''; renderQPanel();
+  if (!document.getElementById('qpanel-body').classList.contains('open')) toggleQPanel();
+}
+function deleteQ(id) { saveQArr(getQArr().filter(q => q.id !== id)); renderQPanel(); }
+function toggleQPanel() {
+  const body = document.getElementById('qpanel-body');
+  const header = document.getElementById('qpanel-header');
+  const chevron = document.getElementById('qpanel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-qpanel-open', open);
+}
+function renderQPanel() {
+  const qs = getQArr();
+  const count = document.getElementById('qpanel-count');
+  if (count) { count.textContent = qs.length; count.style.display = qs.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.qpanel-hint');
+  if (hint) hint.textContent = qs.length ? `— ${qs.length} question${qs.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('qpanel-body'); if (!body) return;
+  if (!qs.length) { body.innerHTML = '<p class="no-questions">No questions yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  qs.forEach(q => { if (groups[q.section]) groups[q.section].push(q); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(q => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${q.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteQ(${q.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function getNotesArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-notes') || '[]'); }
+function saveNotesArr(ns) { localStorage.setItem(PAGE_KEY+'-notes', JSON.stringify(ns)); }
+function addNote(key) {
+  const ta = document.getElementById('note-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const ns = getNotesArr(); ns.push({id: Date.now(), section: key, sectionName: SECTIONS[key]||key, text});
+  saveNotesArr(ns); ta.value = ''; renderNotesPanel();
+  if (!document.getElementById('notes-panel-body').classList.contains('open')) toggleNotesPanel();
+}
+function deleteNote(id) { saveNotesArr(getNotesArr().filter(n => n.id !== id)); renderNotesPanel(); }
+function toggleNotesPanel() {
+  const body = document.getElementById('notes-panel-body');
+  const header = document.getElementById('notes-panel-header');
+  const chevron = document.getElementById('notes-panel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-notes-panel-open', open);
+}
+function renderNotesPanel() {
+  const ns = getNotesArr();
+  const count = document.getElementById('notes-panel-count');
+  if (count) { count.textContent = ns.length; count.style.display = ns.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.notes-panel-hint');
+  if (hint) hint.textContent = ns.length ? `— ${ns.length} note${ns.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('notes-panel-body'); if (!body) return;
+  if (!ns.length) { body.innerHTML = '<p class="no-questions">No notes yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  ns.forEach(n => { if (groups[n.section]) groups[n.section].push(n); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(n => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteNote(${n.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function toggleDone(input) {
+  localStorage.setItem(PAGE_KEY+'-check-'+input.dataset.key, input.checked);
+}
+function initChecks() {
+  document.querySelectorAll('.check-input').forEach(function(inp) {
+    inp.checked = localStorage.getItem(PAGE_KEY+'-check-'+inp.dataset.key) === 'true';
+  });
+}
+
+function saveSocAnswer(btn) {
+  const area = btn.closest('.answer-area');
+  const ta = area.querySelector('.answer-textarea');
+  if (!ta.value.trim()) { ta.focus(); return; }
+  const key = PAGE_KEY+'-socans-'+area.dataset.section;
+  try { localStorage.setItem(key, ta.value); } catch(e) {}
+  ta.disabled = true; btn.textContent = '✓ Answer saved'; btn.disabled = true;
+  const seeBtn = area.querySelector('.btn-see-answer');
+  seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+}
+function revealSocAnswer(btn) {
+  if (btn.disabled) return;
+  const answers = btn.closest('.answer-area').querySelector('.model-answers');
+  const isHidden = answers.style.display === 'none' || !answers.style.display;
+  answers.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '▲ Hide Model Answer' : '💡 See Model Answer';
+}
+
+function togglePrompt(btn) {
+  const c = btn.nextElementSibling;
+  const isHidden = c.hasAttribute('hidden');
+  if (isHidden) { c.removeAttribute('hidden'); btn.textContent = '▴ Hide image prompt'; }
+  else { c.setAttribute('hidden', ''); btn.textContent = '▾ Show image prompt'; }
+}
+
+if (sessionStorage.getItem('pt')) {
+  document.body.style.opacity = '1';
+  sessionStorage.removeItem('pt');
+}
+document.querySelectorAll('a[href]').forEach(function(a) {
+  a.addEventListener('click', function() { sessionStorage.setItem('pt', '1'); });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderQPanel(); renderNotesPanel(); initChecks();
+  if (localStorage.getItem(PAGE_KEY+'-qpanel-open') === 'true') toggleQPanel();
+  if (localStorage.getItem(PAGE_KEY+'-notes-panel-open') === 'true') toggleNotesPanel();
+  document.querySelectorAll('.answer-area').forEach(function(area) {
+    const key = PAGE_KEY+'-socans-'+area.dataset.section;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const ta = area.querySelector('.answer-textarea'); ta.value = saved; ta.disabled = true;
+        const addBtn = area.querySelector('.btn-add-answer'); addBtn.textContent = '✓ Answer saved'; addBtn.disabled = true;
+        const seeBtn = area.querySelector('.btn-see-answer'); seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+      }
+    } catch(e) {}
+  });
+  document.querySelectorAll('.analogy-box').forEach(function(box) {
+    if (box.dataset.collapsibleInit) return;
+    box.dataset.collapsibleInit = '1';
+    box.classList.add('expanded');
+    const label = box.querySelector(':scope > .analogy-label');
+    if (label) label.addEventListener('click', () => box.classList.toggle('expanded'));
+  });
+  document.querySelectorAll('.analogy-img img').forEach(function(img) {
+    if (img.dataset.zoomInit) return;
+    img.dataset.zoomInit = '1';
+    img.addEventListener('click', () => img.classList.toggle('zoomed'));
+  });
+  document.querySelectorAll('.section-img').forEach(function(img) {
+    img.addEventListener('click', () => img.classList.toggle('si-expanded'));
+  });
+});
+
+(function() {
+  var items = document.querySelectorAll('.ssnav-item');
+  if (!items.length) return;
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      var lnk = document.querySelector('.ssnav-item[href="#'+e.target.id+'"]');
+      if (lnk) lnk.classList.toggle('active', e.isIntersecting);
+    });
+  }, { rootMargin: '-10% 0% -70% 0%' });
+  document.querySelectorAll('.section-block[id]').forEach(function(el) { obs.observe(el); });
+})();
+</script>
+</body>
+</html>

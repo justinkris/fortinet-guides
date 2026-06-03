@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Integrate IPS — EF-NSE7 Ch06</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+html{scroll-behavior:smooth;}
+html.pt-init body{opacity:0;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+:root{
+  --bg:#fff5f5;--surface:#ffffff;--surface-2:#fef2f2;--border:#f0c8c8;--border-dim:#fde8e8;
+  --text:#1a0606;--text-soft:#4a1212;--text-muted:#8a3a3a;
+  --red:#c0392b;--red-vivid:#e03e2d;--red-glow:rgba(192,57,43,0.07);--red-dim:#f8b4b4;
+  --red-deep:#7f1d1d;--red-light:#fef2f2;--red-border:#f8b4b4;
+  --green:#1a7c4a;--green-light:#d4f0e0;--green-border:#a7e0c0;
+  --amber:#b45309;--amber-light:#fef9c3;--amber-border:#fde68a;
+}
+header{padding:48px 60px 36px;background:#1a0606;display:flex;align-items:flex-end;gap:32px;}
+.header-left{flex:1;}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);letter-spacing:0.08em;margin-bottom:12px;flex-wrap:wrap;}
+.breadcrumb a{color:#e87070;text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.breadcrumb-sep{color:rgba(232,112,112,0.35);}
+.header-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(232,112,112,0.1);border:1px solid rgba(232,112,112,0.25);padding:5px 14px;border-radius:20px;font-size:11px;color:#e87070;letter-spacing:0.08em;margin-bottom:14px;}
+.dot-live{width:6px;height:6px;background:#e87070;border-radius:50%;display:inline-block;animation:blink 2.4s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+header h1{font-family:'Fraunces',serif;font-size:44px;font-weight:700;line-height:1.0;color:#fff;margin-bottom:10px;}
+header h1 em{font-style:italic;font-weight:400;color:#e87070;}
+header p{font-size:13px;color:rgba(255,255,255,0.42);margin-top:10px;line-height:1.7;}
+.motivation-banner{padding:20px 60px;min-height:84px;display:flex;flex-direction:column;justify-content:center;border-bottom:1px solid var(--border);background:var(--surface);}
+.motivation-text{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--text);}
+.motivation-text em{font-style:italic;color:var(--red);}
+.motivation-sub{font-size:12px;color:var(--text-muted);line-height:1.7;margin-top:4px;}
+.top-panels{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+.top-panels .qpanel{border-bottom:none;border-right:1px solid var(--border);}
+.top-panels .qpanel-header{padding-left:32px;padding-right:32px;}
+.top-panels .qpanel-body{padding-left:32px;padding-right:32px;}
+.qpanel{background:var(--surface);}
+.qpanel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 20px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.qpanel-header:hover,.qpanel-header.open{background:var(--surface-2);}
+.qpanel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.qpanel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.qpanel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.qpanel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.qpanel-body{display:none;padding:0 20px 22px;}
+.qpanel-body.open{display:block;}
+.notes-panel{background:var(--surface);}
+.notes-panel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 32px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.notes-panel-header:hover,.notes-panel-header.open{background:var(--surface-2);}
+.notes-panel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.notes-panel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.notes-panel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.notes-panel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.notes-panel-body{display:none;padding:0 32px 22px;}
+.notes-panel-body.open{display:block;}
+.q-group{margin-bottom:16px;}
+.q-group-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+.q-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-dim);}
+.q-item:last-child{border-bottom:none;}
+.q-num{font-size:10px;font-weight:700;color:var(--red);min-width:16px;margin-top:2px;}
+.q-text{font-size:12px;color:var(--text-soft);line-height:1.5;flex:1;}
+.q-del{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 4px;margin-top:1px;}
+.q-del:hover{color:var(--red);}
+.no-questions{font-size:12px;color:var(--text-muted);padding:8px 0;}
+.btn-add-q{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-q:hover{opacity:0.85;}
+.section-nav{position:sticky;top:0;z-index:90;display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);padding:0 32px;overflow-x:auto;}
+.nav-tab{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:12px 18px;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--red);border-bottom-color:var(--red);}
+main{display:grid;grid-template-columns:1fr 320px;gap:0;align-items:start;max-width:1200px;margin:0 auto;padding:0;}
+.main-content{padding:36px 40px 60px 60px;}
+.sidebar{padding:32px 24px 60px 20px;position:sticky;top:57px;max-height:calc(100vh - 57px);overflow-y:auto;}
+.section-block{margin-bottom:48px;}
+.section-label{font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.section-block h2{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1.15;margin-bottom:16px;padding-left:16px;border-left:3px solid var(--red);}
+.section-block h2 em{font-style:italic;font-weight:400;color:var(--red);}
+.section-block p{font-size:14px;line-height:1.8;color:var(--text-soft);margin-bottom:14px;}
+.section-block p strong{color:var(--text);font-weight:600;}
+.section-block p em{color:var(--red);font-style:italic;}
+.section-block ul,.section-block ol{padding-left:22px;margin-bottom:14px;}
+.section-block li{font-size:14px;line-height:1.75;color:var(--text-soft);margin-bottom:4px;}
+.section-block li strong{color:var(--text);font-weight:600;}
+.callout{border-left:3px solid var(--red-border);background:var(--red-light);border-radius:0 10px 10px 0;padding:12px 18px;margin:16px 0;font-size:13.5px;line-height:1.65;color:var(--text-soft);}
+.callout strong{color:var(--text);}
+.callout-green{border-left-color:var(--green-border);background:var(--green-light);}
+.callout-amber{border-left-color:var(--amber-border);background:var(--amber-light);}
+.section-img-wrap{margin:0 0 20px;display:flex;flex-direction:column;align-items:center;}
+.section-img{width:260px;max-width:100%;border-radius:12px;cursor:zoom-in;transition:width 0.3s ease;border:1px solid var(--border);display:block;}
+.section-img.si-expanded{width:100%;cursor:zoom-out;border-radius:16px;}
+.si-placeholder{display:none;width:260px;max-width:100%;border:2px dashed var(--border);border-radius:12px;background:var(--surface-2);padding:14px 16px;flex-direction:column;align-items:flex-start;gap:8px;}
+.si-placeholder.si-show{display:flex;}
+.si-filename{font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+.code-block{background:#1a0606;border-radius:12px;padding:20px 24px;margin:16px 0;overflow-x:auto;}
+.code-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#e87070;margin-bottom:10px;}
+.code-block pre{margin:0;}
+.code-block code{font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:rgba(255,255,255,0.82);}
+.socratic-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:16px;border-top:3px solid var(--red);}
+.socratic-header{display:flex;align-items:center;gap:8px;margin-bottom:0;cursor:pointer;user-select:none;}
+.socratic-header::after{content:'▸ Expand';margin-left:auto;font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'Inter',sans-serif;}
+.socratic-block.soc-open .socratic-header{margin-bottom:10px;}
+.socratic-block.soc-open .socratic-header::after{content:'▾ Collapse';}
+.socratic-block:not(.soc-open) .socratic-insight,
+.socratic-block:not(.soc-open) .socratic-questions,
+.socratic-block:not(.soc-open) .answer-area{display:none;}
+.socratic-icon{font-size:17px;flex-shrink:0;}
+.socratic-label{font-size:9px;font-weight:700;letter-spacing:0.18em;color:var(--text-muted);}
+.socratic-insight{font-size:13px;color:var(--text-soft);line-height:1.75;margin-bottom:12px;border-left:3px solid var(--border);padding-left:12px;font-style:italic;}
+.socratic-questions{list-style:none;padding:0;margin:0;}
+.socratic-questions li{font-size:12.5px;color:var(--text);padding:7px 0 7px 22px;position:relative;border-bottom:1px solid var(--border-dim);line-height:1.6;}
+.socratic-questions li:last-child{border-bottom:none;}
+.socratic-questions li::before{content:'?';position:absolute;left:0;font-weight:700;font-size:12px;top:8px;color:var(--red);}
+.answer-area{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.answer-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.answer-textarea:focus{border-color:var(--text);}
+.answer-textarea:disabled{opacity:0.7;background:var(--surface-2);cursor:default;}
+.answer-buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.btn-add-answer{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-answer:hover:not(:disabled){opacity:0.85;}
+.btn-add-answer:disabled{opacity:0.5;cursor:default;}
+.btn-see-answer{background:var(--surface);color:var(--text-muted);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-see-answer:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-see-answer:not(:disabled){color:var(--red);border-color:var(--red);}
+.btn-see-answer:hover:not(:disabled){background:var(--red-glow);}
+.model-answers{margin-top:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.model-answer-item{padding:10px 0;border-bottom:1px solid var(--border-dim);}
+.model-answer-item:first-child{padding-top:0;}
+.model-answer-item:last-child{border-bottom:none;padding-bottom:0;}
+.model-answer-q{font-size:9px;font-weight:700;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:4px;}
+.model-answer-text{font-size:13px;color:var(--text-soft);line-height:1.7;}
+.mental-note-block{border-radius:10px;padding:12px 16px;margin:16px 0;display:flex;gap:10px;align-items:flex-start;background:rgba(192,57,43,0.07);border:1px solid var(--border);}
+.mental-note-block-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.mental-note-block-inner{flex:1;}
+.mental-note-block-label{font-size:9px;font-weight:700;letter-spacing:0.16em;color:var(--red);margin-bottom:3px;}
+.mental-note-block-text{font-size:13px;font-weight:600;line-height:1.55;color:var(--text);}
+.analogy-box{background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #b45309;border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0;}
+.analogy-label{display:flex;align-items:center;gap:6px;user-select:none;cursor:pointer;font-size:9px;font-weight:700;letter-spacing:0.16em;color:#b45309;margin-bottom:4px;}
+.analogy-label::after{content:'▾  Reveal illustration';margin-left:auto;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:none;opacity:0.75;}
+.analogy-label:hover::after{opacity:1;}
+.analogy-box.expanded>.analogy-label::after{content:'▴  Hide illustration';}
+.analogy-text{font-size:13px;color:#78350f;line-height:1.65;font-style:italic;}
+.analogy-box>.analogy-img{display:none;}
+.analogy-box.expanded>.analogy-img{display:block;}
+.analogy-img img{max-width:360px;width:100%;cursor:zoom-in;transition:max-width 0.25s ease;border-radius:8px;margin-top:10px;}
+.analogy-img img.zoomed{max-width:100%;cursor:zoom-out;}
+.prompt-toggle{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:10px;font-weight:600;letter-spacing:0.08em;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;text-transform:uppercase;}
+.prompt-toggle:hover{color:var(--text);border-color:var(--text);}
+.prompt-content{margin-top:10px;padding:10px 14px;background:rgba(0,0,0,0.04);border-radius:8px;font-size:11.5px;color:var(--text-muted);font-style:italic;line-height:1.65;text-align:left;}
+.prompt-content[hidden]{display:none;}
+.lesson-tools{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:40px;}
+.lesson-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.tool-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.tool-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.tool-textarea:focus{border-color:var(--red);}
+.tool-row{margin-top:8px;display:flex;gap:8px;}
+.sidebar-section{margin-bottom:28px;}
+.sidebar-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;}
+.ssnav{display:flex;flex-direction:column;gap:2px;margin-top:4px;}
+.ssnav-item{font-size:12px;color:var(--text-soft);padding:6px 10px;border-radius:6px;text-decoration:none;line-height:1.4;display:block;transition:background 0.15s,color 0.15s;}
+.ssnav-item:hover,.ssnav-item.active{background:var(--red-glow);color:var(--red);}
+.hub-link{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);margin-bottom:16px;transition:color 0.15s,border-color 0.15s,background 0.15s;}
+.hub-link:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);}
+.check-item{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;}
+.check-input{accent-color:var(--red);width:14px;height:14px;flex-shrink:0;cursor:pointer;}
+.check-label{font-size:12px;color:var(--text-soft);line-height:1.4;}
+.check-item:has(.check-input:checked) .check-label{color:var(--text-muted);text-decoration:line-through;}
+.quick-ref{background:#1a0606;border-radius:10px;padding:12px 16px;margin-bottom:8px;}
+.quick-ref-term{font-size:10px;font-weight:700;letter-spacing:0.12em;color:#e87070;margin-bottom:3px;text-transform:uppercase;}
+.quick-ref-def{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;}
+.page-nav{display:flex;border-top:2px solid var(--border);background:var(--surface);}
+.page-nav-btn{flex:1;display:flex;flex-direction:column;gap:4px;padding:16px 28px;text-decoration:none;transition:background 0.15s;cursor:pointer;}
+.page-nav-btn:hover:not(.page-nav-disabled){background:var(--surface-2);}
+.page-nav-prev{border-right:1px solid var(--border);}
+.page-nav-next{text-align:right;}
+.page-nav-disabled{opacity:0.3;pointer-events:none;}
+.page-nav-label{font-size:10px;font-weight:600;letter-spacing:0.14em;color:var(--text-muted);display:block;}
+.page-nav-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;color:var(--red);display:block;}
+footer{font-size:11px;letter-spacing:0.12em;color:var(--text-muted);text-transform:uppercase;padding:20px 60px;border-top:1px solid var(--border);}
+footer span{color:var(--red);}
+.img-caption{font-size:11px;color:var(--text-muted);text-align:center;margin-top:6px;line-height:1.4;font-style:italic;}
+.analogy-summary{font-style:normal;font-weight:600;color:#92400e;margin-bottom:10px;}
+.analogy-text ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;}
+.analogy-text li{padding-left:18px;position:relative;}
+.analogy-text li::before{content:'•';position:absolute;left:0;font-weight:700;color:#b45309;}
+.data-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;}
+.data-table th{background:#1a0606;color:#e87070;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:10px 14px;text-align:left;}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-soft);line-height:1.55;vertical-align:top;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:nth-child(even) td{background:var(--surface-2);}
+.data-table td strong{color:var(--text);font-weight:600;}
+@media(max-width:1000px){main{grid-template-columns:1fr;}.sidebar{position:static;max-height:none;padding:0 40px 40px;}}
+@media(max-width:720px){header{padding:28px 24px 24px;}header h1{font-size:32px;}.motivation-banner{padding:16px 24px;}.main-content{padding:24px 24px 40px;}.section-nav{padding:0 16px;}.top-panels{grid-template-columns:1fr;}.top-panels .qpanel{border-right:none;border-bottom:1px solid var(--border);}.lesson-tools-grid{grid-template-columns:1fr;}footer{padding:16px 24px;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="breadcrumb">
+      <a href="../nse7-ef-study-guide-hub.html">EF-NSE7</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="index.html">Chapter 06 — Security Profiles</a>
+      <span class="breadcrumb-sep">›</span>
+      Subtopic 03
+    </div>
+    <div class="header-eyebrow"><span class="dot-live"></span> Study Guide · EF-NSE7</div>
+    <h1>Integrate IPS in <em>Enterprise Networks</em></h1>
+    <p>Understand IPS profile configuration, false positive handling, real-world attack use cases (PHP injection, DNS exfiltration), and how to place UTM profiles strategically across NGFW, ISFW, DCFW, and DEFW topologies.</p>
+  </div>
+</header>
+
+<div class="motivation-banner">
+  <div class="motivation-text">A broad IPS filter catches everything — including your own <em>legitimate traffic</em>.</div>
+  <p class="motivation-sub">IPS is the most powerful and most dangerous security profile to misconfigure. This subtopic teaches you to protect without disrupting, using real attack scenarios to sharpen your judgment.</p>
+</div>
+
+<div class="top-panels">
+  <div class="qpanel" id="qpanel">
+    <button class="qpanel-header" onclick="toggleQPanel()" id="qpanel-header">
+      <span class="qpanel-title">MY QUESTIONS</span>
+      <span class="qpanel-count" id="qpanel-count">0</span>
+      <span class="qpanel-hint">— click to expand</span>
+      <span class="qpanel-chevron" id="qpanel-chevron">▾</span>
+    </button>
+    <div class="qpanel-body" id="qpanel-body"></div>
+  </div>
+  <div class="notes-panel" id="notes-panel">
+    <button class="notes-panel-header" onclick="toggleNotesPanel()" id="notes-panel-header">
+      <span class="notes-panel-title">MY NOTES</span>
+      <span class="notes-panel-count" id="notes-panel-count">0</span>
+      <span class="notes-panel-hint">— click to expand</span>
+      <span class="notes-panel-chevron" id="notes-panel-chevron">▾</span>
+    </button>
+    <div class="notes-panel-body" id="notes-panel-body"></div>
+  </div>
+</div>
+
+<nav class="section-nav" id="section-nav">
+  <a class="nav-tab active" href="#s1">IPS Profile Basics</a>
+  <a class="nav-tab" href="#s2">False Positives</a>
+  <a class="nav-tab" href="#s3">Attack Use Cases</a>
+  <a class="nav-tab" href="#s4">UTM Placement</a>
+</nav>
+
+<main>
+  <div class="main-content">
+
+    <!-- ═══════════════════════════════ SECTION 1 ═══════════════════════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · IPS PROFILE BASICS</span>
+      </div>
+      <p class="socratic-insight">An IPS profile with Type=Filter and Action=Block targeting both Client and Server targets delivers 10,320+ signatures — and will flag and block everything that even looks suspicious, including legitimate traffic. The tradeoff between comprehensive protection and operational disruption is the core tension in IPS deployment.</p>
+      <ul class="socratic-questions">
+        <li>Setting an IPS filter to target both "Client" and "Server" with Action=Block and all severities enabled results in over 10,000 active signatures. What is the operational risk, and what should an admin know about their network before deploying this configuration?</li>
+        <li>hping3 is used to test and simulate IPS attacks in this chapter. Why is an open-source tool used for ethical security testing important in an enterprise firewall course, and what does "false positive" mean in the IPS context?</li>
+      </ul>
+      <div class="answer-area" data-section="ips-basics">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">With 10,320+ signatures active, the IPS profile will block anything resembling an attack pattern — including oversized ICMP packets from legitimate monitoring tools, peer applications with unusual packet sizes, or specialized business software. The admin must deeply understand the network's normal protocols and workflows to avoid blocking critical services. False positives are common in broad-coverage IPS configurations and can disrupt day-to-day operations.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">hping3 allows network engineers to simulate specific attack patterns safely in a lab environment to verify that IPS signatures trigger correctly — and to identify which signatures trigger on normal traffic (false positives). A false positive occurs when IPS identifies benign, legitimate traffic as an attack and blocks it. Understanding how attacks are simulated helps admins tune their IPS to minimize false positives without leaving gaps in protection.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s1">
+      <div class="section-label">SECTION 01</div>
+      <h2>IPS Profile Configuration — <em>Filter vs Signature Types</em></h2>
+
+      <div class="section-img-wrap">
+        <img src="images/s1-ips-profile.png" class="section-img" alt="IPS profile configuration showing Filter type with Block action targeting Client and Server"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s1-ips-profile.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: A FortiGate "Security Profiles > Intrusion Prevention" panel. Two rows: top row labeled "Filter" with Action=Block, Target=Client+Server, Status=Enabled — shown with a broad red net catching many signature icons. Bottom row labeled "Signature" with Action=Monitor, a single specific signature highlighted in a spotlight. Left: an attacker icon; right: a server/client icon pair. Pastel palette, bold outlines, no shadows.</div>
+        </div>
+        <p class="img-caption">Filter type casts a wide net across many signatures; Signature type pins down one specific CVE or attack pattern with its own action.</p>
+      </div>
+
+      <p>FortiGate IPS profiles use two entry types: <strong>Filter</strong> and <strong>Signature</strong>. A <em>Filter</em> entry applies an action to a broad group of signatures matching criteria (severity, protocol, OS, target). A <em>Signature</em> entry targets one specific IPS signature by name, allowing a granular override action that takes priority over any matching filter.</p>
+
+      <p>Key IPS profile settings include:</p>
+      <ul>
+        <li><strong>Type:</strong> Filter (broad group) or Signature (specific CVE/signature name)</li>
+        <li><strong>Action:</strong> Block, Monitor, Reset, or Default (inherits the signature's default action)</li>
+        <li><strong>Packet Logging:</strong> Enable to capture packets triggering the signature — use only for troubleshooting false positives or creating custom signatures; avoid in long-term production due to performance impact</li>
+        <li><strong>Status:</strong> Enable, Disable, or Default</li>
+        <li><strong>Target:</strong> Client, Server, or both</li>
+      </ul>
+
+      <p><strong>hping3</strong> is a free, open-source tool used for network security auditing, firewall testing, and simulating attack traffic. In the IPS context, it is used to generate test packets (oversized ICMP, TCP SYN floods, traceroutes via UDP) to validate IPS signatures and identify false positives. Key hping3 examples from the study guide:</p>
+
+      <div class="code-block">
+        <div class="code-label">hping3 — IPS Test Commands</div>
+        <pre><code># Ping using TCP SYN packets to port 80 (5 packets)
+hping3 -S -p 80 -c 5 www.example.com
+
+# Traceroute using UDP packets
+hping3 --traceroute -V -1 -p 33434 www.example.com
+
+# Check for open port 22 (1 packet)
+hping3 -S -c 1 -p 22 www.example.com
+
+# Send 8 oversized ICMP packets (654001 bytes — triggers ICMP.Oversized.Packet)
+hping3 -1 -d 654001 -c 8 10.0.3.55</code></pre>
+      </div>
+
+      <div class="callout callout-amber"><strong>Exam tip:</strong> Packet logging (<code>Packet Logging: Enable</code>) is useful for addressing false positives or creating specific signatures, but its long-term use or production deployment is explicitly warned against — it has significant performance overhead and should not be left enabled during normal operations.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">IPS profile Type=Filter, Action=Block, Target=Client+Server → 10,320+ signatures, high false positive risk. Type=Signature → one specific signature, can override the filter. Signature entries must be ranked HIGHER (earlier in the list) than filter entries to take priority. Packet logging = troubleshooting only.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s1" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s1','IPS Profile Basics')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s1" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s1')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════ SECTION 2 ═══════════════════════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · FALSE POSITIVES</span>
+      </div>
+      <p class="socratic-insight">A false positive is when IPS blocks legitimate traffic because it matches an attack signature. The resolution is not to remove the blocking filter — it's to add a higher-priority Signature entry with Action=Monitor that allows the specific legitimate signature through while keeping the broader filter in place.</p>
+      <ul class="socratic-questions">
+        <li>To resolve a false positive, you add a Signature-type entry with Action=Monitor above the Filter entry. Why must the Signature entry have a HIGHER priority (ranked earlier) than the Filter entry, and what happens if you rank it lower?</li>
+        <li>Using Action=Monitor instead of removing the blocking rule is the recommended approach. Why is completely removing the filter signature not the right solution for a false positive?</li>
+      </ul>
+      <div class="answer-area" data-section="false-positives">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">IPS rules are evaluated top-to-bottom in priority order. The first matching rule wins. If the Signature=Monitor entry is ranked lower than the Filter=Block entry, the Filter match happens first and the traffic is blocked before FortiGate ever reaches the Monitor override. The Signature entry must be at the top — or at least above any Filter entry that would otherwise match — to override the broader filter's action.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Removing the filter signature entirely would create a protection gap for other traffic that genuinely matches that signature pattern. The goal is surgical: allow the specific legitimate traffic through while keeping the broad blocking protection for actual attacks. Monitor=allow+log achieves this — you retain visibility (packet logging can confirm the traffic is benign) while no longer blocking the legitimate business application.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s2">
+      <div class="section-label">SECTION 02</div>
+      <h2>Handling False Positives — <em>Monitor Override Strategy</em></h2>
+
+      <div class="section-img-wrap">
+        <img src="images/s2-false-positive.png" class="section-img" alt="Two-step diagram: before=ICMP.Oversized.Packet blocked; after=Signature Monitor entry added above filter, traffic allowed"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s2-false-positive.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful two-panel illustration: Left panel labeled "False Positive — Traffic Blocked": hping3 arrow from Linux server hits FortiGate, big red X blocks it, Windows PC shows broken app. Right panel labeled "Solution — Signature Monitor": same Linux server, but now inside FortiGate there are two rules stacked: top rule highlighted in green (Signature=ICMP.Oversized.Packet, Action=Monitor), below it a grey rule (Filter=Block). Arrow passes through, Windows PC shows working app. Pastel palette, bold outlines, no shadows.</div>
+        </div>
+        <p class="img-caption">The false positive fix: add a Signature entry with Action=Monitor ranked above the broad Filter=Block. Priority order is critical.</p>
+      </div>
+
+      <p>When a FortiGate IPS profile incorrectly blocks legitimate traffic (a <strong>false positive</strong>), the recommended resolution is to add a <strong>Signature-type entry</strong> with <strong>Action=Monitor</strong> above the Filter entry that is causing the block.</p>
+
+      <p>The false positive workflow in the study guide is illustrated with the <em>ICMP.Oversized.Packet</em> signature:</p>
+      <ol>
+        <li>A Linux server uses hping3 to send 8 oversized ICMP packets (654001 bytes, exceeding MTU) to a Windows PC at 10.0.3.55</li>
+        <li>FortiGate's broad Filter=Block IPS profile flags these as an attack and drops the packets</li>
+        <li>The Windows application stops working — this is the false positive</li>
+        <li><strong>Solution:</strong> Add a Signature entry for <em>ICMP.Oversized.Packet</em> with Action=Monitor, ranked at the top of the IPS signature list — above the Filter=Block entry</li>
+        <li>FortiGate now allows the oversized packets through (and logs them), while the broader Filter continues blocking all other potential attacks</li>
+      </ol>
+
+      <div class="callout callout-amber"><strong>Exam tip:</strong> Signature priority is critical. If the Monitor Signature entry is ranked LOWER than the Filter=Block entry, it will have no effect — the filter wins first. The new Signature entry must be at the TOP of the rules list (highest priority) to override the filter action.</div>
+
+      <div class="callout"><strong>From FortiGuard Encyclopedia:</strong> When a detected attack signature is a known false positive for your environment, you can look up the signature in the FortiGuard Encyclopedia to learn: Affected products, Impact assessment, Recommended actions, and Description of the vulnerability.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">False positive fix = Type=Signature, Action=Monitor, ranked ABOVE the Filter=Block. Priority top-to-bottom: first match wins. If Monitor is below Filter, Filter wins and the fix does nothing. Packet logging helps identify false positives but must not remain on in production.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s2" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s2','False Positives')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s2" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s2')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════ SECTION 3 ═══════════════════════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · ATTACK USE CASES</span>
+      </div>
+      <p class="socratic-insight">Two attack patterns illustrate why SSL inspection mode matters for IPS. PHP code injection in HTTP can be detected with certificate inspection + IPS. But over HTTPS, the same attack is invisible to IPS unless full SSL inspection with "Protecting SSL Server" is enabled. DNS exfiltration is the subtler attack — it uses plain UDP DNS queries to steal encrypted data, and requires the DNSExfiltrator.Data.Exfiltration IPS signature with full SSL inspection to detect.</p>
+      <ul class="socratic-questions">
+        <li>A firewall policy with IPS and certificate inspection is sufficient to detect PHP code injection in HTTP. Why is it NOT sufficient for the same attack over HTTPS, and what SSL/SSH profile option is required?</li>
+        <li>DNS exfiltration uses unencrypted UDP DNS queries to steal data. Why does FortiGate still need full SSL inspection enabled (with DNS over TLS) to use the DNSExfiltrator.Data.Exfiltration IPS signature?</li>
+      </ul>
+      <div class="answer-area" data-section="attack-cases">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Certificate inspection does not decrypt the HTTPS payload — FortiGate can see the SNI and certificate, but the injected PHP code is inside the encrypted body. IPS cannot inspect what it cannot read. To detect PHP code injection in HTTPS, the SSL/SSH profile must use "Protecting SSL Server" mode, which decrypts inbound HTTPS traffic destined for the protected server, allowing IPS to inspect the plaintext request body for the PHP.URI.Code.Injection signature pattern.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">DNS exfiltration encodes stolen data as DNS query subdomains (e.g., JHCMQK.example.com where JHCMQK is the encoded password). These queries travel as regular UDP DNS traffic. The IPS signature DNSExfiltrator.Data.Exfiltration requires full SSL inspection with "multiple clients connecting to multiple servers" mode enabled — because the signature needs to decrypt and analyze the entire traffic stream (including DNS over TLS, port 853) to detect the encoding pattern of the exfiltration attempt.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s3">
+      <div class="section-label">SECTION 03</div>
+      <h2>IPS Attack Use Cases — <em>PHP Injection &amp; DNS Exfiltration</em></h2>
+
+      <div class="section-img-wrap">
+        <img src="images/s3-attack-usecases.png" class="section-img" alt="Two attack flow diagrams: PHP code injection in HTTPS blocked by Protecting SSL Server mode, and DNS exfiltration via encoded UDP queries"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s3-attack-usecases.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful two-panel illustration: Left panel "PHP Code Injection": Windows laptop (attacker) sending an HTTPS request with PHP code embedded in the URL arrow to a Linux Ubuntu server. FortiGate in the middle with "Protecting SSL Server" enabled — a padlock with an eye icon. A "Secure Connection Failed" browser message shows the attack was blocked. Right panel "DNS Exfiltration": A malware-infected laptop sending DNS queries with encoded subdomains (JHCMQK.example.com) through FortiGate to an attacker-controlled name server. FortiGate has a "DNSExfiltrator" IPS signature tag highlighted in red blocking the query. Pastel palette, bold outlines, no shadows.</div>
+        </div>
+        <p class="img-caption">PHP injection in HTTPS requires "Protecting SSL Server" mode. DNS exfiltration requires full SSL inspection to detect the encoding pattern.</p>
+      </div>
+
+      <p><strong>Use Case 3 — PHP Code Injection (HTTP):</strong> An attacker from a Windows PC (10.0.3.55) accesses a Linux server running a vulnerable PHP file via HTTP. The attacker embeds PHP code in the URL (<code>dir_command.php?arg=...echo%20system(dir)...</code>) to execute remote commands. With IPS Type=Filter, Action=Monitor, and certificate inspection, FortiGate detects the <em>PHP.URI.Code.Injection</em> signature but does not block. To block: add the signature at the top of the list with Action=Block. The "connection reset" error in the browser confirms the block.</p>
+
+      <p><strong>Use Case 4 — PHP Code Injection (HTTPS):</strong> The same attack over HTTPS is invisible with certificate inspection — FortiGate sees the encrypted request but cannot read the injected PHP code. The solution: create an SSL/SSH profile with the <strong>Protecting SSL Server</strong> option enabled and configure the server certificate. This mode decrypts inbound HTTPS to the protected server, allowing IPS to inspect the plaintext body. Once the SSL/SSH profile is attached to the policy, FortiGate detects and drops the PHP injection attempts.</p>
+
+      <p><strong>Use Case 5 — DNS Exfiltration:</strong> DNS converts IP addresses to text using unencrypted UDP. An attacker registers a domain (e.g., NS1.example.com) and uses a malware-infected client to encode stolen data (a password) as a DNS query subdomain: <em>JHCMQK.example.com</em>. The recursive DNS server forwards the query to the attacker's name server, which decodes the subdomain to recover the stolen data — all using normal, unencrypted DNS traffic.</p>
+
+      <p>FortiGate includes the <strong>DNSExfiltrator.Data.Exfiltration</strong> IPS signature (ID: M18143) to detect and block this attack. To use it, enable full SSL inspection with multiple clients connecting to multiple servers mode. This enables FortiGate to encrypt, decrypt, and see all traffic — including DNS over TLS (port 853).</p>
+
+      <div class="analogy-box">
+        <div class="analogy-label">Analogy</div>
+        <div class="analogy-text">
+          <p class="analogy-summary">DNS exfiltration is like spelling out a secret message using only the return addresses on postcards — the postcard itself is empty, but the address encodes the data.</p>
+          <ul>
+            <li><strong>DNS query subdomain</strong> — maps to the return address on the postcard (visible to all, but carries the hidden message)</li>
+            <li><strong>Recursive DNS server</strong> — maps to the postal sorting facility that forwards the postcard toward its destination without reading the "hidden" return address data</li>
+            <li><strong>Attacker's name server</strong> — maps to the attacker's mailbox that collects and decodes all the return addresses to reconstruct the message</li>
+          </ul>
+        </div>
+        <div class="analogy-img" style="margin-top:14px;background:rgba(255,255,255,0.5);border-radius:10px;padding:14px;text-align:center;">
+          <img src="images/a1-dns-postcard.png" alt="DNS exfiltration postcard analogy"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='block';" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 10px;">
+          <div class="img-missing-msg" style="display:none;font-size:12px;color:#92400e;padding:8px;background:rgba(146,64,14,0.1);border-radius:6px;">📷 <strong>images/a1-dns-postcard.png</strong> — add this image to the folder</div>
+          <button class="prompt-toggle" onclick="togglePrompt(this)" type="button">▾ Show analogy image prompt</button>
+          <div class="prompt-content" hidden>Cartoon flat illustration in pastel style: Three-scene horizontal panel. Scene 1: A hooded "attacker" figure writing a secret code on a postcard return address field labeled "JHCMQK.example.com" — the postcard body is blank. Scene 2: A postal sorting facility (labeled "Recursive DNS Server") passing the postcard along without reading the return address meaning. Scene 3: The attacker's mailbox (labeled "NS1.example.com") receiving the postcard, and the attacker decoding "JHCMQK = password" from the return address. Bold outlines, pastel colors, minimal text labels, no shadows, educational infographic feel.</div>
+        </div>
+      </div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">PHP injection in HTTP = cert inspection + IPS works. PHP injection in HTTPS = must use "Protecting SSL Server" SSL/SSH profile to decrypt payload. DNS exfiltration = uses unencrypted UDP DNS subdomains to encode stolen data; blocked by DNSExfiltrator.Data.Exfiltration IPS signature (requires full SSL inspection + multiple-client mode).</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s3" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s3','Attack Use Cases')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s3" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s3')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════ SECTION 4 ═══════════════════════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · UTM PLACEMENT</span>
+      </div>
+      <p class="socratic-insight">UTM profiles (web filter, application control, IPS) are typically deployed on NGFW devices — but the right placement depends on the firewall's role in the topology. ISFW, DCFW, and DEFW each have different primary functions, and applying UTM profiles on all of them may create redundancy, increased latency, or misalignment with the device's role.</p>
+      <ul class="socratic-questions">
+        <li>DEFW (Distributed Enterprise Firewall) is designed for connecting remote sites to HQ — it does not natively need NGFW functions. When should you consider enabling UTM profiles on a DEFW, and what hardware recommendation applies?</li>
+        <li>NGFW and DCFW may create redundancy when both apply content filtering and IPS. Why is this redundancy sometimes acceptable, and how does topology help manage it?</li>
+      </ul>
+      <div class="answer-area" data-section="utm-placement">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">If operational needs require UTM on a DEFW — for example, if direct internet breakout is needed at the branch — consider using a midrange firewall (higher capability than the 100-900 series ISFW devices). Small-form DEFW appliances have limited CPU for deep inspection. The decision should be driven by whether the remote site has direct internet access or always routes traffic back through the NGFW at HQ.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">The NGFW acts as the internet gateway and applies UTM to all inbound/outbound traffic. The DCFW sits above the ISFWs and protects internal data center resources — it may need its own IPS to protect east-west traffic that never leaves the data center and thus never passes through the NGFW. In that sense, the redundancy is intentional: the DCFW catches threats that bypass the perimeter NGFW by moving laterally inside the network.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s4">
+      <div class="section-label">SECTION 04</div>
+      <h2>UTM Profile Placement — <em>NGFW, ISFW, DCFW, DEFW</em></h2>
+
+      <div class="section-img-wrap">
+        <img src="images/s4-utm-placement.png" class="section-img" alt="Network topology showing UTM profile placement across NGFW, DCFW, ISFW, and DEFW firewall roles"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s4-utm-placement.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful network topology illustration: A hierarchical diagram from top to bottom. Top: Internet cloud. Below: NGFW icon labeled "UTMs" with colored dots showing web filter, app control, IPS. Below NGFW: DCFW icon (also labeled UTMs). Below DCFW: two ISFW icons (labeled UTMs with smaller dots — partial profile). Bottom left: Remote site with DEFW icon (labeled "no NGFW native"). Bottom right: Another ISFW and DEFW pair. Color-coded connections showing traffic flows. Pastel palette, bold outlines, no shadows.</div>
+        </div>
+        <p class="img-caption">UTM profiles are standard on NGFW. ISFW may serve dual roles. DEFW and DCFW placement depends on operational priorities.</p>
+      </div>
+
+      <p>UTM profiles (web filtering, application control, IPS) are standard features in <strong>Next-Generation Firewalls (NGFW)</strong>. The optimal placement depends on network topology and the specific role of each firewall type:</p>
+
+      <table class="data-table">
+        <tr><th>Firewall Type</th><th>Primary Role</th><th>UTM Profile Usage</th></tr>
+        <tr><td><strong>NGFW</strong></td><td>Internet gateway, perimeter security</td><td>Full UTM — content filtering, IPS, app control across all internet traffic</td></tr>
+        <tr><td><strong>ISFW</strong> (Internal Segmentation)</td><td>Segmentation, low latency, wireless LAN</td><td>Content filtering supported, but primarily configured for segmentation. May serve dual ISFW+NGFW role</td></tr>
+        <tr><td><strong>DCFW</strong> (Data Center)</td><td>Connecting internal and external traffic to data center</td><td>Content filtering and IPS for east-west / north-south data center traffic. May coexist with NGFW (some redundancy)</td></tr>
+        <tr><td><strong>DEFW</strong> (Distributed Enterprise)</td><td>Remote site connectivity to HQ</td><td>Does not natively need NGFW functions. If UTM is required, use midrange hardware</td></tr>
+      </table>
+
+      <p>An <strong>ISFW</strong> may serve a dual role as both an ISFW and an NGFW — for example, if it needs VPNs to manage sensitive traffic or requires traffic filtering for secure internet access or SD-WAN prioritization. A <strong>DCFW</strong> often performs NGFW functions and is a critical node for connecting internal and external traffic. It may use VDOMs to create virtual firewalls for segmentation.</p>
+
+      <p>A <strong>DEFW</strong>, designed solely for connecting remote sites to headquarters, does not necessarily need UTM profiles. If UTM profiles become necessary on a DEFW, consider using a midrange firewall with greater capabilities than the 100-900 series appliances typically used for branch connectivity.</p>
+
+      <div class="callout callout-green"><strong>Note:</strong> UTM profile placement should be strategically determined based on topology and operational priorities. Applying UTM on every firewall in the network introduces redundancy, increased latency at each inspection point, and additional resource consumption that must be justified by the threat model.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-text">UTM placement hierarchy: NGFW = always (internet gateway). DCFW = applies content filter + IPS for data center traffic. ISFW = primarily segmentation, UTM optional, can serve dual NGFW role. DEFW = no native NGFW function; use midrange hardware if UTM needed. Placement = topology-driven, not one-size-fits-all.</div>
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s4" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s4','UTM Placement')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s4" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s4')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">ON THIS PAGE</div>
+      <nav class="ssnav">
+        <a class="ssnav-item" href="#s1">IPS Profile Basics</a>
+        <a class="ssnav-item" href="#s2">False Positives</a>
+        <a class="ssnav-item" href="#s3">Attack Use Cases</a>
+        <a class="ssnav-item" href="#s4">UTM Placement</a>
+      </nav>
+    </div>
+
+    <a class="hub-link" href="index.html">← Chapter 06 Hub</a>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">PROGRESS</div>
+      <div class="checklist" id="checklist">
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s1" onchange="toggleDone(this)">
+          <span class="check-label">IPS Profile Basics</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s2" onchange="toggleDone(this)">
+          <span class="check-label">False Positives</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s3" onchange="toggleDone(this)">
+          <span class="check-label">Attack Use Cases</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s4" onchange="toggleDone(this)">
+          <span class="check-label">UTM Placement</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">QUICK REFERENCE</div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">IPS Filter Type</div>
+        <div class="quick-ref-def">Broad group match — applies action to all signatures matching severity, protocol, OS, and target criteria.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">IPS Signature Type</div>
+        <div class="quick-ref-def">Targets one specific signature by name. Must be ranked ABOVE any Filter entry it overrides. Used for false positive resolution.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">False Positive Fix</div>
+        <div class="quick-ref-def">Add Signature entry with Action=Monitor at highest priority (above Filter=Block). Packet logging confirms traffic is benign.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">hping3</div>
+        <div class="quick-ref-def">Open-source ethical attack simulator. Used to test IPS with TCP SYN floods, UDP traceroutes, and oversized ICMP packets.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Protecting SSL Server</div>
+        <div class="quick-ref-def">SSL/SSH profile mode that decrypts inbound HTTPS to a protected server — required for IPS to detect payload-embedded attacks like PHP injection.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">DNS Exfiltration</div>
+        <div class="quick-ref-def">Attack that encodes stolen data as DNS query subdomains. Detected by DNSExfiltrator.Data.Exfiltration IPS signature (requires full SSL inspection).</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">UTM on DEFW</div>
+        <div class="quick-ref-def">DEFW does not natively require NGFW/UTM functions. If needed, use midrange hardware — not low-end 100-900 series appliances.</div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="page-nav">
+  <a class="page-nav-btn page-nav-prev" href="subtopic-02-web-filter-app-control.html">
+    <span class="page-nav-label">← PREVIOUS</span>
+    <span class="page-nav-title">Web Filter, App Control &amp; ISDB</span>
+  </a>
+  <a class="page-nav-btn page-nav-next" href="index.html">
+    <span class="page-nav-label">BACK TO HUB →</span>
+    <span class="page-nav-title">Chapter 06 Hub</span>
+  </a>
+</div>
+
+<footer>
+  EF-NSE7<span>.</span> Chapter 06<span>.</span> Subtopic 03<span>.</span> Integrate IPS in Enterprise Networks
+</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-ch06-sub03-integrate-ips';
+
+const SECTIONS = {
+  's1': 'IPS Profile Basics',
+  's2': 'False Positives',
+  's3': 'Attack Use Cases',
+  's4': 'UTM Placement',
+};
+
+document.querySelectorAll('.socratic-header').forEach(function(h) {
+  h.addEventListener('click', function() { h.closest('.socratic-block').classList.toggle('soc-open'); });
+});
+
+function getQArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-qs') || '[]'); }
+function saveQArr(qs) { localStorage.setItem(PAGE_KEY+'-qs', JSON.stringify(qs)); }
+function addQuestion(key, name) {
+  const ta = document.getElementById('q-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const qs = getQArr(); qs.push({id: Date.now(), section: key, sectionName: name, text});
+  saveQArr(qs); ta.value = ''; renderQPanel();
+  if (!document.getElementById('qpanel-body').classList.contains('open')) toggleQPanel();
+}
+function deleteQ(id) { saveQArr(getQArr().filter(q => q.id !== id)); renderQPanel(); }
+function toggleQPanel() {
+  const body = document.getElementById('qpanel-body');
+  const header = document.getElementById('qpanel-header');
+  const chevron = document.getElementById('qpanel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-qpanel-open', open);
+}
+function renderQPanel() {
+  const qs = getQArr();
+  const count = document.getElementById('qpanel-count');
+  if (count) { count.textContent = qs.length; count.style.display = qs.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.qpanel-hint');
+  if (hint) hint.textContent = qs.length ? `— ${qs.length} question${qs.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('qpanel-body'); if (!body) return;
+  if (!qs.length) { body.innerHTML = '<p class="no-questions">No questions yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  qs.forEach(q => { if (groups[q.section]) groups[q.section].push(q); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(q => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${q.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteQ(${q.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function getNotesArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-notes') || '[]'); }
+function saveNotesArr(ns) { localStorage.setItem(PAGE_KEY+'-notes', JSON.stringify(ns)); }
+function addNote(key) {
+  const ta = document.getElementById('note-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const ns = getNotesArr(); ns.push({id: Date.now(), section: key, sectionName: SECTIONS[key]||key, text});
+  saveNotesArr(ns); ta.value = ''; renderNotesPanel();
+  if (!document.getElementById('notes-panel-body').classList.contains('open')) toggleNotesPanel();
+}
+function deleteNote(id) { saveNotesArr(getNotesArr().filter(n => n.id !== id)); renderNotesPanel(); }
+function toggleNotesPanel() {
+  const body = document.getElementById('notes-panel-body');
+  const header = document.getElementById('notes-panel-header');
+  const chevron = document.getElementById('notes-panel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-notes-panel-open', open);
+}
+function renderNotesPanel() {
+  const ns = getNotesArr();
+  const count = document.getElementById('notes-panel-count');
+  if (count) { count.textContent = ns.length; count.style.display = ns.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.notes-panel-hint');
+  if (hint) hint.textContent = ns.length ? `— ${ns.length} note${ns.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('notes-panel-body'); if (!body) return;
+  if (!ns.length) { body.innerHTML = '<p class="no-questions">No notes yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  ns.forEach(n => { if (groups[n.section]) groups[n.section].push(n); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(n => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteNote(${n.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function toggleDone(input) {
+  localStorage.setItem(PAGE_KEY+'-check-'+input.dataset.key, input.checked);
+}
+function initChecks() {
+  document.querySelectorAll('.check-input').forEach(function(inp) {
+    inp.checked = localStorage.getItem(PAGE_KEY+'-check-'+inp.dataset.key) === 'true';
+  });
+}
+
+function saveSocAnswer(btn) {
+  const area = btn.closest('.answer-area');
+  const ta = area.querySelector('.answer-textarea');
+  if (!ta.value.trim()) { ta.focus(); return; }
+  const key = PAGE_KEY+'-socans-'+area.dataset.section;
+  try { localStorage.setItem(key, ta.value); } catch(e) {}
+  ta.disabled = true; btn.textContent = '✓ Answer saved'; btn.disabled = true;
+  const seeBtn = area.querySelector('.btn-see-answer');
+  seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+}
+function revealSocAnswer(btn) {
+  if (btn.disabled) return;
+  const answers = btn.closest('.answer-area').querySelector('.model-answers');
+  const isHidden = answers.style.display === 'none' || !answers.style.display;
+  answers.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '▲ Hide Model Answer' : '💡 See Model Answer';
+}
+
+function togglePrompt(btn) {
+  const c = btn.nextElementSibling;
+  const isHidden = c.hasAttribute('hidden');
+  if (isHidden) { c.removeAttribute('hidden'); btn.textContent = '▴ Hide image prompt'; }
+  else { c.setAttribute('hidden', ''); btn.textContent = '▾ Show image prompt'; }
+}
+
+if (sessionStorage.getItem('pt')) {
+  document.body.style.opacity = '1';
+  sessionStorage.removeItem('pt');
+}
+document.querySelectorAll('a[href]').forEach(function(a) {
+  a.addEventListener('click', function() { sessionStorage.setItem('pt', '1'); });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderQPanel(); renderNotesPanel(); initChecks();
+  if (localStorage.getItem(PAGE_KEY+'-qpanel-open') === 'true') toggleQPanel();
+  if (localStorage.getItem(PAGE_KEY+'-notes-panel-open') === 'true') toggleNotesPanel();
+  document.querySelectorAll('.answer-area').forEach(function(area) {
+    const key = PAGE_KEY+'-socans-'+area.dataset.section;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const ta = area.querySelector('.answer-textarea'); ta.value = saved; ta.disabled = true;
+        const addBtn = area.querySelector('.btn-add-answer'); addBtn.textContent = '✓ Answer saved'; addBtn.disabled = true;
+        const seeBtn = area.querySelector('.btn-see-answer'); seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+      }
+    } catch(e) {}
+  });
+  document.querySelectorAll('.analogy-box').forEach(function(box) {
+    if (box.dataset.collapsibleInit) return;
+    box.dataset.collapsibleInit = '1';
+    box.classList.add('expanded');
+    const label = box.querySelector(':scope > .analogy-label');
+    if (label) label.addEventListener('click', () => box.classList.toggle('expanded'));
+  });
+  document.querySelectorAll('.analogy-img img').forEach(function(img) {
+    if (img.dataset.zoomInit) return;
+    img.dataset.zoomInit = '1';
+    img.addEventListener('click', () => img.classList.toggle('zoomed'));
+  });
+  document.querySelectorAll('.section-img').forEach(function(img) {
+    img.addEventListener('click', () => img.classList.toggle('si-expanded'));
+  });
+});
+
+(function() {
+  var items = document.querySelectorAll('.ssnav-item');
+  if (!items.length) return;
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      var lnk = document.querySelector('.ssnav-item[href="#'+e.target.id+'"]');
+      if (lnk) lnk.classList.toggle('active', e.isIntersecting);
+    });
+  }, { rootMargin: '-10% 0% -70% 0%' });
+  document.querySelectorAll('.section-block[id]').forEach(function(el) { obs.observe(el); });
+})();
+</script>
+</body>
+</html>

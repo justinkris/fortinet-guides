@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){if(sessionStorage.getItem('pt'))document.documentElement.style.opacity='0';})()</script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Session 11 — FGSP Standalone Session Sync · EF-NSE7 Socratic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:#0a0101;color:#e8ddd5;line-height:1.6;transition:opacity .25s ease;opacity:0}
+:root{
+  --session-color:#5ab288;
+  --bg:#0a0101;--surface:#140808;--border:#2a1515;--muted:#7a6060;
+  --text:#e8ddd5;--text-dim:#b09090;
+  --green:#5ab288;--coral:#e07050;--gold:#d2a541
+}
+
+header{background:#1a0606;border-bottom:1px solid #2a1515;padding-bottom:2rem}
+.header-inner{max-width:960px;margin:0 auto;padding:1.5rem 2rem 0}
+.breadcrumb{font-size:.8rem;color:var(--muted);margin-bottom:1rem}
+.breadcrumb a{color:var(--muted);text-decoration:none;transition:color .15s}
+.breadcrumb a:hover{color:var(--session-color)}
+.breadcrumb span{margin:0 .4rem;opacity:.5}
+.eyebrow{display:inline-flex;align-items:center;gap:.5rem;font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--session-color);background:rgba(90,178,136,.1);border:1px solid rgba(90,178,136,.25);border-radius:20px;padding:.28rem .75rem;margin-bottom:.85rem}
+header h1{font-family:'Fraunces',serif;font-size:2.5rem;font-weight:700;color:#fff;line-height:1.15;margin-bottom:.6rem}
+header h1 em{color:var(--session-color);font-style:italic}
+header .tagline{color:var(--text-dim);font-size:1rem;max-width:600px;line-height:1.6}
+
+.story-section{background:linear-gradient(135deg,#1a0a08,#120606);border-top:3px solid var(--session-color);border-bottom:1px solid #2a1515;padding:3rem 0}
+.story-inner{max-width:960px;margin:0 auto;padding:0 2rem}
+.story-label{font-size:.7rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--session-color);margin-bottom:.6rem}
+.story-section h2{font-family:'Fraunces',serif;font-size:1.65rem;font-weight:700;color:#fff;margin-bottom:1.4rem;line-height:1.25}
+.story-section p{color:#c8b8b0;line-height:1.8;margin-bottom:1.1rem;max-width:780px;font-size:.97rem}
+.story-section p:last-child{margin-bottom:0}
+
+main{max-width:960px;margin:0 auto;padding:2.5rem 2rem}
+.pr-grid{display:grid;grid-template-columns:1fr 300px;gap:2rem;align-items:start}
+@media(max-width:720px){.pr-grid{grid-template-columns:1fr}}
+
+.overview-section{margin-bottom:2rem}
+.section-label{font-size:.7rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.75rem}
+.overview-section h3{font-family:'Fraunces',serif;font-size:1.25rem;font-weight:600;color:#fff;margin-bottom:.85rem}
+.overview-section p{color:var(--text-dim);font-size:.95rem;line-height:1.8;margin-bottom:.9rem}
+.overview-section p:last-child{margin-bottom:0}
+
+.img-placeholder{background:#140808;border:1px solid #2a1515;border-radius:10px;overflow:hidden;margin-bottom:2rem}
+.img-placeholder-top{background:#1c0c0c;border-bottom:1px solid #2a1515;padding:.6rem 1rem;display:flex;justify-content:space-between;align-items:center}
+.img-placeholder-top span{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.img-box{aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;padding:2rem;background:linear-gradient(135deg,#120808,#0e0606)}
+.img-icon{font-size:2.5rem;opacity:.3}
+.img-prompt-label{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;text-align:center}
+.img-prompt-text{font-size:.8rem;color:#6a5050;line-height:1.6;text-align:center;max-width:420px;font-style:italic}
+
+.questions-section h3{font-family:'Fraunces',serif;font-size:1.25rem;font-weight:600;color:#fff;margin-bottom:1rem}
+.question-list{list-style:none;padding:0}
+.question-list li{background:#140808;border:1px solid #2a1515;border-radius:8px;padding:.85rem 1.1rem;margin-bottom:.6rem;display:flex;gap:.75rem;align-items:flex-start;transition:border-color .15s}
+.question-list li:hover{border-color:rgba(90,178,136,.35)}
+.q-num{min-width:22px;height:22px;background:rgba(90,178,136,.15);border:1px solid rgba(90,178,136,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:var(--session-color);margin-top:.1rem;flex-shrink:0}
+.q-text{font-size:.9rem;color:var(--text-dim);line-height:1.6}
+
+.sidebar{display:flex;flex-direction:column;gap:1.25rem}
+.sidebar-card{background:#140808;border:1px solid #2a1515;border-radius:10px;overflow:hidden}
+.card-header{background:#1c0c0c;border-bottom:1px solid #2a1515;padding:.65rem 1.1rem;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.card-body{padding:1.1rem}
+.detail-row{display:flex;flex-direction:column;gap:.15rem;margin-bottom:.9rem}
+.detail-row:last-child{margin-bottom:0}
+.detail-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.detail-value{font-size:.88rem;color:var(--text);font-weight:500}
+.detail-value a{color:var(--session-color);text-decoration:none}
+.detail-value a:hover{text-decoration:underline}
+.prereq-list{list-style:none;padding:0}
+.prereq-list li{font-size:.85rem;color:var(--text-dim);padding:.3rem 0;border-bottom:1px solid #1e0e0e;display:flex;gap:.5rem;align-items:flex-start}
+.prereq-list li:last-child{border-bottom:none}
+.prereq-list li::before{content:'→';color:var(--muted);flex-shrink:0;margin-top:.05rem}
+.notes-card textarea{width:100%;background:#0e0606;border:1px solid #2a1515;border-radius:6px;color:var(--text);font-family:'Inter',sans-serif;font-size:.83rem;line-height:1.6;padding:.75rem;resize:vertical;min-height:90px;outline:none;transition:border-color .15s}
+.notes-card textarea:focus{border-color:rgba(90,178,136,.4)}
+.notes-card textarea::placeholder{color:#4a3535}
+.notes-card label{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.4rem}
+.notes-card .field-wrap{margin-bottom:.75rem}
+.notes-card .field-wrap:last-child{margin-bottom:0}
+
+.page-nav{max-width:960px;margin:0 auto;padding:1.5rem 2rem 2.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;border-top:1px solid #2a1515}
+.page-nav a{color:var(--text-dim);text-decoration:none;font-size:.85rem;display:flex;align-items:center;gap:.4rem;padding:.4rem .75rem;border:1px solid #2a1515;border-radius:6px;transition:all .15s}
+.page-nav a:hover{border-color:var(--session-color);color:var(--session-color)}
+.page-nav .hub-link{color:var(--muted);border-color:transparent}
+.page-nav .hub-link:hover{border-color:#2a1515;color:var(--text-dim)}
+
+footer{text-align:center;padding:1.5rem 2rem;font-size:.78rem;color:var(--muted);border-top:1px solid #2a1515}
+</style>
+<style>
+/* ── Light theme override ── */
+body{background:#faf7f5;color:#1a0606}
+header{background:#fff;border-bottom-color:#e8d5cc}
+header h1,h1{color:#1a0606}
+header .tagline,header p.tagline{color:#7a5050}
+.breadcrumb a{color:#9a6060}
+.eyebrow-label{color:#9a6060}
+/* Cards and surfaces */
+.content-section,.sidebar-card,.copy-block,.session-card,
+details.how-to,.how-to,.img-placeholder{background:#fff;border-color:#e8d5cc}
+.copy-block-header{background:#fdf5f0;border-bottom-color:#e8d5cc}
+.copy-block pre{background:#fdf5f0;color:#4a2020}
+.how-to-body{background:#fff}
+.flow-box{background:#fdf5f0;border-color:#e8d5cc}
+.flow-chip{background:#f0e5e0;color:#7a5050}
+/* Sidebar */
+.sidebar-textarea{background:#fdf5f0;border-color:#e8d5cc;color:#3a2020}
+.sidebar-textarea::placeholder{color:#c09090}
+.sidebar-textarea:focus{border-color:var(--session-color)}
+.card-hint,.sidebar-hint{color:#9a6060}
+/* Typography — scoped away from story section */
+.chapter-name,.session-title,.content-section h2,.target-qs h2,
+.overview-block h2,.sidebar-card-title+h2{color:#1a0606}
+.sidebar-card-title,.copy-block-label,.prereqs-label,.img-label,
+.session-meta,.flow-box h4,.chapter-label,.progress-label,.detail-row .dl,
+.eyebrow-label{color:#9a6060}
+.chapter-name{color:#1a0606}
+.prereqs li,.prereq-list li,.detail-row .dv{color:#5a3030}
+.target-intro,.section-sub{color:#9a6060}
+.step-text strong{color:#1a0606}
+.step-text p,.how-to-body p{color:#5a3030}
+.overview-block p,.content-section p{color:#5a3030}
+/* Borders and dividers */
+.chapter-header{border-bottom-color:#e8d5cc}
+.detail-row{border-bottom-color:#f0e0d8}
+.detail-row .dl{color:#9a6060}
+.q-list li{color:#5a3030;border-bottom-color:#f0e0d8}
+.prereq-list li{border-bottom-color:#f0e0d8;color:#5a3030}
+.divider{border-top-color:#e8d5cc}
+/* Page nav */
+.page-nav{border-top-color:#e8d5cc}
+.nav-link{color:#9a6060;border-color:#e8d5cc}
+.nav-link:hover{color:var(--session-color);border-color:var(--session-color)}
+.nav-link.hub{color:#7a5050}
+.nav-disabled{color:#c0a8a0}
+footer{color:#9a7070;border-top-color:#e8d5cc}
+/* Progress and status */
+.days-badge{background:#fff;border-color:#e8d5cc}
+.progress-bar-bg{background:#f0ddd8}
+.status-none{background:#f5ecec;color:#9a7070}
+.status-started{background:#fdf5e0;color:#8a6a20}
+/* Buttons */
+.btn-prereading{background:#fdf5f0;border-color:#e8d5cc;color:#4a2020}
+.btn-prereading:hover{background:#f5e8e0;border-color:var(--session-color);color:#1a0606}
+.btn-sg{background:#faf5f5;border-color:#ede0d8;color:#7a5050}
+.btn-sg:hover{border-color:#c0a098}
+.btn-done-toggle{border-color:#e8d5cc;color:#9a7070}
+.btn-done-toggle:hover{border-color:var(--session-color);color:var(--session-color)}
+.btn-done-toggle.is-done{border-color:var(--green,#5ab288);color:var(--green,#5ab288);background:#f0f8f0}
+.session-card:hover{border-color:#c8a898}
+.session-card.done{opacity:.5}
+/* Image prompt */
+.img-prompt-text{background:#fdf5f0;border-color:#e8d5cc;color:#7a5050}
+.img-placeholder{border-color:#e8d5cc}
+.img-icon{opacity:.25}
+.sg-link{background:#fdf5f0;border-color:#e8d5cc}
+.sg-link:hover{background:#f5e8e0;border-color:var(--session-color)}
+/* Preserve story section darkness */
+.story-section{background:linear-gradient(135deg,#1a0a08,#120606)!important}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <nav class="breadcrumb">
+      <a href="../study-guides/nse7-ef-study-guide-hub.html">EF-NSE7 Hub</a>
+      <span>›</span>
+      <a href="index.html">Socratic Plan</a>
+      <span>›</span>
+      Session 11
+    </nav>
+    <div class="eyebrow">Session 11 &nbsp;·&nbsp; Chapter 04 — High Availability</div>
+    <h1>FGSP — Standalone <em>Session Sync</em></h1>
+    <p class="tagline">Session synchronization without clustering — solving asymmetric routing in carrier and data-center networks.</p>
+  </div>
+</header>
+
+<section class="story-section">
+  <div class="story-inner">
+    <div class="story-label">Pre-Reading Story</div>
+    <h2>"Half the Packets Are Lost — But Why?"</h2>
+    <p>A regional ISP deployed two FortiGate units at their network edge to handle internet gateway traffic for their subscriber base. To maximize throughput, the upstream routing was configured with Equal-Cost Multi-Path (ECMP) load sharing, splitting traffic across both FortiGates based on a per-flow hash. In most scenarios, a single TCP session would stay on one FortiGate for its entire lifetime. But in practice, the flow hashing wasn't always consistent for every subscriber, and occasionally a session's forward path and return path were split across the two devices. FortiGate-1 would see the initial SYN from a subscriber and create a session table entry. The SYN-ACK from the server would return via a different BGP path, arriving at FortiGate-2. FortiGate-2 had no record of this session. It had never seen the SYN. The packet looked like an unsolicited inbound connection attempt, and it was dropped as invalid.</p>
+    <p>Subscribers started reporting random connection failures. Downloads would start and then stall midway. VoIP calls dropped without warning. The ISP's helpdesk call volume doubled. The engineering team pulled packet captures and immediately saw thousands of TCP RST packets originating from the FortiGate layer. The pattern was clear once they mapped the flows to the routing table: every dropped session was one where forward and return traffic had been routed to different FortiGate units. The stateful firewall behavior that made FortiGate excellent at security was causing it to drop half the packets in an asymmetric routing environment — because a stateful firewall enforces the rule that it must see both directions of a session to consider it valid.</p>
+    <p>The solution was FGSP — FortiGate Session Life Support Protocol. Unlike FGCP, which creates a cluster with shared identity and a primary/secondary relationship, FGSP allows two completely independent FortiGate units to synchronize their session tables with each other. Each unit retains its own management IP, its own routing table, its own configuration, and its own forwarding plane. But the session tables are shared in near real time. When FortiGate-1 establishes a new TCP session, it pushes that session entry to FortiGate-2's session table as well. When the return packet arrives at FortiGate-2, there is now a matching session entry — the packet is accepted and forwarded. The TCP RST storms ceased. Downloads completed. VoIP calls stabilized. FGSP had resolved an asymmetric routing problem that FGCP could not address, because FGCP requires traffic to converge on a single primary unit.</p>
+  </div>
+</section>
+
+<main>
+  <div class="pr-grid">
+
+    <div class="left-col">
+
+      <div class="overview-section">
+        <div class="section-label">Overview</div>
+        <h3>FGSP — Session Sync for Independently-Operating FortiGates</h3>
+        <p>The FortiGate Session Life Support Protocol (FGSP) addresses a problem that FGCP cannot: what happens when network topology forces traffic to flow asymmetrically across multiple FortiGate units? In an FGCP cluster, all traffic converges on the primary unit — asymmetric flows don't exist by design. But in carrier-grade networks, data center fabrics using ECMP routing, or any environment where the path of a packet's return journey cannot be guaranteed to match its forward journey, a stateful firewall without session synchronization will drop traffic. FGSP solves this by sharing the session table between two FortiGate units that otherwise operate completely independently.</p>
+        <p>The critical distinction between FGSP and FGCP is the degree of coupling between the participating devices. In FGCP, the two units form a cluster — they share a cluster identity, one is primary and the other is secondary, configurations are synchronized, and failover is automatic. In FGSP, each FortiGate retains its own complete identity: its own hostname, its own management IP, its own routing table, its own policy database, and its own configuration. FGSP does not synchronize configurations — it only synchronizes session state. This means you can run two FortiGates with entirely different configurations in an FGSP pair, which can be useful but also means there is no automatic failover — if one unit fails, the other continues processing traffic but does not automatically take over the failed unit's responsibilities.</p>
+        <p>Configuring FGSP requires defining the peer unit's IP address on each FortiGate, enabling session synchronization, and optionally configuring filters to limit which session types are synchronized. Not every session needs to be synchronized — in a high-throughput environment, synchronizing short-lived DNS sessions would create unnecessary overhead. Most deployments synchronize only long-lived TCP sessions and omit UDP sessions below a configurable duration threshold. FGSP can also be combined with FGCP in certain deployment architectures — for example, two FGCP clusters (each with their own primary and secondary) can use FGSP to synchronize sessions between the clusters, providing both intra-cluster failover and inter-cluster session consistency.</p>
+      </div>
+
+      <div class="img-placeholder">
+        <img src="images/session-11-fgsp.png" alt="Session 11 concept illustration" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 1rem;object-fit:cover;" onerror="this.style.display='none'">
+
+        <div class="img-placeholder-top">
+          <span>Session 11 Illustration</span>
+          <span>Image Prompt Below</span>
+        </div>
+        <div class="img-box">
+          <div class="img-icon">🖼</div>
+          <div class="img-prompt-label">Generate with your preferred image tool</div>
+          <div class="img-prompt-text">Flat illustration of FGSP asymmetric routing: a client at bottom sends traffic → FortiGate-1 (left) → server at top. Server's response comes back via a different path → FortiGate-2 (right) → client. A bidirectional sync bus labeled "FGSP Session Sync" connects FG1 and FG2. Shared session table icon shown between them with matching entries. Pastel green/teal palette.</div>
+        </div>
+      </div>
+
+      <div class="questions-section">
+        <div class="section-label">Target Questions</div>
+        <h3>Come ready to answer these in the Socratic session</h3>
+        <ul class="question-list">
+          <li>
+            <div class="q-num">1</div>
+            <div class="q-text">What is FGSP and fundamentally how does it differ from FGCP?</div>
+          </li>
+          <li>
+            <div class="q-num">2</div>
+            <div class="q-text">In what network topology is FGSP required — what routing condition makes FGCP insufficient?</div>
+          </li>
+          <li>
+            <div class="q-num">3</div>
+            <div class="q-text">What does FGSP synchronize between devices — what is shared and what is not?</div>
+          </li>
+          <li>
+            <div class="q-num">4</div>
+            <div class="q-text">How does FGSP handle the case where one unit becomes unreachable — is there automatic failover?</div>
+          </li>
+          <li>
+            <div class="q-num">5</div>
+            <div class="q-text">What is the difference between FGSP standalone clustering and FGCP HA clustering in terms of device independence?</div>
+          </li>
+          <li>
+            <div class="q-num">6</div>
+            <div class="q-text">Can FGSP and FGCP be used on the same FortiGate — if so, when would you combine them?</div>
+          </li>
+          <li>
+            <div class="q-num">7</div>
+            <div class="q-text">What configuration is required on both FortiGates to establish FGSP synchronization?</div>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <aside class="sidebar">
+
+      <div class="sidebar-card">
+        <div class="card-header">Session Details</div>
+        <div class="card-body">
+          <div class="detail-row">
+            <span class="detail-label">Session</span>
+            <span class="detail-value">11 of 33</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Chapter</span>
+            <span class="detail-value">04 — High Availability</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Subtopic</span>
+            <span class="detail-value">FGCP and FGSP</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Study Guide</span>
+            <span class="detail-value"><a href="../study-guides/Chapter 04 - High Availability/subtopic-02-fgcp-and-fgsp.html">Open Study Guide →</a></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="card-header">Prerequisites</div>
+        <div class="card-body">
+          <ul class="prereq-list">
+            <li>Session 10 — FGCP protocol details</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="sidebar-card notes-card">
+        <div class="card-header">My Questions &amp; Notes</div>
+        <div class="card-body">
+          <div class="field-wrap">
+            <label for="myQs">My Questions (before the session)</label>
+            <textarea id="myQs" placeholder="What am I still unclear about? What do I want to make sure Claude asks me?"></textarea>
+          </div>
+          <div class="field-wrap">
+            <label for="myNotes">My Notes (after the session)</label>
+            <textarea id="myNotes" placeholder="Key takeaways, things that surprised me, gaps to revisit..."></textarea>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+  </div>
+</main>
+
+<nav class="page-nav">
+  <a href="session-10-fgcp.html">← Session 10</a>
+  <a href="index.html" class="hub-link">Socratic Plan</a>
+  <a href="session-12-vrrp.html">Session 12 →</a>
+</nav>
+
+<footer>
+  EF-NSE7 Socratic Study Plan &nbsp;·&nbsp; Session 11 — FGSP Standalone Session Sync &nbsp;·&nbsp; Chapter 04
+</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-pr-s11';
+['myQs','myNotes'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(!el)return;
+  const saved=localStorage.getItem(PAGE_KEY+'-'+id);
+  if(saved)el.value=saved;
+  el.addEventListener('input',()=>localStorage.setItem(PAGE_KEY+'-'+id,el.value));
+});
+window.addEventListener('load',()=>{document.body.style.opacity='1';if(sessionStorage.getItem('pt'))sessionStorage.removeItem('pt');});
+document.querySelectorAll('a[href]').forEach(a=>{
+  if(!a.getAttribute('href').startsWith('#'))a.addEventListener('click',()=>sessionStorage.setItem('pt','1'));
+});
+</script>
+</body>
+</html>

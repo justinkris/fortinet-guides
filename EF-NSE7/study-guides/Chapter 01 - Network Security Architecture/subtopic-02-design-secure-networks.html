@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subtopic 02 — Design Secure Networks Using Fortinet Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Epilogue:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#fff5f5; --surface:#ffffff; --surface-2:#fef2f2;
+    --border:#f0c8c8; --border-dim:#fde8e8;
+    --text:#1a0606; --text-soft:#4a1212; --text-muted:#8a3a3a;
+    --red:#c0392b; --red-vivid:#e03e2d; --red-glow:rgba(192,57,43,0.07);
+    --red-dim:#f8b4b4; --red-deep:#7f1d1d; --red-light:#fef2f2; --red-border:#f8b4b4;
+    --green:#1a7c4a; --green-light:#d4f0e0; --green-border:#a7e0c0;
+    --amber:#b45309; --amber-light:#fef9c3; --amber-border:#fde68a;
+  }
+  html{scroll-behavior:smooth;}
+  html.pt-init body{opacity:0;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Epilogue',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+  /* HEADER */
+  header{padding:48px 60px 36px;background:#1a0606;display:flex;align-items:flex-end;gap:32px;}
+  .header-left{flex:1;}
+  .breadcrumb{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);letter-spacing:0.08em;margin-bottom:12px;flex-wrap:wrap;}
+  .breadcrumb a{color:#e87070;text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .breadcrumb-sep{color:rgba(232,112,112,0.35);}
+  .header-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(232,112,112,0.1);border:1px solid rgba(232,112,112,0.25);padding:5px 14px;border-radius:20px;font-size:11px;color:#e87070;letter-spacing:0.08em;margin-bottom:14px;}
+  .dot-live{width:6px;height:6px;background:#e87070;border-radius:50%;display:inline-block;animation:blink 2.4s ease-in-out infinite;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+  header h1{font-family:'Fraunces',serif;font-size:44px;font-weight:700;line-height:1.0;color:#fff;margin-bottom:10px;}
+  header h1 em{font-style:italic;font-weight:400;color:#e87070;}
+  header p{font-size:13px;color:rgba(255,255,255,0.42);margin-top:10px;line-height:1.7;}
+
+  /* MOTIVATION BANNER */
+  .motivation-banner{padding:20px 60px;min-height:84px;display:flex;flex-direction:column;justify-content:center;border-bottom:1px solid var(--border);background:var(--surface);}
+  .motivation-text{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--text);}
+  .motivation-text em{font-style:italic;color:var(--red);}
+  .motivation-sub{font-size:12px;color:var(--text-muted);line-height:1.7;margin-top:4px;}
+
+  /* TOP PANELS */
+  .top-panels{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+  .top-panels .qpanel{border-bottom:none;border-right:1px solid var(--border);}
+  .top-panels .qpanel-header{padding-left:32px;padding-right:32px;}
+  .top-panels .qpanel-body{padding-left:32px;padding-right:32px;}
+  .qpanel{background:var(--surface);}
+  .qpanel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 20px;cursor:pointer;background:var(--surface);border:none;font-family:'Epilogue',sans-serif;text-align:left;}
+  .qpanel-header:hover,.qpanel-header.open{background:var(--surface-2);}
+  .qpanel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+  .qpanel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+  .qpanel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+  .qpanel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+  .qpanel-body{display:none;padding:0 20px 22px;}
+  .qpanel-body.open{display:block;}
+  .notes-panel{background:var(--surface);}
+  .notes-panel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 32px;cursor:pointer;background:var(--surface);border:none;font-family:'Epilogue',sans-serif;text-align:left;}
+  .notes-panel-header:hover,.notes-panel-header.open{background:var(--surface-2);}
+  .notes-panel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+  .notes-panel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+  .notes-panel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+  .notes-panel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+  .notes-panel-body{display:none;padding:0 32px 22px;}
+  .notes-panel-body.open{display:block;}
+  .q-group{margin-bottom:16px;}
+  .q-group-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+  .q-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-dim);}
+  .q-item:last-child{border-bottom:none;}
+  .q-num{font-size:10px;font-weight:700;color:var(--red);min-width:16px;margin-top:2px;}
+  .q-text{font-size:12px;color:var(--text-soft);line-height:1.5;flex:1;}
+  .q-del{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 4px;margin-top:1px;}
+  .q-del:hover{color:var(--red);}
+  .no-questions{font-size:12px;color:var(--text-muted);padding:8px 0;}
+  .btn-add-q{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Epilogue',sans-serif;}
+  .btn-add-q:hover{opacity:0.85;}
+
+  /* STICKY SECTION NAV */
+  .section-nav{position:sticky;top:0;z-index:90;display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);padding:0 32px;overflow-x:auto;}
+  .nav-tab{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:12px 18px;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
+  .nav-tab:hover{color:var(--text);}
+  .nav-tab.active{color:var(--red);border-bottom-color:var(--red);}
+
+  /* MAIN GRID */
+  main{display:grid;grid-template-columns:1fr 320px;gap:0;align-items:start;max-width:1200px;margin:0 auto;padding:0;}
+  .main-content{padding:36px 40px 60px 60px;}
+  .sidebar{padding:32px 24px 60px 20px;position:sticky;top:57px;max-height:calc(100vh - 57px);overflow-y:auto;}
+
+  /* SECTION BLOCK */
+  .section-block{margin-bottom:48px;}
+  .section-label{font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+  .section-block h2{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1.15;margin-bottom:16px;padding-left:16px;border-left:3px solid var(--red);}
+  .section-block h2 em{font-style:italic;font-weight:400;color:var(--red);}
+  .section-block p{font-size:14px;line-height:1.8;color:var(--text-soft);margin-bottom:14px;}
+  .section-block p strong{color:var(--text);font-weight:600;}
+  .section-block p em{color:var(--red);font-style:italic;}
+  .section-block ul,.section-block ol{padding-left:22px;margin-bottom:14px;}
+  .section-block li{font-size:14px;line-height:1.75;color:var(--text-soft);margin-bottom:4px;}
+  .section-block li strong{color:var(--text);font-weight:600;}
+
+  /* CALLOUTS */
+  .callout{border-left:3px solid var(--red-border);background:var(--red-light);border-radius:0 10px 10px 0;padding:12px 18px;margin:16px 0;font-size:13.5px;line-height:1.65;color:var(--text-soft);}
+  .callout strong{color:var(--text);}
+  .callout-green{border-left-color:var(--green-border);background:var(--green-light);}
+  .callout-amber{border-left-color:var(--amber-border);background:var(--amber-light);}
+
+  /* DATA TABLE */
+  .data-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;}
+  .data-table th{background:#1a0606;color:#e87070;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:10px 14px;text-align:left;}
+  .data-table td{padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text-soft);line-height:1.5;}
+  .data-table tr:hover td{background:var(--red-glow);}
+  .data-table td:first-child{color:var(--text);font-weight:600;}
+
+  /* SECTION IMAGE */
+  .section-img-wrap{margin:0 0 20px;display:flex;flex-direction:column;align-items:center;}
+  .section-img{width:260px;max-width:100%;border-radius:12px;cursor:zoom-in;transition:width 0.3s ease;border:1px solid var(--border);display:block;}
+  .section-img.si-expanded{width:100%;cursor:zoom-out;border-radius:16px;}
+  .si-placeholder{display:none;width:260px;max-width:100%;border:2px dashed var(--border);border-radius:12px;background:var(--surface-2);padding:14px 16px;flex-direction:column;align-items:flex-start;gap:8px;}
+  .si-placeholder.si-show{display:flex;}
+  .si-filename{font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'SF Mono','Fira Code',monospace;}
+
+  /* SOCRATIC */
+  .socratic-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:16px;border-top:3px solid var(--red);}
+  .socratic-header{display:flex;align-items:center;gap:8px;margin-bottom:0;cursor:pointer;user-select:none;}
+  .socratic-header::after{content:'▸ Expand';margin-left:auto;font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'Epilogue',sans-serif;}
+  .socratic-block.soc-open .socratic-header{margin-bottom:10px;}
+  .socratic-block.soc-open .socratic-header::after{content:'▾ Collapse';}
+  .socratic-block:not(.soc-open) .socratic-insight,
+  .socratic-block:not(.soc-open) .socratic-questions,
+  .socratic-block:not(.soc-open) .answer-area{display:none;}
+  .socratic-icon{font-size:17px;flex-shrink:0;}
+  .socratic-label{font-size:9px;font-weight:700;letter-spacing:0.18em;color:var(--text-muted);}
+  .socratic-insight{font-size:13px;color:var(--text-soft);line-height:1.75;margin-bottom:12px;border-left:3px solid var(--border);padding-left:12px;font-style:italic;}
+  .socratic-questions{list-style:none;padding:0;margin:0;}
+  .socratic-questions li{font-size:12.5px;color:var(--text);padding:7px 0 7px 22px;position:relative;border-bottom:1px solid var(--border-dim);line-height:1.6;}
+  .socratic-questions li:last-child{border-bottom:none;}
+  .socratic-questions li::before{content:'?';position:absolute;left:0;font-weight:700;font-size:12px;top:8px;color:var(--red);}
+  .answer-area{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+  .answer-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Epilogue',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+  .answer-textarea:focus{border-color:var(--text);}
+  .answer-textarea:disabled{opacity:0.7;background:var(--surface-2);cursor:default;}
+  .answer-buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+  .btn-add-answer{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Epilogue',sans-serif;}
+  .btn-add-answer:hover:not(:disabled){opacity:0.85;}
+  .btn-add-answer:disabled{opacity:0.5;cursor:default;}
+  .btn-see-answer{background:var(--surface);color:var(--text-muted);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Epilogue',sans-serif;}
+  .btn-see-answer:disabled{opacity:0.5;cursor:not-allowed;}
+  .btn-see-answer:not(:disabled){color:var(--red);border-color:var(--red);}
+  .btn-see-answer:hover:not(:disabled){background:var(--red-glow);}
+  .model-answers{margin-top:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+  .model-answer-item{padding:10px 0;border-bottom:1px solid var(--border-dim);}
+  .model-answer-item:first-child{padding-top:0;}
+  .model-answer-item:last-child{border-bottom:none;padding-bottom:0;}
+  .model-answer-q{font-size:9px;font-weight:700;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:4px;}
+  .model-answer-text{font-size:13px;color:var(--text-soft);line-height:1.7;}
+
+  /* MENTAL NOTE */
+  .mental-note-block{border-radius:10px;padding:12px 16px;margin:16px 0;display:flex;gap:10px;align-items:flex-start;background:rgba(192,57,43,0.07);border:1px solid var(--border);}
+  .mental-note-block-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+  .mental-note-block-inner{flex:1;}
+  .mental-note-block-label{font-size:9px;font-weight:700;letter-spacing:0.16em;color:var(--red);margin-bottom:3px;}
+  .mental-note-block-text{font-size:13px;font-weight:600;line-height:1.55;color:var(--text);}
+
+  /* ANALOGY BOX */
+  .analogy-box{background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #b45309;border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0;}
+  .analogy-label{display:flex;align-items:center;gap:6px;user-select:none;cursor:pointer;font-size:9px;font-weight:700;letter-spacing:0.16em;color:#b45309;margin-bottom:4px;}
+  .analogy-label::after{content:'▾  Reveal illustration';margin-left:auto;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:none;opacity:0.75;}
+  .analogy-label:hover::after{opacity:1;}
+  .analogy-box.expanded > .analogy-label::after{content:'▴  Hide illustration';}
+  .analogy-text{font-size:13px;color:#78350f;line-height:1.65;font-style:italic;}
+  .analogy-summary{font-style:normal;font-weight:600;color:#92400e;margin-bottom:10px;}
+  .analogy-text ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;}
+  .analogy-text li{padding-left:18px;position:relative;}
+  .analogy-text li::before{content:'•';position:absolute;left:0;font-weight:700;color:#b45309;}
+  .analogy-box > .analogy-img{display:none;}
+  .analogy-box.expanded > .analogy-img{display:block;}
+  .analogy-img img{max-width:360px;width:100%;cursor:zoom-in;transition:max-width 0.25s ease;border-radius:8px;margin-top:10px;}
+  .analogy-img img.zoomed{max-width:100%;cursor:zoom-out;}
+  .analogy-img .img-missing-msg{display:none!important;}
+  .prompt-toggle{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:10px;font-weight:600;letter-spacing:0.08em;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'Epilogue',sans-serif;text-transform:uppercase;}
+  .prompt-toggle:hover{color:var(--text);border-color:var(--text);}
+  .prompt-content{margin-top:10px;padding:10px 14px;background:rgba(0,0,0,0.04);border-radius:8px;font-size:11.5px;color:var(--text-muted);font-style:italic;line-height:1.65;text-align:left;}
+  .prompt-content[hidden]{display:none;}
+
+  /* LESSON TOOLS */
+  .lesson-tools{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:40px;}
+  .lesson-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .tool-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+  .tool-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Epilogue',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+  .tool-textarea:focus{border-color:var(--red);}
+  .tool-row{margin-top:8px;display:flex;gap:8px;}
+
+  /* SIDEBAR */
+  .sidebar-section{margin-bottom:28px;}
+  .sidebar-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;}
+  .ssnav{display:flex;flex-direction:column;gap:2px;margin-top:4px;}
+  .ssnav-item{font-size:12px;color:var(--text-soft);padding:6px 10px;border-radius:6px;text-decoration:none;line-height:1.4;display:block;transition:background 0.15s,color 0.15s;}
+  .ssnav-item:hover,.ssnav-item.active{background:var(--red-glow);color:var(--red);}
+  .hub-link{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);margin-bottom:16px;transition:color 0.15s,border-color 0.15s,background 0.15s;}
+  .hub-link:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);}
+  .check-item{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;}
+  .check-input{accent-color:var(--red);width:14px;height:14px;flex-shrink:0;cursor:pointer;}
+  .check-label{font-size:12px;color:var(--text-soft);line-height:1.4;}
+  .check-item:has(.check-input:checked) .check-label{color:var(--text-muted);text-decoration:line-through;}
+  .quick-ref{background:#1a0606;border-radius:10px;padding:12px 16px;margin-bottom:8px;}
+  .quick-ref-term{font-size:10px;font-weight:700;letter-spacing:0.12em;color:#e87070;margin-bottom:3px;text-transform:uppercase;}
+  .quick-ref-def{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;}
+
+  /* PAGE NAV */
+  .page-nav{display:flex;border-top:2px solid var(--border);background:var(--surface);}
+  .page-nav-btn{flex:1;display:flex;flex-direction:column;gap:4px;padding:16px 28px;text-decoration:none;transition:background 0.15s;cursor:pointer;}
+  .page-nav-btn:hover:not(.page-nav-disabled){background:var(--surface-2);}
+  .page-nav-prev{border-right:1px solid var(--border);}
+  .page-nav-next{text-align:right;}
+  .page-nav-disabled{opacity:0.3;pointer-events:none;}
+  .page-nav-label{font-size:10px;font-weight:600;letter-spacing:0.14em;color:var(--text-muted);display:block;}
+  .page-nav-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;color:var(--red);display:block;}
+
+  /* FOOTER */
+  footer{font-size:11px;letter-spacing:0.12em;color:var(--text-muted);text-transform:uppercase;padding:20px 60px;border-top:1px solid var(--border);}
+  footer span{color:var(--red);}
+
+  /* RESPONSIVE */
+  @media(max-width:1000px){
+    main{grid-template-columns:1fr;}
+    .sidebar{position:static;max-height:none;padding:0 40px 40px;}
+  }
+  @media(max-width:720px){
+    header{padding:28px 24px 24px;}
+    header h1{font-size:32px;}
+    .motivation-banner{padding:16px 24px;}
+    .main-content{padding:24px 24px 40px;}
+    .section-nav{padding:0 16px;}
+    .top-panels{grid-template-columns:1fr;}
+    .top-panels .qpanel{border-right:none;border-bottom:1px solid var(--border);}
+    .lesson-tools-grid{grid-template-columns:1fr;}
+    footer{padding:16px 24px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="breadcrumb">
+      <a href="../nse7-ef-study-guide-hub.html">EF-NSE7</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="index.html">Chapter 01 — Network Security Architecture</a>
+      <span class="breadcrumb-sep">›</span>
+      Subtopic 02
+    </div>
+    <div class="header-eyebrow"><span class="dot-live"></span> Study Guide · EF-NSE7</div>
+    <h1>Design <em>Secure Networks</em> Using Fortinet Solutions</h1>
+    <p>Walk through the six deployment use cases — DCFW, ISFW, Cloud, Distributed NGFW, DEFW, and Hybrid Mesh — and learn how to match the right FortiGate form factor and feature set to each position in an enterprise network.</p>
+  </div>
+</header>
+
+<div class="motivation-banner">
+  <div class="motivation-text">The exam doesn't just ask what each role does — it asks <em>where it goes, why it belongs there, and how the pieces fit together.</em></div>
+  <p class="motivation-sub">Mastering the six use cases and the comparison table is the exam-ready output of this subtopic — expect scenario questions that ask you to choose the right FortiGate deployment for a given network design.</p>
+</div>
+
+<div class="top-panels">
+  <div class="qpanel" id="qpanel">
+    <button class="qpanel-header" onclick="toggleQPanel()" id="qpanel-header">
+      <span class="qpanel-title">MY QUESTIONS</span>
+      <span class="qpanel-count" id="qpanel-count">0</span>
+      <span class="qpanel-hint">— click to expand</span>
+      <span class="qpanel-chevron" id="qpanel-chevron">▾</span>
+    </button>
+    <div class="qpanel-body" id="qpanel-body"></div>
+  </div>
+  <div class="notes-panel" id="notes-panel">
+    <button class="notes-panel-header" onclick="toggleNotesPanel()" id="notes-panel-header">
+      <span class="notes-panel-title">MY NOTES</span>
+      <span class="notes-panel-count" id="notes-panel-count">0</span>
+      <span class="notes-panel-hint">— click to expand</span>
+      <span class="notes-panel-chevron" id="notes-panel-chevron">▾</span>
+    </button>
+    <div class="notes-panel-body" id="notes-panel-body"></div>
+  </div>
+</div>
+
+<nav class="section-nav" id="section-nav">
+  <a class="nav-tab active" href="#section-dcfw">DCFW</a>
+  <a class="nav-tab" href="#section-isfw">ISFW</a>
+  <a class="nav-tab" href="#section-cloud">Cloud Firewalls</a>
+  <a class="nav-tab" href="#section-hybrid">Hybrid Mesh</a>
+</nav>
+
+<main>
+  <div class="main-content">
+
+    <!-- SECTION 1: DCFW -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · DCFW USE CASE</span>
+      </div>
+      <p class="socratic-insight">A data center firewall faces demands that simply don't exist at the perimeter: hundreds of thousands of concurrent sessions, hardware-accelerated SSL inspection at 10 Gbps or beyond, and the need to segment large-scale server fabrics without introducing latency. A general-purpose NGFW at this position would immediately become a CPU bottleneck.</p>
+      <ul class="socratic-questions">
+        <li>What is the key differentiator between deploying a traditional NGFW and a DCFW in the data center — what specific hardware and feature requirements justify the 1000-7000 series form factor?</li>
+        <li>A DCFW connects to multiple physical switches, bundling them as a single logical interface. What networking benefit does this provide — and what would happen if that bundle loses one of its member links?</li>
+      </ul>
+      <div class="answer-area" data-section="dcfw">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">The DCFW adds L7 NGFW capability, hardware-accelerated SSL inspection via CP ASICs, VRF and VDOM segmentation for multi-tenant environments, hyperscale throughput (10-1000 Gbps), and low-latency forwarding via NP ASICs. A general-purpose NGFW's CPU cannot sustain line-rate inspection at data center volumes — the DCFW's specialized hardware offloads all of this from the main CPU, making it the only viable option at this scale.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Bundling multiple physical switch connections into one logical interface (802.3ad link aggregation/LACP) provides both bandwidth aggregation and link redundancy. If one physical member link fails, traffic automatically redistributes across the remaining active members without a session drop. This eliminates single points of failure in the data center's most critical network path.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="section-dcfw">
+      <div class="section-label">SECTION 01</div>
+      <h2>Use Case 1 — <em>DCFW</em></h2>
+      <div class="section-img-wrap">
+        <img src="images/s1-dcfw.png" class="section-img" alt="Data center firewall architecture with server racks, FortiGate DCFW, and bundled switch fabric"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s1-dcfw.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration, pastel palette (cool blues, teals, light grays), bold outlines, minimal text. Bird's-eye view of a data center environment. LEFT: two rows of server rack icons. CENTER: two large FortiGate appliance icons (1000-7000 series) labeled "DCFW" with a bold throughput callout "10–1000 Gbps". RIGHT: multiple switch icons drawn bundled together with a thick unified cable labeled "Unified Switch Fabric (LAG)". Feature icons arranged in a vertical column on the far right: NGFW, VRF/VDOM, HW SSL, Low Latency, Hyperscale — each with a small icon and label. Banner at bottom: "FortiGate 1000–7000 Series". Flat design, no shadows, clean educational infographic style.</div>
+        </div>
+      </div>
+      <p>The <strong>Data Center Firewall (DCFW)</strong> protects the data center perimeter — controlling north-south traffic between external networks and internal server infrastructure. Unlike a campus perimeter firewall, the DCFW must sustain throughput from <em>10 Gbps to 1000 Gbps</em> while performing full NGFW inspection, making hardware acceleration non-negotiable.</p>
+      <p>Key DCFW characteristics from the Fortinet study guide:</p>
+      <ul>
+        <li><strong>Traditional + NGFW layers:</strong> Network/transport layer enforcement plus application-layer awareness and intrusion prevention.</li>
+        <li><strong>VRFs and VDOMs:</strong> Virtual routing and forwarding instances and virtual domains enable multi-tenant segmentation — multiple logical firewall instances on one physical platform.</li>
+        <li><strong>Zone-based interfaces:</strong> Group interfaces into security zones for simplified, policy-based enforcement across large server fabrics.</li>
+        <li><strong>Hardware SSL inspection:</strong> Dedicated CP processors handle SSL/TLS decryption at scale without degrading forwarding throughput.</li>
+        <li><strong>Hyperscale:</strong> Supports massive data volumes and high-speed traffic — typically 10 Gbps to 1000 Gbps in production data center environments.</li>
+        <li><strong>Minimal latency:</strong> NP ASICs offload session forwarding from the CPU, keeping per-packet delay at microseconds — critical for real-time application SLAs.</li>
+      </ul>
+      <p>DCFWs connect to <strong>multiple physical switches bundled as a single logical interface</strong> (link aggregation). This provides bandwidth aggregation and automatic failover — if one physical uplink fails, traffic redistributes across remaining active members with no session disruption. The FortiGate 1000-7000 series is the hardware family designed for this role.</p>
+
+      <div class="callout"><strong>Exam tip:</strong> DCFW = data center north-south traffic, 10-1000 Gbps, FortiGate 1000-7000 series. The defining features are hyperscale throughput, VRF/VDOM multi-tenancy, and hardware SSL inspection. Don't confuse DCFW with ISFW — DCFW is the data center boundary, ISFW is internal east-west segmentation.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">DCFW: 10-1000 Gbps, FortiGate 1000-7000 series, data center north-south. Key differentiators: VRF/VDOM segmentation, hardware SSL inspection, hyperscale, low latency via NP ASICs. Multiple physical switch uplinks bundled as one logical LAG interface for redundancy and throughput aggregation.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-section-dcfw" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('section-dcfw','DCFW Use Case')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-section-dcfw" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('section-dcfw')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: ISFW -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · ISFW USE CASE</span>
+      </div>
+      <p class="socratic-insight">The ISFW addresses the problem the DCFW and perimeter NGFW cannot: lateral movement inside the campus. Once an attacker is inside the perimeter, east-west traffic between internal VLANs, between user segments and server farms, or between wireless and wired networks flows freely — unless an internal firewall enforces zone boundaries.</p>
+      <ul class="socratic-questions">
+        <li>What specific attack scenario makes east-west enforcement mandatory — and what ISFW mechanism creates the policy boundary inside the campus network?</li>
+        <li>The ISFW has integrated wireless LAN support via FortiAP. What security advantage does having the firewall directly control wireless APs provide over using a standalone wireless controller?</li>
+      </ul>
+      <div class="answer-area" data-section="isfw">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Lateral movement — an attacker compromises a user workstation in the Finance VLAN, then pivots to the HR server or engineering systems without ever triggering the perimeter firewall. ISFW uses VLANs, VDOMs, and zone-based interfaces to create explicit enforcement boundaries between internal segments. A packet between zones must pass through the ISFW policy table and be explicitly permitted — implicit trust between internal hosts is eliminated.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">When the ISFW directly manages FortiAPs, wireless traffic is subject to the same NGFW policy, UTM profiles, and user-identity rules as wired traffic — a unified policy model. With a standalone wireless controller, wireless traffic often bypasses the firewall inspection path entirely or is treated as a separate trusted zone. Integrated management closes this security gap and simplifies policy management to a single console.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="section-isfw">
+      <div class="section-label">SECTION 02</div>
+      <h2>Use Case 2 — <em>ISFW</em></h2>
+      <div class="section-img-wrap">
+        <img src="images/s2-isfw.png" class="section-img" alt="ISFW campus segmentation — VLANs, zone boundaries, east-west traffic enforcement"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s2-isfw.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration, pastel palette (sage greens, soft yellows, warm cream, coral), bold outlines, minimal text. A campus network top-down diagram. Four distinct internal network zone blobs in different pastel colors: "Finance" (blue), "HR" (green), "Engineering" (yellow), "IoT" (orange). A FortiGate appliance icon labeled "ISFW" in the center where all zones meet, with inspection lines radiating out to each zone. A red crossed-out arrow between two zones labeled "BLOCKED — Lateral Movement". FortiAP wireless icons around the campus perimeter with dotted lines connecting back to the ISFW. Label: "Campus — Internal Segmentation, 1–100 Gbps". Flat design, no shadows.</div>
+        </div>
+      </div>
+      <p>The <strong>Internal Segmentation Firewall (ISFW)</strong> controls east-west traffic between internal network segments — server-to-server, VLAN-to-VLAN, and wired-to-wireless flows inside the campus. Unlike the perimeter NGFW that stops external threats at the boundary, the ISFW prevents an already-inside attacker from pivoting freely between internal zones.</p>
+      <p>Key ISFW characteristics:</p>
+      <ul>
+        <li><strong>VLANs, VDOMs, and zone-based interfaces:</strong> Create explicit enforcement boundaries between internal segments — all cross-segment traffic must match a permit policy.</li>
+        <li><strong>Micro-segmentation:</strong> Breaks the internal flat network into granular zones aligned with security requirements — user devices, servers, IoT, and management networks each get separate enforcement.</li>
+        <li><strong>Minimal delay:</strong> Internal traffic requires the same low-latency forwarding as the DCFW — NP processors offload high-volume east-west sessions.</li>
+        <li><strong>Integrated wireless LAN:</strong> FortiGate acts as the wireless controller for FortiAPs directly, applying the same NGFW policies and UTM profiles to wireless traffic as wired traffic — no policy gap between network types.</li>
+        <li><strong>Hardware SSL inspection:</strong> Internal encrypted traffic (HTTPS between internal services, encrypted management traffic) is inspected without bottlenecking.</li>
+      </ul>
+      <p>The ISFW uses <strong>FortiGate 100-900 series</strong> (the campus hardware family). These appliances support 1-100 Gbps throughput — lower than the DCFW's hyperscale requirement but sufficient for campus east-west flows. The integrated wireless controller (FortiWLC for large-scale deployments) enables unified wired and wireless policy management.</p>
+
+      <div class="callout callout-amber"><strong>Lateral movement risk:</strong> In a flat campus network with no ISFW, a single compromised workstation has unrestricted access to every other host on the LAN. Micro-segmentation limits the blast radius — even if the attacker compromises Finance, they hit the ISFW policy boundary before reaching HR or Engineering. This is the foundational value proposition of the ISFW.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">ISFW: 1-100 Gbps, FortiGate 100-900 series, campus east-west traffic. Key features: VLANs/VDOMs for micro-segmentation, integrated wireless LAN (FortiAP/FortiWLC), low latency. Stops lateral movement — the attacker inside the perimeter still hits the ISFW policy boundary between zones.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-section-isfw" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('section-isfw','ISFW Use Case')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-section-isfw" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('section-isfw')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3: CLOUD -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · CLOUD FIREWALLS</span>
+      </div>
+      <p class="socratic-insight">Cloud-based firewalls break the physical appliance model entirely — instead of hardware with NP/CP ASICs, security is delivered via VMs, cloud-native services, or SaaS platforms. Each option trades some performance ceiling for flexibility, elastic scaling, or zero-infrastructure deployment.</p>
+      <ul class="socratic-questions">
+        <li>FortiGate VMs run on AWS, Azure, and GCP but lack NP/CP hardware. In what specific deployment scenario is a FortiGate VM the right choice over a physical appliance — and where does it start to break down?</li>
+        <li>FortiSASE is described as a SaaS-delivered security service. How does it fundamentally differ in architecture from deploying a FortiGate VM in a cloud provider — and which user population is it uniquely designed for?</li>
+      </ul>
+      <div class="answer-area" data-section="cloud">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">FortiGate VM is the right choice when workloads are already cloud-hosted (AWS, Azure, GCP) and traffic volumes stay within CPU-only inspection limits, or when elastic scaling and cloud-native APIs (auto-scaling groups, IaC templates) outweigh the need for hardware acceleration. It breaks down when full SSL inspection at high volumes is required — without CP ASICs, the virtual CPU becomes the bottleneck, limiting practical throughput well below what physical hardware achieves.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">A FortiGate VM in a cloud provider is infrastructure you deploy and manage — you provision it, size the VM, manage policies, and handle updates. FortiSASE is fully managed SaaS — no infrastructure to deploy or operate. It's designed for distributed and mobile users who need secure internet access and SaaS application control without having to route all traffic through a corporate firewall. FortiSASE combines SD-WAN, ZTNA, secure web gateway, and CASB in one cloud-delivered service.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="section-cloud">
+      <div class="section-label">SECTION 03</div>
+      <h2>Use Case 3 — <em>Cloud Firewalls</em></h2>
+      <div class="section-img-wrap">
+        <img src="images/s3-cloud.png" class="section-img" alt="Cloud firewall options — FortiGate VM, FortiCNF, FortiSASE, multicloud and SD-WAN"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s3-cloud.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration, pastel palette (soft purples, sky blues, cloud white, mint), bold outlines, minimal text. A large stylized cloud in the center labeled "Cloud + Internet". Three distinct delivery options floating around it: LEFT — a "FortiGate VM" box with cloud provider logos (AWS, Azure, GCP, VMware icons); TOP — a "FortiCNF" box labeled "Cloud-Native Firewall"; RIGHT — a "FortiSASE" bubble labeled "FWaaS / SaaS Security". IPsec padlock icons on connection lines from each option to the cloud. At the bottom, a row of laptop/user icons labeled "Remote + Mobile Users" with ZTNA arrows connecting up to FortiSASE. Small SD-WAN icon on one of the connection paths. Flat design, no shadows, educational style.</div>
+        </div>
+      </div>
+      <p>Cloud and virtual firewall deployments address environments where physical appliances aren't practical — public cloud workloads, SaaS-heavy organizations, and distributed remote users. Fortinet provides three distinct delivery models for cloud security, each optimized for a different operational context.</p>
+
+      <p><strong>FortiGate VM</strong> runs FortiOS on hypervisor and public cloud infrastructure. It supports a wide range of platforms:</p>
+      <ul>
+        <li>Public cloud: <strong>AWS, Microsoft Azure, Google Cloud, Oracle Cloud, IBM Cloud, Alibaba Cloud</strong></li>
+        <li>Private hypervisors: <strong>VMware ESXi, Microsoft Hyper-V, KVM, OpenStack, Xen, Cisco</strong></li>
+      </ul>
+      <p>FortiGate VMs deliver full FortiOS features including IPsec/SSL/L2TP VPNs, WAN redundancy, multicloud connectivity, and SD-WAN — but without NP/CP ASICs, all processing runs on the virtual CPU. This makes them best suited for moderate throughput workloads where cloud agility and elastic scaling outweigh raw performance requirements.</p>
+
+      <p><strong>FortiGate Cloud-Native Firewall (Fortinet CNF)</strong> provides robust security specifically within Fortinet's own cloud infrastructure, integrating tightly with the Fortinet Security Fabric and other cloud-hosted services (FortiWeb Cloud, FortiCWP, FortiCASB, FortiSandbox Cloud, FortiMail Cloud).</p>
+
+      <p><strong>FortiSASE (Secure Access Service Edge)</strong> is a fully managed SaaS security platform that delivers security services from the cloud to protect users, devices, and data in distributed environments. It combines SD-WAN, ZTNA, secure web gateway, CASB, and firewall-as-a-service in a single cloud-delivered subscription. No appliance deployment or management is required — the service scales automatically with the user base.</p>
+
+      <div class="callout callout-green"><strong>Cloud firewall selection guide:</strong> Use FortiGate VM when your workloads are cloud-hosted and you need full FortiOS features with infrastructure control. Use FortiCNF when operating within the Fortinet cloud fabric. Use FortiSASE when securing distributed/mobile users without deploying physical or virtual infrastructure at each location.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Three cloud options: FortiGate VM (self-managed, runs on AWS/Azure/GCP/ESXi/KVM/etc., CPU-only), FortiCNF (cloud-native, within Fortinet cloud infrastructure), FortiSASE (fully managed SaaS, no infrastructure, for distributed/mobile users). All support VPN, WAN redundancy, and multicloud. FortiSASE = SD-WAN + ZTNA + SWG + CASB as-a-service.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-section-cloud" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('section-cloud','Cloud Firewalls')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-section-cloud" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('section-cloud')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4: HYBRID MESH -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · HYBRID MESH AND DEPLOYMENT DESIGN</span>
+      </div>
+      <p class="socratic-insight">The Fortinet study guide makes a critical distinction: a firewall's role is defined by how it's deployed and configured — not by its hardware model number. A 100-900 series appliance with UTM profiles at the internet perimeter is functioning as an NGFW. The same hardware with VLANs and east-west policy enforcement inside the campus is an ISFW. Understanding this separation unlocks the Hybrid Mesh concept.</p>
+      <ul class="socratic-questions">
+        <li>The study guide states that a 100-900 series with UTM security profiles is categorized as an NGFW, not an ISFW. What does this tell you about how Fortinet defines firewall roles — by hardware capability or by deployment and configuration?</li>
+        <li>In a Hybrid Mesh deployment, you need to recommend a firewall for a new branch office with 50 users, basic internet access via IPsec VPN to HQ, and no deep UTM inspection requirement. Which use case applies, and which FortiGate series should you specify?</li>
+      </ul>
+      <div class="answer-area" data-section="hybrid">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Fortinet defines roles functionally — by deployment position and configuration, not hardware model. The same FortiOS runs on every appliance; what changes is where it sits in the network and what policies are applied. This matters on the exam because scenario questions often describe a network position and ask you to identify the role, not name the hardware. A device doing UTM inspection at the internet boundary is always an NGFW regardless of its series number.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">This is the DEFW use case — a branch with basic firewall protection, VPN connectivity to the central site, and no deep security analysis requirement. The FortiGate 30-90 series (up to 1 Gbps) is the correct specification. If the branch were to require full UTM/NGFW inspection, you would step up to the 100-900 campus series — but that would be a D-NGFW deployment, not a DEFW.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="section-hybrid">
+      <div class="section-label">SECTION 04</div>
+      <h2>Hybrid Mesh and <em>Deployment Design</em></h2>
+      <div class="section-img-wrap">
+        <img src="images/s4-hybrid.png" class="section-img" alt="Hybrid Mesh topology — DCFW, ISFW, NGFW, DEFW, D-NGFW combined in one enterprise"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s4-hybrid.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration, pastel palette (warm reds, blues, greens, coral, cream), bold outlines, minimal text. An enterprise topology network map combining all four FortiGate roles. TOP: a cloud/internet icon. Below it: "NGFW" (blue box) at the internet perimeter. Center-left: "DCFW" (red, large) at the data center boundary. Center: "ISFW" (green) bridging internal campus VLANs with east-west arrows. RIGHT: "DEFW" (small, coral) at a branch office icon. A second "D-NGFW" icon at another campus site connected via VPN lines (padlock on WAN). All connected with flow arrows labeled "North-South" (vertical) and "East-West" (horizontal). A banner at the bottom: "Hybrid Mesh — All Roles, One FortiOS". Small callout bubble: "Role = Deployment Position + Configuration". Flat design, no shadows.</div>
+        </div>
+      </div>
+
+      <p><strong>Distributed NGFW (D-NGFW)</strong> extends the NGFW role across multiple facilities — buildings, campuses, schools, factories, or branches in large organizations. Rather than routing all traffic through a central firewall, multiple FortiGate NGFWs are deployed at each location, each enforcing full UTM and security policies locally. The D-NGFW deployment adds:</p>
+      <ul>
+        <li><strong>5G/LTE WAN connectivity</strong> via the FortiExtender series for mobile or failover WAN links</li>
+        <li><strong>DDoS protection</strong> at each site to mitigate volumetric attacks before they reach the core</li>
+        <li><strong>ZTNA enforcement</strong> using FortiGate + FortiClient + FortiAuthenticator + FortiToken + FortiNAC</li>
+        <li><strong>Hyperscale and SD-WAN</strong> for optimizing multi-site WAN connectivity</li>
+      </ul>
+
+      <p>The <strong>DEFW (Distributed Enterprise Firewall)</strong> is the branch-focused use case — basic firewall protection for remote sites using <strong>FortiGate 30-90 series</strong> appliances. DEFWs handle up to 1 Gbps throughput and provide:</p>
+      <ul>
+        <li>Traditional firewall and VPN (typically IPsec back to HQ)</li>
+        <li>Basic segmentation and integrated wireless LAN</li>
+        <li>All-in-one form factor for small office deployments</li>
+      </ul>
+      <p>If a branch requires deeper UTM/NGFW analysis, the 100-900 campus series is used instead — at that point the device is functioning as a D-NGFW, not a DEFW.</p>
+
+      <p>The <strong>Hybrid Mesh</strong> is the most common real-world enterprise architecture — a collection of all role types working together. Hybrid mesh firewall secure networking distributes security functions across all deployment positions: internal segmentation (ISFW), data center protection (DCFW), distributed NGFW at campuses, and DEFW at branches — all running FortiOS and managed centrally via FortiManager.</p>
+
+      <div class="callout callout-amber"><strong>Key exam insight — Role ≠ Model:</strong> "The role of a firewall does not necessarily match its model." A 100-900 series is considered an ISFW or campus firewall by default, but deploying it with UTM security profiles categorizes it as an NGFW. The technology adapts to your configuration. Exam questions describe a network position and configuration — identify the role from that context, not from the series number alone.</div>
+
+      <p>The exam-ready comparison table from the Fortinet study guide:</p>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Role</th>
+            <th>Throughput</th>
+            <th>Models</th>
+            <th>Firewall Type</th>
+            <th>Purpose</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>DCFW</td>
+            <td>10–1000 Gbps</td>
+            <td>FortiGate 1000-7000 series</td>
+            <td>Data center</td>
+            <td>High-speed network protection, hyperscale</td>
+          </tr>
+          <tr>
+            <td>ISFW</td>
+            <td>1–100 Gbps</td>
+            <td>FortiGate 100-900 series</td>
+            <td>Campus</td>
+            <td>Network microsegmentation, east-west</td>
+          </tr>
+          <tr>
+            <td>NGFW</td>
+            <td>1–40 Gbps</td>
+            <td>FortiGate 100-7000 series + VM</td>
+            <td>VM / Cloud / Campus / DC</td>
+            <td>Multilayered security, UTM, SD-WAN</td>
+          </tr>
+          <tr>
+            <td>DEFW</td>
+            <td>Up to 1 Gbps</td>
+            <td>FortiGate 30-90 series</td>
+            <td>Branch</td>
+            <td>Remote site protection, VPN to HQ</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="analogy-box">
+        <div class="analogy-label">Analogy</div>
+        <div class="analogy-text">
+          <p class="analogy-summary">A hospital maps each FortiGate deployment role to a specialized department — same trained staff and protocols across all of them, positioned differently based on what each location needs to handle.</p>
+          <ul>
+            <li>Trauma center (DCFW) — high-volume, high-speed critical care at the main facility; built for throughput above all else</li>
+            <li>Ward nurses (ISFW) — control movement between patient rooms; stop threats from spreading between internal zones</li>
+            <li>Ambulances (DEFW) — deployed remotely, handling basic stabilization; compact and mobile for branch locations</li>
+            <li>Mobile health clinics (D-NGFW) — bring full inspection capability to distributed campuses</li>
+            <li>Medical team (FortiOS) — the same trained staff and clinical protocols run in every department</li>
+            <li>Hospital administration (FortiManager) — coordinates all departments; a nurse's role is their position and specialty, not the room number — same as a FortiGate</li>
+          </ul>
+        </div>
+        <div class="analogy-img" style="margin-top:14px;background:rgba(255,255,255,0.5);border-radius:10px;padding:14px;text-align:center;">
+          <img src="images/a3-deployment-roles-analogy.png" alt="Hospital departments as FortiGate deployment roles" onerror="this.style.display='none';this.nextElementSibling.style.display='block';" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 10px;">
+          <div class="img-missing-msg" style="display:none;padding:24px 12px;background:rgba(0,0,0,0.03);border:1px dashed #fde68a;border-radius:8px;color:#78350f;font-size:12px;margin-bottom:10px;">📷 <strong>images/a3-deployment-roles-analogy.png</strong> — add this image to the folder</div>
+          <button class="prompt-toggle" onclick="togglePrompt(this)" type="button">▾ Show analogy image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration, pastel palette (warm pinks, soft blues, sage green, cream), bold outlines, minimal text, educational infographic style. A stylized hospital building split into four clearly labeled departments. TOP-LEFT labeled "Trauma Center / DCFW": large red room with multiple beds and fast-moving carts (representing high throughput, high-speed processing). CENTER labeled "Wards / ISFW": a corridor with multiple separate locked doors between patient rooms (representing zone segmentation, east-west control). BOTTOM-LEFT labeled "Ambulance Bay / DEFW": a small bay with compact ambulance vehicles labeled "Branch" departing on roads (IPsec VPN lines). RIGHT labeled "Mobile Clinic / D-NGFW": a van with a WiFi icon visiting multiple building icons. In the CENTER TOP: a small admin office labeled "FortiManager" with dotted coordination lines to each department. Small badge at bottom: "Same Team (FortiOS) — Different Roles". No shadows, clean flat design.</div>
+        </div>
+      </div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">DEFW: up to 1 Gbps, FortiGate 30-90 series, branch, basic firewall + VPN. D-NGFW: multi-site enterprise, 100-900+ series, adds 5G/LTE, DDoS, ZTNA. Hybrid Mesh = all roles combined. Critical rule: role = deployment position + configuration, NOT model number. A 100-900 with UTM profiles = NGFW, not ISFW.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-section-hybrid" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('section-hybrid','Hybrid Mesh')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-section-hybrid" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('section-hybrid')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">ON THIS PAGE</div>
+      <nav class="ssnav">
+        <a class="ssnav-item" href="#section-dcfw">DCFW Use Case</a>
+        <a class="ssnav-item" href="#section-isfw">ISFW Use Case</a>
+        <a class="ssnav-item" href="#section-cloud">Cloud Firewalls</a>
+        <a class="ssnav-item" href="#section-hybrid">Hybrid Mesh</a>
+      </nav>
+    </div>
+
+    <a class="hub-link" href="index.html">← Chapter 01 Hub</a>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">PROGRESS</div>
+      <div class="checklist" id="checklist">
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="section-dcfw" onchange="toggleDone(this)">
+          <span class="check-label">DCFW Use Case</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="section-isfw" onchange="toggleDone(this)">
+          <span class="check-label">ISFW Use Case</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="section-cloud" onchange="toggleDone(this)">
+          <span class="check-label">Cloud Firewalls</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="section-hybrid" onchange="toggleDone(this)">
+          <span class="check-label">Hybrid Mesh</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">QUICK REFERENCE</div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">DCFW</div>
+        <div class="quick-ref-def">Data center north-south. 10-1000 Gbps. FortiGate 1000-7000 series. VRF/VDOM segmentation, HW SSL, hyperscale, low latency.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">ISFW</div>
+        <div class="quick-ref-def">Campus east-west. 1-100 Gbps. FortiGate 100-900 series. Micro-segmentation, VLANs/VDOMs, integrated wireless (FortiAP/FortiWLC).</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">NGFW</div>
+        <div class="quick-ref-def">Multilayered security. 1-40 Gbps. FortiGate 100-7000 + VM. Internet perimeter, UTM profiles, SD-WAN, DDoS, ZTNA.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">DEFW</div>
+        <div class="quick-ref-def">Branch remote site. Up to 1 Gbps. FortiGate 30-90 series. Basic firewall + VPN to HQ. All-in-one form factor.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">FortiGate VM</div>
+        <div class="quick-ref-def">FortiOS on cloud hypervisors (AWS, Azure, GCP, ESXi, KVM, etc.). No NP/CP — CPU-only. Best for moderate throughput cloud workloads.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">FortiSASE</div>
+        <div class="quick-ref-def">SaaS-delivered security (FWaaS). Combines SD-WAN, ZTNA, SWG, CASB. Zero infrastructure — for distributed and mobile users.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Role ≠ Model</div>
+        <div class="quick-ref-def">Role is defined by deployment position + configuration, not hardware series. A 100-900 with UTM profiles = NGFW. Same FortiOS, different role.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">FortiExtender</div>
+        <div class="quick-ref-def">Provides 5G/LTE WAN connectivity for FortiGate D-NGFW deployments. Used for mobile or failover WAN links at remote/branch sites.</div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="page-nav">
+  <a class="page-nav-btn page-nav-prev" href="subtopic-01-enterprise-firewall-solution.html">
+    <span class="page-nav-label">← PREVIOUS</span>
+    <span class="page-nav-title">Understand the Enterprise Firewall Solution</span>
+  </a>
+  <a class="page-nav-btn page-nav-next" href="index.html">
+    <span class="page-nav-label">BACK TO HUB →</span>
+    <span class="page-nav-title">Chapter 01 Hub</span>
+  </a>
+</div>
+
+<footer>
+  EF-NSE7<span>.</span> Chapter 01<span>.</span> Subtopic 02<span>.</span> Design Secure Networks Using Fortinet Solutions
+</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-ch01-sub02-design-secure-networks';
+
+const SECTIONS = {
+  'section-dcfw':   'DCFW Use Case',
+  'section-isfw':   'ISFW Use Case',
+  'section-cloud':  'Cloud Firewalls',
+  'section-hybrid': 'Hybrid Mesh',
+};
+
+document.querySelectorAll('.socratic-header').forEach(function(h) {
+  h.addEventListener('click', function() { h.closest('.socratic-block').classList.toggle('soc-open'); });
+});
+
+function getQArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-qs') || '[]'); }
+function saveQArr(qs) { localStorage.setItem(PAGE_KEY+'-qs', JSON.stringify(qs)); }
+function addQuestion(key, name) {
+  const ta = document.getElementById('q-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const qs = getQArr(); qs.push({id: Date.now(), section: key, sectionName: name, text});
+  saveQArr(qs); ta.value = ''; renderQPanel();
+  if (!document.getElementById('qpanel-body').classList.contains('open')) toggleQPanel();
+}
+function deleteQ(id) { saveQArr(getQArr().filter(q => q.id !== id)); renderQPanel(); }
+function toggleQPanel() {
+  const body = document.getElementById('qpanel-body');
+  const header = document.getElementById('qpanel-header');
+  const chevron = document.getElementById('qpanel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-qpanel-open', open);
+}
+function renderQPanel() {
+  const qs = getQArr();
+  const count = document.getElementById('qpanel-count');
+  if (count) { count.textContent = qs.length; count.style.display = qs.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.qpanel-hint');
+  if (hint) hint.textContent = qs.length ? `— ${qs.length} question${qs.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('qpanel-body'); if (!body) return;
+  if (!qs.length) { body.innerHTML = '<p class="no-questions">No questions yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  qs.forEach(q => { if (groups[q.section]) groups[q.section].push(q); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(q => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${q.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteQ(${q.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function getNotesArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-notes') || '[]'); }
+function saveNotesArr(ns) { localStorage.setItem(PAGE_KEY+'-notes', JSON.stringify(ns)); }
+function addNote(key) {
+  const ta = document.getElementById('note-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const ns = getNotesArr(); ns.push({id: Date.now(), section: key, sectionName: SECTIONS[key]||key, text});
+  saveNotesArr(ns); ta.value = ''; renderNotesPanel();
+  if (!document.getElementById('notes-panel-body').classList.contains('open')) toggleNotesPanel();
+}
+function deleteNote(id) { saveNotesArr(getNotesArr().filter(n => n.id !== id)); renderNotesPanel(); }
+function toggleNotesPanel() {
+  const body = document.getElementById('notes-panel-body');
+  const header = document.getElementById('notes-panel-header');
+  const chevron = document.getElementById('notes-panel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-notes-panel-open', open);
+}
+function renderNotesPanel() {
+  const ns = getNotesArr();
+  const count = document.getElementById('notes-panel-count');
+  if (count) { count.textContent = ns.length; count.style.display = ns.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.notes-panel-hint');
+  if (hint) hint.textContent = ns.length ? `— ${ns.length} note${ns.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('notes-panel-body'); if (!body) return;
+  if (!ns.length) { body.innerHTML = '<p class="no-questions">No notes yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  ns.forEach(n => { if (groups[n.section]) groups[n.section].push(n); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(n => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteNote(${n.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function toggleDone(input) {
+  localStorage.setItem(PAGE_KEY+'-check-'+input.dataset.key, input.checked);
+}
+function initChecks() {
+  document.querySelectorAll('.check-input').forEach(function(inp) {
+    inp.checked = localStorage.getItem(PAGE_KEY+'-check-'+inp.dataset.key) === 'true';
+  });
+}
+
+function saveSocAnswer(btn) {
+  const area = btn.closest('.answer-area');
+  const ta = area.querySelector('.answer-textarea');
+  if (!ta.value.trim()) { ta.focus(); return; }
+  const key = PAGE_KEY+'-socans-'+area.dataset.section;
+  try { localStorage.setItem(key, ta.value); } catch(e) {}
+  ta.disabled = true; btn.textContent = '✓ Answer saved'; btn.disabled = true;
+  const seeBtn = area.querySelector('.btn-see-answer');
+  seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+}
+function revealSocAnswer(btn) {
+  if (btn.disabled) return;
+  const answers = btn.closest('.answer-area').querySelector('.model-answers');
+  const isHidden = answers.style.display === 'none' || !answers.style.display;
+  answers.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '▲ Hide Model Answer' : '💡 See Model Answer';
+}
+
+function togglePrompt(btn) {
+  const c = btn.nextElementSibling;
+  const isHidden = c.hasAttribute('hidden');
+  if (isHidden) { c.removeAttribute('hidden'); btn.textContent = '▴ Hide analogy image prompt'; }
+  else { c.setAttribute('hidden', ''); btn.textContent = '▾ Show analogy image prompt'; }
+}
+
+if (sessionStorage.getItem('pt')) {
+  document.body.style.opacity = '1';
+  sessionStorage.removeItem('pt');
+}
+document.querySelectorAll('a[href]').forEach(function(a) {
+  a.addEventListener('click', function() { sessionStorage.setItem('pt', '1'); });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderQPanel(); renderNotesPanel(); initChecks();
+  if (localStorage.getItem(PAGE_KEY+'-qpanel-open') === 'true') toggleQPanel();
+  if (localStorage.getItem(PAGE_KEY+'-notes-panel-open') === 'true') toggleNotesPanel();
+  document.querySelectorAll('.answer-area').forEach(function(area) {
+    const key = PAGE_KEY+'-socans-'+area.dataset.section;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const ta = area.querySelector('.answer-textarea'); ta.value = saved; ta.disabled = true;
+        const addBtn = area.querySelector('.btn-add-answer'); addBtn.textContent = '✓ Answer saved'; addBtn.disabled = true;
+        const seeBtn = area.querySelector('.btn-see-answer'); seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+      }
+    } catch(e) {}
+  });
+  document.querySelectorAll('.analogy-box').forEach(function(box) {
+    if (box.dataset.collapsibleInit) return;
+    box.dataset.collapsibleInit = '1';
+    box.classList.add('expanded');
+    const label = box.querySelector(':scope > .analogy-label');
+    if (label) label.addEventListener('click', () => box.classList.toggle('expanded'));
+  });
+  document.querySelectorAll('.analogy-img img').forEach(function(img) {
+    if (img.dataset.zoomInit) return;
+    img.dataset.zoomInit = '1';
+    img.addEventListener('click', () => img.classList.toggle('zoomed'));
+  });
+  document.querySelectorAll('.section-img').forEach(function(img) {
+    img.addEventListener('click', () => img.classList.toggle('si-expanded'));
+  });
+});
+
+(function() {
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      var lnk = document.querySelector('.ssnav-item[href="#'+e.target.id+'"]');
+      if (lnk) lnk.classList.toggle('active', e.isIntersecting);
+    });
+  }, { rootMargin: '-10% 0% -70% 0%' });
+  document.querySelectorAll('.section-block[id]').forEach(function(el) { obs.observe(el); });
+})();
+</script>
+</body>
+</html>

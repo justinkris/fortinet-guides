@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inter-VDOM Routing — EF-NSE7 Ch03 Sub03</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#fff5f5;--surface:#ffffff;--surface-2:#fef2f2;--border:#f0c8c8;--border-dim:#fde8e8;
+  --text:#1a0606;--text-soft:#4a1212;--text-muted:#8a3a3a;
+  --red:#c0392b;--red-vivid:#e03e2d;--red-glow:rgba(192,57,43,0.07);--red-dim:#f8b4b4;
+  --red-deep:#7f1d1d;--red-light:#fef2f2;--red-border:#f8b4b4;
+  --green:#1a7c4a;--green-light:#d4f0e0;--green-border:#a7e0c0;
+  --amber:#b45309;--amber-light:#fef9c3;--amber-border:#fde68a;
+}
+html{scroll-behavior:smooth;}
+html.pt-init body{opacity:0;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+header{padding:48px 60px 36px;background:#1a0606;display:flex;align-items:flex-end;gap:32px;}
+.header-left{flex:1;}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);letter-spacing:0.08em;margin-bottom:12px;flex-wrap:wrap;}
+.breadcrumb a{color:#e87070;text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.breadcrumb-sep{color:rgba(232,112,112,0.35);}
+.header-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(232,112,112,0.1);border:1px solid rgba(232,112,112,0.25);padding:5px 14px;border-radius:20px;font-size:11px;color:#e87070;letter-spacing:0.08em;margin-bottom:14px;}
+.dot-live{width:6px;height:6px;background:#e87070;border-radius:50%;display:inline-block;animation:blink 2.4s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+header h1{font-family:'Fraunces',serif;font-size:44px;font-weight:700;line-height:1.0;color:#fff;margin-bottom:10px;}
+header h1 em{font-style:italic;font-weight:400;color:#e87070;}
+header p{font-size:13px;color:rgba(255,255,255,0.42);margin-top:10px;line-height:1.7;}
+.motivation-banner{padding:20px 60px;min-height:84px;display:flex;flex-direction:column;justify-content:center;border-bottom:1px solid var(--border);background:var(--surface);}
+.motivation-text{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--text);}
+.motivation-text em{font-style:italic;color:var(--red);}
+.motivation-sub{font-size:12px;color:var(--text-muted);line-height:1.7;margin-top:4px;}
+.top-panels{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+.top-panels .qpanel{border-bottom:none;border-right:1px solid var(--border);}
+.top-panels .qpanel-header{padding-left:32px;padding-right:32px;}
+.top-panels .qpanel-body{padding-left:32px;padding-right:32px;}
+.qpanel{background:var(--surface);}
+.qpanel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 20px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.qpanel-header:hover,.qpanel-header.open{background:var(--surface-2);}
+.qpanel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.qpanel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.qpanel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.qpanel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.qpanel-body{display:none;padding:0 20px 22px;}
+.qpanel-body.open{display:block;}
+.notes-panel{background:var(--surface);}
+.notes-panel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 32px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.notes-panel-header:hover,.notes-panel-header.open{background:var(--surface-2);}
+.notes-panel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.notes-panel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.notes-panel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.notes-panel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.notes-panel-body{display:none;padding:0 32px 22px;}
+.notes-panel-body.open{display:block;}
+.q-group{margin-bottom:16px;}
+.q-group-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+.q-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-dim);}
+.q-item:last-child{border-bottom:none;}
+.q-num{font-size:10px;font-weight:700;color:var(--red);min-width:16px;margin-top:2px;}
+.q-text{font-size:12px;color:var(--text-soft);line-height:1.5;flex:1;}
+.q-del{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 4px;margin-top:1px;}
+.q-del:hover{color:var(--red);}
+.no-questions{font-size:12px;color:var(--text-muted);padding:8px 0;}
+.btn-add-q{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-q:hover{opacity:0.85;}
+.section-nav{position:sticky;top:0;z-index:90;display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);padding:0 32px;overflow-x:auto;}
+.nav-tab{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:12px 18px;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--red);border-bottom-color:var(--red);}
+main{display:grid;grid-template-columns:1fr 320px;gap:0;align-items:start;max-width:1200px;margin:0 auto;padding:0;}
+.main-content{padding:36px 40px 60px 60px;}
+.sidebar{padding:32px 24px 60px 20px;position:sticky;top:57px;max-height:calc(100vh - 57px);overflow-y:auto;}
+.section-block{margin-bottom:48px;}
+.section-label{font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.section-block h2{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1.15;margin-bottom:16px;padding-left:16px;border-left:3px solid var(--red);}
+.section-block h2 em{font-style:italic;font-weight:400;color:var(--red);}
+.section-block p{font-size:14px;line-height:1.8;color:var(--text-soft);margin-bottom:14px;}
+.section-block p strong{color:var(--text);font-weight:600;}
+.section-block p em{color:var(--red);font-style:italic;}
+.section-block ul,.section-block ol{padding-left:22px;margin-bottom:14px;}
+.section-block li{font-size:14px;line-height:1.75;color:var(--text-soft);margin-bottom:4px;}
+.section-block li strong{color:var(--text);font-weight:600;}
+.callout{border-left:3px solid var(--red-border);background:var(--red-light);border-radius:0 10px 10px 0;padding:12px 18px;margin:16px 0;font-size:13.5px;line-height:1.65;color:var(--text-soft);}
+.callout strong{color:var(--text);}
+.callout-green{border-left-color:var(--green-border);background:var(--green-light);}
+.callout-amber{border-left-color:var(--amber-border);background:var(--amber-light);}
+.section-img-wrap{margin:0 0 20px;display:flex;flex-direction:column;align-items:center;}
+.section-img{width:260px;max-width:100%;border-radius:12px;cursor:zoom-in;transition:width 0.3s ease;border:1px solid var(--border);display:block;}
+.section-img.si-expanded{width:100%;cursor:zoom-out;border-radius:16px;}
+.si-placeholder{display:none;width:260px;max-width:100%;border:2px dashed var(--border);border-radius:12px;background:var(--surface-2);padding:14px 16px;flex-direction:column;align-items:flex-start;gap:8px;}
+.si-placeholder.si-show{display:flex;}
+.si-filename{font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+.code-block{background:#1a0606;border-radius:12px;padding:20px 24px;margin:16px 0;overflow-x:auto;}
+.code-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#e87070;margin-bottom:10px;}
+.code-block pre{margin:0;}
+.code-block code{font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:rgba(255,255,255,0.82);}
+.socratic-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:16px;border-top:3px solid var(--red);}
+.socratic-header{display:flex;align-items:center;gap:8px;margin-bottom:0;cursor:pointer;user-select:none;}
+.socratic-header::after{content:'▸ Expand';margin-left:auto;font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'Inter',sans-serif;}
+.socratic-block.soc-open .socratic-header{margin-bottom:10px;}
+.socratic-block.soc-open .socratic-header::after{content:'▾ Collapse';}
+.socratic-block:not(.soc-open) .socratic-insight,
+.socratic-block:not(.soc-open) .socratic-questions,
+.socratic-block:not(.soc-open) .answer-area{display:none;}
+.socratic-icon{font-size:17px;flex-shrink:0;}
+.socratic-label{font-size:9px;font-weight:700;letter-spacing:0.18em;color:var(--text-muted);}
+.socratic-insight{font-size:13px;color:var(--text-soft);line-height:1.75;margin-bottom:12px;border-left:3px solid var(--border);padding-left:12px;font-style:italic;}
+.socratic-questions{list-style:none;padding:0;margin:0;}
+.socratic-questions li{font-size:12.5px;color:var(--text);padding:7px 0 7px 22px;position:relative;border-bottom:1px solid var(--border-dim);line-height:1.6;}
+.socratic-questions li:last-child{border-bottom:none;}
+.socratic-questions li::before{content:'?';position:absolute;left:0;font-weight:700;font-size:12px;top:8px;color:var(--red);}
+.answer-area{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.answer-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.answer-textarea:focus{border-color:var(--text);}
+.answer-textarea:disabled{opacity:0.7;background:var(--surface-2);cursor:default;}
+.answer-buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.btn-add-answer{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-answer:hover:not(:disabled){opacity:0.85;}
+.btn-add-answer:disabled{opacity:0.5;cursor:default;}
+.btn-see-answer{background:var(--surface);color:var(--text-muted);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-see-answer:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-see-answer:not(:disabled){color:var(--red);border-color:var(--red);}
+.btn-see-answer:hover:not(:disabled){background:var(--red-glow);}
+.model-answers{margin-top:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.model-answer-item{padding:10px 0;border-bottom:1px solid var(--border-dim);}
+.model-answer-item:first-child{padding-top:0;}
+.model-answer-item:last-child{border-bottom:none;padding-bottom:0;}
+.model-answer-q{font-size:9px;font-weight:700;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:4px;}
+.model-answer-text{font-size:13px;color:var(--text-soft);line-height:1.7;}
+.mental-note-block{border-radius:10px;padding:12px 16px;margin:16px 0;display:flex;gap:10px;align-items:flex-start;background:rgba(192,57,43,0.07);border:1px solid var(--border);}
+.mental-note-block-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.mental-note-block-inner{flex:1;}
+.mental-note-block-label{font-size:9px;font-weight:700;letter-spacing:0.16em;color:var(--red);margin-bottom:3px;}
+.mental-note-block-text{font-size:13px;font-weight:600;line-height:1.55;color:var(--text);}
+.analogy-box{background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #b45309;border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0;}
+.analogy-label{display:flex;align-items:center;gap:6px;user-select:none;cursor:pointer;font-size:9px;font-weight:700;letter-spacing:0.16em;color:#b45309;margin-bottom:4px;}
+.analogy-label::after{content:'▾  Reveal illustration';margin-left:auto;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:none;opacity:0.75;}
+.analogy-label:hover::after{opacity:1;}
+.analogy-box.expanded > .analogy-label::after{content:'▴  Hide illustration';}
+.analogy-text{font-size:13px;color:#78350f;line-height:1.65;font-style:italic;}
+.analogy-box > .analogy-img{display:none;}
+.analogy-box.expanded > .analogy-img{display:block;}
+.analogy-img img{max-width:360px;width:100%;cursor:zoom-in;transition:max-width 0.25s ease;border-radius:8px;margin-top:10px;}
+.analogy-img img.zoomed{max-width:100%;cursor:zoom-out;}
+.prompt-toggle{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:10px;font-weight:600;letter-spacing:0.08em;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;text-transform:uppercase;}
+.prompt-toggle:hover{color:var(--text);border-color:var(--text);}
+.prompt-content{margin-top:10px;padding:10px 14px;background:rgba(0,0,0,0.04);border-radius:8px;font-size:11.5px;color:var(--text-muted);font-style:italic;line-height:1.65;text-align:left;}
+.prompt-content[hidden]{display:none;}
+.lesson-tools{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:40px;}
+.lesson-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.tool-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.tool-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.tool-textarea:focus{border-color:var(--red);}
+.tool-row{margin-top:8px;display:flex;gap:8px;}
+.sidebar-section{margin-bottom:28px;}
+.sidebar-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;}
+.ssnav{display:flex;flex-direction:column;gap:2px;margin-top:4px;}
+.ssnav-item{font-size:12px;color:var(--text-soft);padding:6px 10px;border-radius:6px;text-decoration:none;line-height:1.4;display:block;transition:background 0.15s,color 0.15s;}
+.ssnav-item:hover,.ssnav-item.active{background:var(--red-glow);color:var(--red);}
+.hub-link{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);margin-bottom:16px;transition:color 0.15s,border-color 0.15s,background 0.15s;}
+.hub-link:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);}
+.check-item{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;}
+.check-input{accent-color:var(--red);width:14px;height:14px;flex-shrink:0;cursor:pointer;}
+.check-label{font-size:12px;color:var(--text-soft);line-height:1.4;}
+.check-item:has(.check-input:checked) .check-label{color:var(--text-muted);text-decoration:line-through;}
+.quick-ref{background:#1a0606;border-radius:10px;padding:12px 16px;margin-bottom:8px;}
+.quick-ref-term{font-size:10px;font-weight:700;letter-spacing:0.12em;color:#e87070;margin-bottom:3px;text-transform:uppercase;}
+.quick-ref-def{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;}
+.page-nav{display:flex;border-top:2px solid var(--border);background:var(--surface);}
+.page-nav-btn{flex:1;display:flex;flex-direction:column;gap:4px;padding:16px 28px;text-decoration:none;transition:background 0.15s;cursor:pointer;}
+.page-nav-btn:hover:not(.page-nav-disabled){background:var(--surface-2);}
+.page-nav-prev{border-right:1px solid var(--border);}
+.page-nav-next{text-align:right;}
+.page-nav-disabled{opacity:0.3;pointer-events:none;}
+.page-nav-label{font-size:10px;font-weight:600;letter-spacing:0.14em;color:var(--text-muted);display:block;}
+.page-nav-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;color:var(--red);display:block;}
+footer{font-size:11px;letter-spacing:0.12em;color:var(--text-muted);text-transform:uppercase;padding:20px 60px;border-top:1px solid var(--border);}
+footer span{color:var(--red);}
+.img-caption{font-size:11px;color:var(--text-muted);text-align:center;margin-top:6px;line-height:1.4;font-style:italic;}
+.analogy-summary{font-style:normal;font-weight:600;color:#92400e;margin-bottom:10px;}
+.analogy-text ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;}
+.analogy-text li{padding-left:18px;position:relative;}
+.analogy-text li::before{content:'•';position:absolute;left:0;font-weight:700;color:#b45309;}
+.data-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;}
+.data-table th{background:#1a0606;color:#e87070;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:10px 14px;text-align:left;}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-soft);line-height:1.55;vertical-align:top;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:nth-child(even) td{background:var(--surface-2);}
+.data-table td strong{color:var(--text);font-weight:600;}
+@media(max-width:1000px){main{grid-template-columns:1fr;}.sidebar{position:static;max-height:none;padding:0 40px 40px;}}
+@media(max-width:720px){header{padding:28px 24px 24px;}header h1{font-size:32px;}.motivation-banner{padding:16px 24px;}.main-content{padding:24px 24px 40px;}.section-nav{padding:0 16px;}.top-panels{grid-template-columns:1fr;}.top-panels .qpanel{border-right:none;border-bottom:1px solid var(--border);}.lesson-tools-grid{grid-template-columns:1fr;}footer{padding:16px 24px;}}
+</style>
+</head>
+<body>
+<div id="page-transition" style="position:fixed;inset:0;background:#1a0606;z-index:9999;pointer-events:none;opacity:0;transition:opacity 0.25s;"></div>
+
+<header>
+  <div class="header-left">
+    <div class="breadcrumb">
+      <a href="../nse7-ef-study-guide-hub.html">EF-NSE7</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="index.html">Chapter 03 — VLANs and VDOMs</a>
+      <span class="breadcrumb-sep">›</span>
+      Subtopic 03
+    </div>
+    <div class="header-eyebrow"><span class="dot-live"></span> Study Guide · EF-NSE7</div>
+    <h1>Inter-<em>VDOM</em> Routing</h1>
+    <p>Master VDOM link creation, interface naming conventions, routing and policy requirements — the final piece that makes isolated VDOMs cooperate in a real enterprise network.</p>
+  </div>
+</header>
+
+<div class="motivation-banner">
+  <div class="motivation-text">VDOMs are isolated by design — <em>VDOM links</em> are the controlled exceptions that let them share resources.</div>
+  <p class="motivation-sub">This subtopic covers the mechanics of VDOM links, interface naming (the 0/1 convention), static and dynamic routing over links, and inter-VDOM firewall policies.</p>
+</div>
+
+<div class="top-panels">
+  <div class="qpanel" id="qpanel">
+    <button class="qpanel-header" onclick="toggleQPanel()" id="qpanel-header">
+      <span class="qpanel-title">MY QUESTIONS</span>
+      <span class="qpanel-count" id="qpanel-count">0</span>
+      <span class="qpanel-hint">— click to expand</span>
+      <span class="qpanel-chevron" id="qpanel-chevron">▾</span>
+    </button>
+    <div class="qpanel-body" id="qpanel-body"></div>
+  </div>
+  <div class="notes-panel" id="notes-panel">
+    <button class="notes-panel-header" onclick="toggleNotesPanel()" id="notes-panel-header">
+      <span class="notes-panel-title">MY NOTES</span>
+      <span class="notes-panel-count" id="notes-panel-count">0</span>
+      <span class="notes-panel-hint">— click to expand</span>
+      <span class="notes-panel-chevron" id="notes-panel-chevron">▾</span>
+    </button>
+    <div class="notes-panel-body" id="notes-panel-body"></div>
+  </div>
+</div>
+
+<nav class="section-nav" id="section-nav">
+  <a class="nav-tab active" href="#s1">Why VDOM Links</a>
+  <a class="nav-tab" href="#s2">VDOM Link Config</a>
+  <a class="nav-tab" href="#s3">Routing Over Links</a>
+  <a class="nav-tab" href="#s4">Policies &amp; Comparing VDOMs</a>
+</nav>
+
+<main>
+  <div class="main-content">
+
+    <!-- ═══ SECTION 1 ═══ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · WHY VDOM LINKS</span>
+      </div>
+      <p class="socratic-insight">VDOMs are completely isolated from each other by default — no traffic can pass between them without an explicit connection. An inter-VDOM link creates a virtual cable between two VDOMs, eliminating the need for a physical cable looped between two ports.</p>
+      <ul class="socratic-questions">
+        <li>Why is an inter-VDOM link preferable to physically looping a cable between two FortiGate interfaces to connect two VDOMs?</li>
+        <li>Besides internet sharing, what other type of connectivity can an inter-VDOM link facilitate between two VDOMs?</li>
+      </ul>
+      <div class="answer-area" data-section="why-vdom-links">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">A physical cable loop wastes two physical interfaces, introduces a potential hardware failure point, and consumes port resources. An inter-VDOM link uses virtual interfaces — no physical cable or ports needed. It's more scalable, reliable, and resource-efficient. You can create multiple VDOM links without any physical connectivity changes.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Beyond internet sharing, an inter-VDOM link facilitates connectivity between the networks of different VDOMs — for example, allowing users in VDOM1's LAN to reach servers in VDOM2's network, or enabling a shared DMZ VDOM to serve multiple traffic VDOMs. Any routing or policy-based connectivity between isolated VDOMs can be achieved through inter-VDOM links.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s1">
+      <div class="section-label">SECTION 01</div>
+      <h2>Why Inter-VDOM Links — <em>Controlled Isolation</em></h2>
+      <div class="section-img-wrap">
+        <img src="images/s1-inter-vdom-use-case.png" class="section-img" alt="VDOM1 without internet accessing root VDOM via an inter-VDOM link"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s1-inter-vdom-use-case.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: vertical stack — VDOM Global (dark bar, top), below it "vdom: root" (blue box, connected to an internet cloud on the right via a "port2" arrow), below root "vdom: VDOM1" (green box, labeled "No internet access"). A dashed curved arrow labeled "Inter-VDOM Link" connects VDOM1 to root on the left side. A laptop icon below VDOM1 with "Internet access" arrow pointing up through the link to root then to internet. Pastel palette, bold outlines, no shadows, educational style.</div>
+        </div>
+        <p class="img-caption">Use Case 3: VDOM1 has no direct internet — it routes through root VDOM via an inter-VDOM link.</p>
+      </div>
+      <p>By default, VDOMs are completely isolated — no traffic can flow between them. An <strong>inter-VDOM link</strong> (also called a VDOM link) creates a <strong>virtual interface pair</strong> connecting two VDOMs, eliminating the need for a physical cable looped between two FortiGate ports.</p>
+      <p>The primary use case is <strong>internet sharing</strong>: if VDOM1 does not have a direct internet-facing interface, it can reach the internet through the root VDOM's interface via an inter-VDOM link. The inter-VDOM link provides a routed path from VDOM1 to root.</p>
+      <p>Inter-VDOM links also enable <strong>network-to-network connectivity</strong> — allowing users in one VDOM's network to reach servers or resources in another VDOM's network through a controlled, policy-enforced path.</p>
+      <div class="callout callout-green"><strong>Key benefit:</strong> Inter-VDOM links are virtual — they consume no physical ports, introduce no hardware failure points, and can be created as needed without physical changes to the FortiGate device.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Inter-VDOM links = virtual cable between VDOMs. No physical ports consumed. Two uses: (1) share internet access from one VDOM to another, (2) connect networks across VDOMs. Traffic requires routing AND firewall policies on both sides.</div>
+        </div>
+      </div>
+      <div class="analogy-box">
+        <div class="analogy-label">Analogy</div>
+        <div class="analogy-text">
+          <p class="analogy-summary">An inter-VDOM link is like a private internal hallway between two adjacent office suites that share a building — without it, occupants must exit the building (use a physical cable) to visit each other.</p>
+          <ul>
+            <li><strong>Each VDOM</strong> — a separate leased office suite with its own locked door and independent operations</li>
+            <li><strong>Inter-VDOM link</strong> — the internal connecting door between two suites: no need to go outside; the building's security (FortiGate) still monitors who passes through</li>
+            <li><strong>Firewall policy on the link</strong> — the receptionist at the internal door: not everyone can walk through — each visit requires explicit approval (a matching policy)</li>
+          </ul>
+        </div>
+        <div class="analogy-img" style="margin-top:14px;background:rgba(255,255,255,0.5);border-radius:10px;padding:14px;text-align:center;">
+          <img src="images/a1-vdom-link-hallway.png" alt="Office hallway analogy for inter-VDOM links"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='block';" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 10px;">
+          <div class="img-missing-msg" style="display:none;font-size:12px;color:#92400e;padding:8px;background:rgba(146,64,14,0.1);border-radius:6px;">📷 <strong>images/a1-vdom-link-hallway.png</strong> — add this image to the folder</div>
+          <button class="prompt-toggle" onclick="togglePrompt(this)" type="button">▾ Show analogy image prompt</button>
+          <div class="prompt-content" hidden>Cartoon illustration in pastel style: top-down floor plan of a building. Left suite labeled "VDOM Root" (blue) — has a door to outside world (internet cloud). Right suite labeled "VDOM1" (green) — no outside door. Between them: a internal connecting door labeled "Inter-VDOM Link" with a small receptionist desk blocking it labeled "Firewall Policy". An arrow flows from VDOM1 through the internal door and out to the internet via root's external door. The external wall between VDOM1 and outside has a red "X No Internet" sign. Bold outlines, pastel colors, no shadows, educational infographic style.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s1" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s1','Why VDOM Links')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s1" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s1')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SECTION 2 ═══ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · VDOM LINK CONFIGURATION</span>
+      </div>
+      <p class="socratic-insight">When you create a VDOM link named "VDOM_Link," FortiGate automatically creates two interface instances — one for each VDOM in the pair. The naming convention appends 0 and 1 to distinguish which end belongs to which VDOM.</p>
+      <ul class="socratic-questions">
+        <li>If you create an inter-VDOM link named "Corp_Link" between the root VDOM and VDOM1, what will the two resulting interface names be — and which VDOM gets which interface?</li>
+        <li>Creating a VDOM link alone is not enough to enable traffic — what two additional configurations are required before traffic can actually flow?</li>
+      </ul>
+      <div class="answer-area" data-section="vdom-link-config">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">FortiGate creates Corp_Link0 and Corp_Link1. Interface 0 is assigned to the first VDOM listed (typically root), and Interface 1 is assigned to the second VDOM (VDOM1). This 0/1 convention is automatic — you cannot choose which number goes to which VDOM; it's determined by the creation order. The naming helps administrators quickly identify which end of the link belongs to which VDOM.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">After creating a VDOM link, you must configure: (1) routing — either static routes or dynamic routing protocol on each VDOM's side of the link interface, so each VDOM knows how to forward packets through the link; and (2) firewall policies — at least one policy on each VDOM allowing traffic to enter and exit through the VDOM link interfaces. Without both, traffic will not pass even though the link exists.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s2">
+      <div class="section-label">SECTION 02</div>
+      <h2>VDOM Link <em>Configuration</em> — Creating the Virtual Pipe</h2>
+      <div class="section-img-wrap">
+        <img src="images/s2-vdom-link-config.png" class="section-img" alt="New VDOM Link creation form showing Interface 0 (root) and Interface 1 (VDOM) with IP addressing"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s2-vdom-link-config.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: two-column form diagram. Left column "Interface 0 (VDOM_Link0)" — Virtual Domain dropdown showing "root", IP/Netmask "172.16.1.253/30". Right column "Interface 1 (VDOM_Link1)" — Virtual Domain dropdown showing "VDOM4", IP/Netmask "172.16.1.254/30". Below both: a legend showing the naming rule "Base Name + 0 = first VDOM, Base Name + 1 = second VDOM". A small table below shows the resulting interface list with type "VDOM Link Interface". Pastel palette, bold outlines, no shadows.</div>
+        </div>
+        <p class="img-caption">One VDOM link creates two virtual interface instances — appended with 0 and 1 — one per VDOM.</p>
+      </div>
+      <p>To create an inter-VDOM link, navigate to <strong>Global VDOM &gt; Network &gt; Interfaces &gt; Create New &gt; VDOM Link</strong>. You provide a base name for the link, and FortiGate automatically creates two interface instances — one per VDOM — by appending <strong>0</strong> and <strong>1</strong> to the name.</p>
+      <p>For example, a VDOM link named <strong>VDOM_Link</strong> creates:</p>
+      <ul>
+        <li><strong>VDOM_Link0</strong> — Interface 0, assigned to the root VDOM (172.16.1.253/30)</li>
+        <li><strong>VDOM_Link1</strong> — Interface 1, assigned to VDOM4 (172.16.1.254/30)</li>
+      </ul>
+      <p>This naming convention — appending 0 and 1 — allows administrators to instantly identify which end of the link belongs to which VDOM. The two interfaces appear under their respective VDOMs in <strong>Network &gt; Interfaces</strong>.</p>
+      <div class="code-block">
+        <div class="code-label">FortiGate GUI Path — Create VDOM Link</div>
+        <pre><code># Navigate to: Global VDOM > Network > Interfaces > Create New > VDOM Link
+# Name: VDOM_Link
+# Interface 0:
+#   Virtual Domain: root
+#   IP/Netmask: 172.16.1.253/30
+# Interface 1:
+#   Virtual Domain: VDOM1
+#   IP/Netmask: 172.16.1.254/30
+
+# Result in interface list:
+# VDOM_Link  (parent VDOM Link entry, type = VDOM Link)
+#   VDOM_Link0  (assigned to root, type = VDOM Link Interface)
+#   VDOM_Link1  (assigned to VDOM1, type = VDOM Link Interface)</code></pre>
+      </div>
+      <div class="callout callout-amber"><strong>Exam tip:</strong> The 0/1 naming convention is automatic — you cannot choose which number is assigned to which VDOM. Interface 0 goes to the first VDOM configured (typically root), Interface 1 to the second. Knowing this naming pattern is testable when interpreting interface lists.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Create VDOM link at: Global VDOM &gt; Network &gt; Interfaces &gt; VDOM Link. One link = two virtual interfaces: BaseName0 (first VDOM) + BaseName1 (second VDOM). Both appear in their VDOM's Network &gt; Interfaces. Each side needs an IP address for routing.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s2" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s2','VDOM Link Config')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s2" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s2')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SECTION 3 ═══ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · ROUTING OVER VDOM LINKS</span>
+      </div>
+      <p class="socratic-insight">A VDOM link creates the virtual interface pair — but traffic won't flow until each VDOM knows how to reach the other's networks via routing. This is identical to configuring routing on any other interface: you can use static routes or dynamic routing protocols.</p>
+      <ul class="socratic-questions">
+        <li>For a VDOM1 host to reach the internet through root VDOM via a VDOM link, which VDOM needs a default route pointing to the link interface — and which VDOM needs a route back to VDOM1's subnet?</li>
+        <li>Can you run a dynamic routing protocol (such as OSPF or BGP) over a VDOM link interface the same way you would over a physical interface?</li>
+      </ul>
+      <div class="answer-area" data-section="routing-vdom-links">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">VDOM1 needs a default route (0.0.0.0/0) pointing to the VDOM_Link1 interface (or the link's next-hop IP on root's side), so internet-bound traffic exits toward root. Root needs a specific route pointing to VDOM1's internal subnet (e.g., 10.1.0.0/24) via VDOM_Link0, so return traffic can find its way back to VDOM1. Without the return route on root, connections will be one-way and packets won't return.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Yes — VDOM link interfaces are treated as normal network interfaces for routing purposes. You can enable OSPF, BGP, or other dynamic routing protocols on VDOM link interfaces just as you would on a physical WAN or LAN interface. Dynamic routing over VDOM links is common in complex VDOM deployments where routes need to be automatically exchanged between VDOMs.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s3">
+      <div class="section-label">SECTION 03</div>
+      <h2>Routing and Policies Over <em>VDOM Links</em></h2>
+      <div class="section-img-wrap">
+        <img src="images/s3-routing-vdom-link.png" class="section-img" alt="Static route and firewall policy configuration on both sides of a VDOM link"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s3-routing-vdom-link.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: two side-by-side boxes — "VDOM Root" (blue) and "VDOM1" (green) — connected by a horizontal "VDOM_Link" bar in the middle. In the Root box: a routing table showing "10.1.0.0/24 → VDOM_Link0" and a policy shield icon labeled "Allow from VDOM_Link0". In the VDOM1 box: routing table showing "0.0.0.0/0 → VDOM_Link1" and a policy shield icon labeled "Allow to VDOM_Link1". Arrows showing traffic flow left-to-right and right-to-left. Pastel palette, bold outlines, no shadows.</div>
+        </div>
+        <p class="img-caption">Both VDOMs need routing entries AND firewall policies — traffic flows through the link only when both sides are configured.</p>
+      </div>
+      <p>A VDOM link alone does not enable traffic. Two additional configurations are required on <em>each VDOM</em>:</p>
+      <ul>
+        <li><strong>Routing</strong> — static routes or a dynamic routing protocol telling each VDOM how to reach the other's networks via the link interface</li>
+        <li><strong>Firewall policies</strong> — explicit allow policies on each VDOM permitting traffic to enter and exit through the VDOM link interface</li>
+      </ul>
+      <p>For the internet-sharing scenario (VDOM1 accessing internet via root):</p>
+      <table class="data-table">
+        <thead><tr><th>VDOM</th><th>Route Required</th><th>Policy Required</th></tr></thead>
+        <tbody>
+          <tr><td><strong>VDOM1</strong></td><td>Default route (0.0.0.0/0) → VDOM_Link1 (toward root)</td><td>Allow outbound from VDOM1 LAN → VDOM_Link1 (to root)</td></tr>
+          <tr><td><strong>Root</strong></td><td>Specific route to VDOM1 subnet → VDOM_Link0 (toward VDOM1)</td><td>Allow inbound from VDOM_Link0 → WAN (internet-facing interface)</td></tr>
+        </tbody>
+      </table>
+      <p>VDOM link interfaces support <strong>static and dynamic routing</strong> (OSPF, BGP) exactly like physical interfaces. In complex multi-VDOM deployments, dynamic routing over VDOM links is common to automatically exchange routes as network topology changes.</p>
+      <div class="callout callout-amber"><strong>Exam gotcha:</strong> Forgetting the return route is one of the most common inter-VDOM routing mistakes. Even if VDOM1 can send traffic to root, if root has no route back to VDOM1's subnet, return packets are dropped. Always configure routes AND policies on BOTH sides of the link.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">VDOM link = 3-step config: (1) Create the link (Global VDOM), (2) Add routes on both sides, (3) Add firewall policies on both sides. Static or dynamic routing both work. Return route on the "receiving" VDOM is easy to miss — always configure both directions.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s3" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s3','Routing Over Links')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s3" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s3')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SECTION 4 ═══ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · POLICIES AND COMPARING VDOMS</span>
+      </div>
+      <p class="socratic-insight">The VDOM comparison table consolidates all the key differences in one place. Traffic NAT and LAN Extension support 10 VDOMs by default (expandable with licensing), while Admin is limited to exactly 1 per FortiGate. Understanding the deployment scenario for each type is an exam favorite.</p>
+      <ul class="socratic-questions">
+        <li>Traffic VDOMs in NAT mode appear in four deployment acronyms: ISFW, DCFW, NGFW, and DEFW. What do these abbreviations stand for and how does a Traffic NAT VDOM serve each scenario?</li>
+        <li>Which VDOM type is most appropriate for a scenario where you want to add UTM security scanning to a Layer 2 segment without changing any IP addressing or routing in that segment?</li>
+      </ul>
+      <div class="answer-area" data-section="policies-comparing">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">ISFW = Internal Segmentation Firewall (segments internal networks), DCFW = Data Center Firewall (protects data center traffic), NGFW = Next-Generation Firewall (inspects application-layer traffic with IPS, App Control), DEFW = Distributed Enterprise Firewall (branch/distributed sites). A Traffic NAT VDOM serves all four because it operates as a full Layer 3 firewall with routing, NAT, and all security profiles available.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Traffic VDOM in Transparent mode is the correct choice. It operates at Layer 2 — placed inline between network segments — and performs UTM scanning without requiring any changes to IP addressing, default gateways, or routing. It is "invisible" to the IP layer, so the existing network sees no topology change, making it ideal for inserting firewall inspection without disruption.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s4">
+      <div class="section-label">SECTION 04</div>
+      <h2>Firewall Policies and <em>Comparing All VDOM Types</em></h2>
+      <div class="section-img-wrap">
+        <img src="images/s4-vdom-comparison.png" class="section-img" alt="VDOM type comparison table: Admin, Traffic NAT, Traffic Transparent, LAN Extension"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s4-vdom-comparison.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: a four-row comparison table with colored row headers. Row 1 "Admin" (grey): No traffic X, 1 max, Management network. Row 2 "Traffic NAT" (blue): Traffic check, 10 default, ISFW/DCFW/NGFW/DEFW. Row 3 "Traffic Transparent" (green): Traffic check, 10 default, Anywhere layer 2. Row 4 "LAN Extension" (purple): Traffic check, 10 default, ISFW/NGFW/DEFW. Columns: "Enable", "Traffic", "Default VDOMs", "Usage". Each cell has colored badges. Pastel palette, bold outlines, no shadows, educational style.</div>
+        </div>
+        <p class="img-caption">All four VDOM types compared — Admin is the only type that cannot pass user traffic.</p>
+      </div>
+      <p>Firewall policies on VDOM link interfaces follow the same rules as policies on any other interface. Each VDOM needs its own policies to allow traffic through the link:</p>
+      <ul>
+        <li>In the <strong>source VDOM</strong>: a policy allowing traffic from the internal network toward the VDOM link interface</li>
+        <li>In the <strong>destination VDOM</strong>: a policy allowing traffic arriving on the VDOM link interface toward the internet or target network</li>
+      </ul>
+      <p>The complete VDOM type comparison:</p>
+      <table class="data-table">
+        <thead><tr><th>VDOM Type</th><th>Traffic?</th><th>Default Count</th><th>Operation</th><th>Typical Deployment</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Admin</strong></td><td>No</td><td>1 (max 1)</td><td>Management only</td><td>Management networks (ISFW, DCFW, NGFW, DEFW)</td></tr>
+          <tr><td><strong>Traffic NAT</strong></td><td>Yes</td><td>10*</td><td>Layer 3, routing+NAT</td><td>ISFW, DCFW, NGFW, DEFW</td></tr>
+          <tr><td><strong>Traffic Transparent</strong></td><td>Yes</td><td>10*</td><td>Layer 2, inline</td><td>Anywhere Layer 2 analysis needed</td></tr>
+          <tr><td><strong>LAN Extension</strong></td><td>Yes</td><td>10*</td><td>IPsec + VXLAN</td><td>ISFW, NGFW, DEFW (remote connectivity)</td></tr>
+        </tbody>
+      </table>
+      <p>* Traffic NAT and LAN Extension can exceed 10 with additional licensing. Admin VDOM is always limited to 1 per FortiGate.</p>
+      <div class="callout"><strong>Lab scenario context:</strong> The Lab 3 exercise for this chapter builds exactly this architecture — enabling VDOMs, creating two additional VDOMs (Zone1, Zone2), configuring VLANs for each, and then setting up inter-VDOM routing through the root VDOM for internet access using VDOM links, static routes, and firewall policies.</div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-text">Admin = 1 max, no traffic. Traffic NAT/Transparent + LAN Extension = 10 default (expandable). Transparent mode = Layer 2 UTM without IP changes — best for inserting security into an existing segment without topology disruption. Inter-VDOM policies: one policy per direction, per VDOM.</div>
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s4" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s4','Policies and Comparing VDOMs')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s4" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s4')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">ON THIS PAGE</div>
+      <nav class="ssnav">
+        <a class="ssnav-item" href="#s1">Why VDOM Links</a>
+        <a class="ssnav-item" href="#s2">VDOM Link Config</a>
+        <a class="ssnav-item" href="#s3">Routing Over Links</a>
+        <a class="ssnav-item" href="#s4">Policies &amp; Comparing VDOMs</a>
+      </nav>
+    </div>
+
+    <a class="hub-link" href="index.html">← Chapter 03 Hub</a>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">PROGRESS</div>
+      <div class="checklist" id="checklist">
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s1" onchange="toggleDone(this)">
+          <span class="check-label">Why Inter-VDOM Links</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s2" onchange="toggleDone(this)">
+          <span class="check-label">VDOM Link Configuration</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s3" onchange="toggleDone(this)">
+          <span class="check-label">Routing and Policies</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s4" onchange="toggleDone(this)">
+          <span class="check-label">VDOM Type Comparison</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">QUICK REFERENCE</div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Inter-VDOM Link</div>
+        <div class="quick-ref-def">Virtual interface pair connecting two VDOMs — no physical cable needed; created at Global VDOM &gt; Network &gt; Interfaces &gt; VDOM Link</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Naming Convention</div>
+        <div class="quick-ref-def">BaseName + 0 = first VDOM interface; BaseName + 1 = second VDOM interface. FortiGate assigns automatically.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">3-Step VDOM Link Setup</div>
+        <div class="quick-ref-def">(1) Create link in Global VDOM, (2) Add routes on both sides, (3) Add firewall policies on both sides. All three required for traffic to flow.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Return Route</div>
+        <div class="quick-ref-def">The receiving VDOM must have a route back to the sending VDOM's subnet — missing return routes are the #1 inter-VDOM troubleshooting issue.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">ISFW</div>
+        <div class="quick-ref-def">Internal Segmentation Firewall — Traffic NAT VDOM segmenting internal networks from each other</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">DCFW</div>
+        <div class="quick-ref-def">Data Center Firewall — Traffic NAT VDOM protecting data center east-west and north-south traffic</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Transparent Mode Use</div>
+        <div class="quick-ref-def">Insert UTM scanning at Layer 2 without changing IP addressing or routing — the VDOM is invisible at the IP layer; manageip required</div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="page-nav">
+  <a class="page-nav-btn page-nav-prev" href="subtopic-02-implement-enterprise-vdoms.html">
+    <span class="page-nav-label">← PREVIOUS</span>
+    <span class="page-nav-title">Implement Enterprise VDOMs</span>
+  </a>
+  <a class="page-nav-btn page-nav-next" href="index.html">
+    <span class="page-nav-label">BACK TO HUB →</span>
+    <span class="page-nav-title">Chapter 03 Hub</span>
+  </a>
+</div>
+
+<footer>
+  EF-NSE7<span>.</span> Chapter 03<span>.</span> Subtopic 03<span>.</span> Inter-VDOM Routing
+</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-ch03-sub03-inter-vdom-routing';
+
+const SECTIONS = {
+  's1': 'Why VDOM Links',
+  's2': 'VDOM Link Config',
+  's3': 'Routing Over Links',
+  's4': 'Policies and Comparing VDOMs',
+};
+
+document.querySelectorAll('.socratic-header').forEach(function(h) {
+  h.addEventListener('click', function() { h.closest('.socratic-block').classList.toggle('soc-open'); });
+});
+
+function getQArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-qs') || '[]'); }
+function saveQArr(qs) { localStorage.setItem(PAGE_KEY+'-qs', JSON.stringify(qs)); }
+function addQuestion(key, name) {
+  const ta = document.getElementById('q-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const qs = getQArr(); qs.push({id: Date.now(), section: key, sectionName: name, text});
+  saveQArr(qs); ta.value = ''; renderQPanel();
+  if (!document.getElementById('qpanel-body').classList.contains('open')) toggleQPanel();
+}
+function deleteQ(id) { saveQArr(getQArr().filter(q => q.id !== id)); renderQPanel(); }
+function toggleQPanel() {
+  const body = document.getElementById('qpanel-body');
+  const header = document.getElementById('qpanel-header');
+  const chevron = document.getElementById('qpanel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-qpanel-open', open);
+}
+function renderQPanel() {
+  const qs = getQArr();
+  const count = document.getElementById('qpanel-count');
+  if (count) { count.textContent = qs.length; count.style.display = qs.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.qpanel-hint');
+  if (hint) hint.textContent = qs.length ? `— ${qs.length} question${qs.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('qpanel-body'); if (!body) return;
+  if (!qs.length) { body.innerHTML = '<p class="no-questions">No questions yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  qs.forEach(q => { if (groups[q.section]) groups[q.section].push(q); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(q => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${q.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteQ(${q.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function getNotesArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-notes') || '[]'); }
+function saveNotesArr(ns) { localStorage.setItem(PAGE_KEY+'-notes', JSON.stringify(ns)); }
+function addNote(key) {
+  const ta = document.getElementById('note-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const ns = getNotesArr(); ns.push({id: Date.now(), section: key, sectionName: SECTIONS[key]||key, text});
+  saveNotesArr(ns); ta.value = ''; renderNotesPanel();
+  if (!document.getElementById('notes-panel-body').classList.contains('open')) toggleNotesPanel();
+}
+function deleteNote(id) { saveNotesArr(getNotesArr().filter(n => n.id !== id)); renderNotesPanel(); }
+function toggleNotesPanel() {
+  const body = document.getElementById('notes-panel-body');
+  const header = document.getElementById('notes-panel-header');
+  const chevron = document.getElementById('notes-panel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-notes-panel-open', open);
+}
+function renderNotesPanel() {
+  const ns = getNotesArr();
+  const count = document.getElementById('notes-panel-count');
+  if (count) { count.textContent = ns.length; count.style.display = ns.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.notes-panel-hint');
+  if (hint) hint.textContent = ns.length ? `— ${ns.length} note${ns.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('notes-panel-body'); if (!body) return;
+  if (!ns.length) { body.innerHTML = '<p class="no-questions">No notes yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  ns.forEach(n => { if (groups[n.section]) groups[n.section].push(n); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(n => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteNote(${n.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function toggleDone(input) { localStorage.setItem(PAGE_KEY+'-check-'+input.dataset.key, input.checked); }
+function initChecks() {
+  document.querySelectorAll('.check-input').forEach(function(inp) {
+    inp.checked = localStorage.getItem(PAGE_KEY+'-check-'+inp.dataset.key) === 'true';
+  });
+}
+
+function saveSocAnswer(btn) {
+  const area = btn.closest('.answer-area');
+  const ta = area.querySelector('.answer-textarea');
+  if (!ta.value.trim()) { ta.focus(); return; }
+  const key = PAGE_KEY+'-socans-'+area.dataset.section;
+  try { localStorage.setItem(key, ta.value); } catch(e) {}
+  ta.disabled = true; btn.textContent = '✓ Answer saved'; btn.disabled = true;
+  const seeBtn = area.querySelector('.btn-see-answer');
+  seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+}
+function revealSocAnswer(btn) {
+  if (btn.disabled) return;
+  const answers = btn.closest('.answer-area').querySelector('.model-answers');
+  const isHidden = answers.style.display === 'none' || !answers.style.display;
+  answers.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '▲ Hide Model Answer' : '💡 See Model Answer';
+}
+
+function togglePrompt(btn) {
+  const c = btn.nextElementSibling;
+  const isHidden = c.hasAttribute('hidden');
+  if (isHidden) { c.removeAttribute('hidden'); btn.textContent = '▴ Hide image prompt'; }
+  else { c.setAttribute('hidden', ''); btn.textContent = '▾ Show image prompt'; }
+}
+
+if (sessionStorage.getItem('pt')) { document.body.style.opacity = '1'; sessionStorage.removeItem('pt'); }
+document.querySelectorAll('a[href]').forEach(function(a) { a.addEventListener('click', function() { sessionStorage.setItem('pt', '1'); }); });
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderQPanel(); renderNotesPanel(); initChecks();
+  if (localStorage.getItem(PAGE_KEY+'-qpanel-open') === 'true') toggleQPanel();
+  if (localStorage.getItem(PAGE_KEY+'-notes-panel-open') === 'true') toggleNotesPanel();
+  document.querySelectorAll('.answer-area').forEach(function(area) {
+    const key = PAGE_KEY+'-socans-'+area.dataset.section;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const ta = area.querySelector('.answer-textarea'); ta.value = saved; ta.disabled = true;
+        const addBtn = area.querySelector('.btn-add-answer'); addBtn.textContent = '✓ Answer saved'; addBtn.disabled = true;
+        const seeBtn = area.querySelector('.btn-see-answer'); seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+      }
+    } catch(e) {}
+  });
+  document.querySelectorAll('.section-img').forEach(function(img) {
+    img.addEventListener('click', () => img.classList.toggle('si-expanded'));
+  });
+  document.querySelectorAll('.analogy-box').forEach(function(box) {
+    if (box.dataset.collapsibleInit) return;
+    box.dataset.collapsibleInit = '1';
+    box.classList.add('expanded');
+    const label = box.querySelector(':scope > .analogy-label');
+    if (label) label.addEventListener('click', () => box.classList.toggle('expanded'));
+  });
+  document.querySelectorAll('.analogy-img img').forEach(function(img) {
+    if (img.dataset.zoomInit) return;
+    img.dataset.zoomInit = '1';
+    img.addEventListener('click', () => img.classList.toggle('zoomed'));
+  });
+});
+
+(function() {
+  var items = document.querySelectorAll('.ssnav-item');
+  if (!items.length) return;
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      var lnk = document.querySelector('.ssnav-item[href="#'+e.target.id+'"]');
+      if (lnk) lnk.classList.toggle('active', e.isIntersecting);
+    });
+  }, { rootMargin: '-10% 0% -70% 0%' });
+  document.querySelectorAll('.section-block[id]').forEach(function(el) { obs.observe(el); });
+})();
+</script>
+</body>
+</html>

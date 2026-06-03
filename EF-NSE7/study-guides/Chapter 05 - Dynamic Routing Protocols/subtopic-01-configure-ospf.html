@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configure OSPF — EF-NSE7 Ch05 Sub01</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff5f5;--surface:#ffffff;--surface-2:#fef2f2;--border:#f0c8c8;--border-dim:#fde8e8;
+  --text:#1a0606;--text-soft:#4a1212;--text-muted:#8a3a3a;
+  --red:#c0392b;--red-vivid:#e03e2d;--red-glow:rgba(192,57,43,0.07);--red-dim:#f8b4b4;
+  --red-deep:#7f1d1d;--red-light:#fef2f2;--red-border:#f8b4b4;
+  --green:#1a7c4a;--green-light:#d4f0e0;--green-border:#a7e0c0;
+  --amber:#b45309;--amber-light:#fef9c3;--amber-border:#fde68a;
+}
+html{scroll-behavior:smooth;}
+html.pt-init body{opacity:0;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* HEADER */
+header{padding:48px 60px 36px;background:#1a0606;display:flex;align-items:flex-end;gap:32px;}
+.header-left{flex:1;}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);letter-spacing:0.08em;margin-bottom:12px;flex-wrap:wrap;}
+.breadcrumb a{color:#e87070;text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.breadcrumb-sep{color:rgba(232,112,112,0.35);}
+.header-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(232,112,112,0.1);border:1px solid rgba(232,112,112,0.25);padding:5px 14px;border-radius:20px;font-size:11px;color:#e87070;letter-spacing:0.08em;margin-bottom:14px;}
+.dot-live{width:6px;height:6px;background:#e87070;border-radius:50%;display:inline-block;animation:blink 2.4s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+header h1{font-family:'Fraunces',serif;font-size:44px;font-weight:700;line-height:1.0;color:#fff;margin-bottom:10px;}
+header h1 em{font-style:italic;font-weight:400;color:#e87070;}
+header p{font-size:13px;color:rgba(255,255,255,0.42);margin-top:10px;line-height:1.7;}
+
+/* MOTIVATION BANNER */
+.motivation-banner{padding:20px 60px;min-height:84px;display:flex;flex-direction:column;justify-content:center;border-bottom:1px solid var(--border);background:var(--surface);}
+.motivation-text{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--text);}
+.motivation-text em{font-style:italic;color:var(--red);}
+.motivation-sub{font-size:12px;color:var(--text-muted);line-height:1.7;margin-top:4px;}
+
+/* TOP PANELS */
+.top-panels{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+.top-panels .qpanel{border-bottom:none;border-right:1px solid var(--border);}
+.top-panels .qpanel-header{padding-left:32px;padding-right:32px;}
+.top-panels .qpanel-body{padding-left:32px;padding-right:32px;}
+.qpanel{background:var(--surface);}
+.qpanel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 20px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.qpanel-header:hover,.qpanel-header.open{background:var(--surface-2);}
+.qpanel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.qpanel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.qpanel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.qpanel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.qpanel-body{display:none;padding:0 20px 22px;}
+.qpanel-body.open{display:block;}
+.notes-panel{background:var(--surface);}
+.notes-panel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 32px;cursor:pointer;background:var(--surface);border:none;font-family:'Inter',sans-serif;text-align:left;}
+.notes-panel-header:hover,.notes-panel-header.open{background:var(--surface-2);}
+.notes-panel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.notes-panel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.notes-panel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.notes-panel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.notes-panel-body{display:none;padding:0 32px 22px;}
+.notes-panel-body.open{display:block;}
+.q-group{margin-bottom:16px;}
+.q-group-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+.q-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-dim);}
+.q-item:last-child{border-bottom:none;}
+.q-num{font-size:10px;font-weight:700;color:var(--red);min-width:16px;margin-top:2px;}
+.q-text{font-size:12px;color:var(--text-soft);line-height:1.5;flex:1;}
+.q-del{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 4px;margin-top:1px;}
+.q-del:hover{color:var(--red);}
+.no-questions{font-size:12px;color:var(--text-muted);padding:8px 0;}
+.btn-add-q{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-q:hover{opacity:0.85;}
+
+/* STICKY SECTION NAV */
+.section-nav{position:sticky;top:0;z-index:90;display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);padding:0 32px;overflow-x:auto;}
+.nav-tab{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:12px 18px;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--red);border-bottom-color:var(--red);}
+
+/* MAIN GRID */
+main{display:grid;grid-template-columns:1fr 320px;gap:0;align-items:start;max-width:1200px;margin:0 auto;padding:0;}
+.main-content{padding:36px 40px 60px 60px;}
+.sidebar{padding:32px 24px 60px 20px;position:sticky;top:57px;max-height:calc(100vh - 57px);overflow-y:auto;}
+
+/* SECTION BLOCK */
+.section-block{margin-bottom:48px;}
+.section-label{font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.section-block h2{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1.15;margin-bottom:16px;padding-left:16px;border-left:3px solid var(--red);}
+.section-block h2 em{font-style:italic;font-weight:400;color:var(--red);}
+.section-block p{font-size:14px;line-height:1.8;color:var(--text-soft);margin-bottom:14px;}
+.section-block p strong{color:var(--text);font-weight:600;}
+.section-block p em{color:var(--red);font-style:italic;}
+.section-block ul,.section-block ol{padding-left:22px;margin-bottom:14px;}
+.section-block li{font-size:14px;line-height:1.75;color:var(--text-soft);margin-bottom:4px;}
+.section-block li strong{color:var(--text);font-weight:600;}
+
+/* CALLOUTS */
+.callout{border-left:3px solid var(--red-border);background:var(--red-light);border-radius:0 10px 10px 0;padding:12px 18px;margin:16px 0;font-size:13.5px;line-height:1.65;color:var(--text-soft);}
+.callout strong{color:var(--text);}
+.callout-green{border-left-color:var(--green-border);background:var(--green-light);}
+.callout-amber{border-left-color:var(--amber-border);background:var(--amber-light);}
+
+/* SECTION IMAGE */
+.section-img-wrap{margin:0 0 20px;display:flex;flex-direction:column;align-items:center;}
+.section-img{width:260px;max-width:100%;border-radius:12px;cursor:zoom-in;transition:width 0.3s ease;border:1px solid var(--border);display:block;}
+.section-img.si-expanded{width:100%;cursor:zoom-out;border-radius:16px;}
+.si-placeholder{display:none;width:260px;max-width:100%;border:2px dashed var(--border);border-radius:12px;background:var(--surface-2);padding:14px 16px;flex-direction:column;align-items:flex-start;gap:8px;}
+.si-placeholder.si-show{display:flex;}
+.si-filename{font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+
+/* CODE BLOCK */
+.code-block{background:#1a0606;border-radius:12px;padding:20px 24px;margin:16px 0;overflow-x:auto;}
+.code-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#e87070;margin-bottom:10px;}
+.code-block pre{margin:0;}
+.code-block code{font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:rgba(255,255,255,0.82);}
+
+/* SOCRATIC THINK-FIRST */
+.socratic-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:16px;border-top:3px solid var(--red);}
+.socratic-header{display:flex;align-items:center;gap:8px;margin-bottom:0;cursor:pointer;user-select:none;}
+.socratic-header::after{content:'▸ Expand';margin-left:auto;font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'Inter',sans-serif;}
+.socratic-block.soc-open .socratic-header{margin-bottom:10px;}
+.socratic-block.soc-open .socratic-header::after{content:'▾ Collapse';}
+.socratic-block:not(.soc-open) .socratic-insight,
+.socratic-block:not(.soc-open) .socratic-questions,
+.socratic-block:not(.soc-open) .answer-area{display:none;}
+.socratic-icon{font-size:17px;flex-shrink:0;}
+.socratic-label{font-size:9px;font-weight:700;letter-spacing:0.18em;color:var(--text-muted);}
+.socratic-insight{font-size:13px;color:var(--text-soft);line-height:1.75;margin-bottom:12px;border-left:3px solid var(--border);padding-left:12px;font-style:italic;}
+.socratic-questions{list-style:none;padding:0;margin:0;}
+.socratic-questions li{font-size:12.5px;color:var(--text);padding:7px 0 7px 22px;position:relative;border-bottom:1px solid var(--border-dim);line-height:1.6;}
+.socratic-questions li:last-child{border-bottom:none;}
+.socratic-questions li::before{content:'?';position:absolute;left:0;font-weight:700;font-size:12px;top:8px;color:var(--red);}
+.answer-area{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.answer-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.answer-textarea:focus{border-color:var(--text);}
+.answer-textarea:disabled{opacity:0.7;background:var(--surface-2);cursor:default;}
+.answer-buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.btn-add-answer{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-add-answer:hover:not(:disabled){opacity:0.85;}
+.btn-add-answer:disabled{opacity:0.5;cursor:default;}
+.btn-see-answer{background:var(--surface);color:var(--text-muted);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-see-answer:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-see-answer:not(:disabled){color:var(--red);border-color:var(--red);}
+.btn-see-answer:hover:not(:disabled){background:var(--red-glow);}
+.model-answers{margin-top:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.model-answer-item{padding:10px 0;border-bottom:1px solid var(--border-dim);}
+.model-answer-item:first-child{padding-top:0;}
+.model-answer-item:last-child{border-bottom:none;padding-bottom:0;}
+.model-answer-q{font-size:9px;font-weight:700;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:4px;}
+.model-answer-text{font-size:13px;color:var(--text-soft);line-height:1.7;}
+
+/* MENTAL NOTE */
+.mental-note-block{border-radius:10px;padding:12px 16px;margin:16px 0;display:flex;gap:10px;align-items:flex-start;background:rgba(192,57,43,0.07);border:1px solid var(--border);}
+.mental-note-block-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.mental-note-block-inner{flex:1;}
+.mental-note-block-label{font-size:9px;font-weight:700;letter-spacing:0.16em;color:var(--red);margin-bottom:3px;}
+.mental-note-block-text{font-size:13px;font-weight:600;line-height:1.55;color:var(--text);}
+
+/* ANALOGY BOX */
+.analogy-box{background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #b45309;border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0;}
+.analogy-label{display:flex;align-items:center;gap:6px;user-select:none;cursor:pointer;font-size:9px;font-weight:700;letter-spacing:0.16em;color:#b45309;margin-bottom:4px;}
+.analogy-label::after{content:'▾  Reveal illustration';margin-left:auto;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:none;opacity:0.75;}
+.analogy-label:hover::after{opacity:1;}
+.analogy-box.expanded > .analogy-label::after{content:'▴  Hide illustration';}
+.analogy-text{font-size:13px;color:#78350f;line-height:1.65;font-style:italic;}
+.analogy-box > .analogy-img{display:none;}
+.analogy-box.expanded > .analogy-img{display:block;}
+.analogy-img img{max-width:360px;width:100%;cursor:zoom-in;transition:max-width 0.25s ease;border-radius:8px;margin-top:10px;}
+.analogy-img img.zoomed{max-width:100%;cursor:zoom-out;}
+.prompt-toggle{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:10px;font-weight:600;letter-spacing:0.08em;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;text-transform:uppercase;}
+.prompt-toggle:hover{color:var(--text);border-color:var(--text);}
+.prompt-content{margin-top:10px;padding:10px 14px;background:rgba(0,0,0,0.04);border-radius:8px;font-size:11.5px;color:var(--text-muted);font-style:italic;line-height:1.65;text-align:left;}
+.prompt-content[hidden]{display:none;}
+
+/* LESSON TOOLS */
+.lesson-tools{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:40px;}
+.lesson-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.tool-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.tool-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.tool-textarea:focus{border-color:var(--red);}
+.tool-row{margin-top:8px;display:flex;gap:8px;}
+
+/* SIDEBAR */
+.sidebar-section{margin-bottom:28px;}
+.sidebar-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;}
+.ssnav{display:flex;flex-direction:column;gap:2px;margin-top:4px;}
+.ssnav-item{font-size:12px;color:var(--text-soft);padding:6px 10px;border-radius:6px;text-decoration:none;line-height:1.4;display:block;transition:background 0.15s,color 0.15s;}
+.ssnav-item:hover,.ssnav-item.active{background:var(--red-glow);color:var(--red);}
+.hub-link{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);margin-bottom:16px;transition:color 0.15s,border-color 0.15s,background 0.15s;}
+.hub-link:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);}
+.check-item{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;}
+.check-input{accent-color:var(--red);width:14px;height:14px;flex-shrink:0;cursor:pointer;}
+.check-label{font-size:12px;color:var(--text-soft);line-height:1.4;}
+.check-item:has(.check-input:checked) .check-label{color:var(--text-muted);text-decoration:line-through;}
+.quick-ref{background:#1a0606;border-radius:10px;padding:12px 16px;margin-bottom:8px;}
+.quick-ref-term{font-size:10px;font-weight:700;letter-spacing:0.12em;color:#e87070;margin-bottom:3px;text-transform:uppercase;}
+.quick-ref-def{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;}
+
+/* PAGE NAV */
+.page-nav{display:flex;border-top:2px solid var(--border);background:var(--surface);}
+.page-nav-btn{flex:1;display:flex;flex-direction:column;gap:4px;padding:16px 28px;text-decoration:none;transition:background 0.15s;cursor:pointer;}
+.page-nav-btn:hover:not(.page-nav-disabled){background:var(--surface-2);}
+.page-nav-prev{border-right:1px solid var(--border);}
+.page-nav-next{text-align:right;}
+.page-nav-disabled{opacity:0.3;pointer-events:none;}
+.page-nav-label{font-size:10px;font-weight:600;letter-spacing:0.14em;color:var(--text-muted);display:block;}
+.page-nav-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;color:var(--red);display:block;}
+
+/* FOOTER */
+footer{font-size:11px;letter-spacing:0.12em;color:var(--text-muted);text-transform:uppercase;padding:20px 60px;border-top:1px solid var(--border);}
+footer span{color:var(--red);}
+
+/* EXTRA */
+.img-caption{font-size:11px;color:var(--text-muted);text-align:center;margin-top:6px;line-height:1.4;font-style:italic;}
+.analogy-summary{font-style:normal;font-weight:600;color:#92400e;margin-bottom:10px;}
+.analogy-text ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;}
+.analogy-text li{padding-left:18px;position:relative;}
+.analogy-text li::before{content:'•';position:absolute;left:0;font-weight:700;color:#b45309;}
+.data-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;}
+.data-table th{background:#1a0606;color:#e87070;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:10px 14px;text-align:left;}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-soft);line-height:1.55;vertical-align:top;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:nth-child(even) td{background:var(--surface-2);}
+.data-table td strong{color:var(--text);font-weight:600;}
+
+/* RESPONSIVE */
+@media(max-width:1000px){main{grid-template-columns:1fr;}.sidebar{position:static;max-height:none;padding:0 40px 40px;}}
+@media(max-width:720px){header{padding:28px 24px 24px;}header h1{font-size:32px;}.motivation-banner{padding:16px 24px;}.main-content{padding:24px 24px 40px;}.section-nav{padding:0 16px;}.top-panels{grid-template-columns:1fr;}.top-panels .qpanel{border-right:none;border-bottom:1px solid var(--border);}.lesson-tools-grid{grid-template-columns:1fr;}footer{padding:16px 24px;}}
+</style>
+</head>
+<body>
+
+<div id="pt-overlay"></div>
+
+<header>
+  <div class="header-left">
+    <div class="breadcrumb">
+      <a href="../nse7-ef-study-guide-hub.html">EF-NSE7</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="index.html">Chapter 05 — Dynamic Routing Protocols</a>
+      <span class="breadcrumb-sep">›</span>
+      Subtopic 01
+    </div>
+    <div class="header-eyebrow"><span class="dot-live"></span> Study Guide · EF-NSE7</div>
+    <h1>Implement <em>OSPF</em> Features</h1>
+    <p>Master OSPF area design, router roles, network types, route filtering, and advanced use cases like ECMP and OSPF over IPsec — all critical territory for the EF-NSE7 exam.</p>
+  </div>
+</header>
+
+<div class="motivation-banner">
+  <div class="motivation-text">OSPF is the backbone of enterprise routing — knowing <em>why each piece exists</em> is the difference between configuring it and understanding it.</div>
+  <p class="motivation-sub">This subtopic covers OSPF fundamentals through advanced FortiGate-specific use cases, including ECMP RFC selection, IPsec tunnel integration, and virtual links for disconnected areas.</p>
+</div>
+
+<div class="top-panels">
+  <div class="qpanel" id="qpanel">
+    <button class="qpanel-header" onclick="toggleQPanel()" id="qpanel-header">
+      <span class="qpanel-title">MY QUESTIONS</span>
+      <span class="qpanel-count" id="qpanel-count">0</span>
+      <span class="qpanel-hint">— click to expand</span>
+      <span class="qpanel-chevron" id="qpanel-chevron">▾</span>
+    </button>
+    <div class="qpanel-body" id="qpanel-body"></div>
+  </div>
+  <div class="notes-panel" id="notes-panel">
+    <button class="notes-panel-header" onclick="toggleNotesPanel()" id="notes-panel-header">
+      <span class="notes-panel-title">MY NOTES</span>
+      <span class="notes-panel-count" id="notes-panel-count">0</span>
+      <span class="notes-panel-hint">— click to expand</span>
+      <span class="notes-panel-chevron" id="notes-panel-chevron">▾</span>
+    </button>
+    <div class="notes-panel-body" id="notes-panel-body"></div>
+  </div>
+</div>
+
+<nav class="section-nav" id="section-nav">
+  <a class="nav-tab active" href="#s1">OSPF Overview</a>
+  <a class="nav-tab" href="#s2">Areas &amp; Router Roles</a>
+  <a class="nav-tab" href="#s3">Network Types</a>
+  <a class="nav-tab" href="#s4">Route Filtering</a>
+  <a class="nav-tab" href="#s5">Advanced Use Cases</a>
+</nav>
+
+<main>
+  <div class="main-content">
+
+    <!-- ═══════════════ SECTION 1 ═══════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · OSPF OVERVIEW</span>
+      </div>
+      <p class="socratic-insight">OSPF is called a "link-state" protocol because each router builds a complete map of the network topology — unlike distance-vector protocols that only know next-hop directions. Every router runs the same Dijkstra algorithm on identical data, which should produce identical results. Yet the protocol still needs periodic refreshes even when nothing changes.</p>
+      <ul class="socratic-questions">
+        <li>Why does OSPF need to re-advertise its information every 30 minutes even when the network topology hasn't changed at all?</li>
+        <li>If all OSPF routers share the same LSDB and run Dijkstra independently, what could cause two routers in the same area to choose different paths to the same destination?</li>
+      </ul>
+      <div class="answer-area" data-section="ospf-overview">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">The 30-minute refresh prevents stale LSAs from being silently dropped from the LSDB — every LSA has an age timer, and re-advertising resets it. Without periodic refresh, LSAs would expire and routes would disappear even in a stable network. This is a reliability mechanism, not an inefficiency — the protocol stays quiet until something forces a refresh or a topology change occurs.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">If the LSDBs are truly identical and both routers run Dijkstra correctly, they will choose identical paths. Divergence typically means the LSDBs are not yet synchronized — either an LSA hasn't propagated yet, or an interface cost is configured differently on one router. OSPF convergence takes time, and during that window routers may temporarily disagree on best paths.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s1">
+      <div class="section-label">SECTION 01</div>
+      <h2>OSPF <em>Overview</em> — Link-State Fundamentals</h2>
+
+      <div class="section-img-wrap">
+        <img src="images/s1-ospf-overview.png" class="section-img" alt="OSPF topology tree — Dijkstra shortest path example"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s1-ospf-overview.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: Five routers (R1–R5) connected with labeled-cost links, pastel blue nodes, bold outlines. Below the network diagram shows R2's OSPF shortest-path tree rooted at R2, with optimal paths highlighted in red to each destination network. Include network labels (Net 1–5). Educational infographic feel, no shadows, no gradients.</div>
+        </div>
+        <p class="img-caption">OSPF builds a shortest-path tree per router using Dijkstra's algorithm. Each router is the root of its own tree.</p>
+      </div>
+
+      <p><strong>OSPF (Open Shortest Path First)</strong> is a link-state routing protocol where every router maintains an identical, synchronized database — the <strong>Link State Database (LSDB)</strong> — that describes the complete network topology. Unlike distance-vector protocols such as RIP, which periodically flood their entire routing table, OSPF sends updates <em>only when the topology changes</em>, making it far quieter during steady-state operation.</p>
+      <p>Each router applies <strong>Dijkstra's algorithm</strong> to the LSDB to independently compute the shortest-path tree with itself as the root. This recursive process produces the best route to every known destination. OSPF refreshes its LSAs every <strong>30 minutes</strong> regardless of changes, resetting LSA age timers to prevent entries from expiring out of the LSDB.</p>
+      <p>Key OSPF advantages include: scalability to large networks, faster convergence than distance-vector protocols, and relatively low overhead during steady-state conditions where only change-triggered updates are sent.</p>
+
+      <div class="callout callout-amber"><strong>Timer to know:</strong> OSPF LSAs are re-advertised every 30 minutes (1800 seconds) to prevent premature aging. Between those intervals, updates only flow when the topology changes.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">OSPF is a link-state protocol — every router has the full topology map (LSDB) and runs Dijkstra independently. Updates trigger on topology changes; LSAs refresh every 30 minutes regardless. This is what makes OSPF "relatively quiet" at steady state.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s1" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s1','OSPF Overview')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s1" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s1')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SECTION 2 ═══════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · AREAS &amp; ROUTER ROLES</span>
+      </div>
+      <p class="socratic-insight">OSPF organizes routers into areas, with Area 0 (backbone) at the center. Area Border Routers connect non-backbone areas to Area 0, and can summarize routes between them. Autonomous System Boundary Routers inject external routes from other protocols. The area structure is what makes OSPF scale — but it also creates strict rules about how information flows.</p>
+      <ul class="socratic-questions">
+        <li>Why must all non-backbone OSPF areas connect to Area 0? What routing problem does the backbone area requirement solve?</li>
+        <li>An ABR is configured with "config range" to summarize 10.10.10.0/24 instead of advertising individual /30 subnets. What is the tradeoff — what do you lose when you summarize at area boundaries?</li>
+      </ul>
+      <div class="answer-area" data-section="ospf-areas">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Requiring all areas to connect to Area 0 prevents routing loops that would occur if inter-area traffic could pass through multiple non-backbone areas without a central transit point. Area 0 acts as a guaranteed loop-free transit backbone — all inter-area routes must flow through it, ensuring that the path between any two non-backbone areas is always defined by a consistent single routing domain.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Route summarization reduces the routing table and improves scalability, but you lose prefix-level visibility — routers in the backbone only see the aggregate and cannot distinguish individual subnets within the summarized range. If one specific subnet becomes unreachable, routers outside the area won't know; they'll still route to the aggregate and the ABR will handle (or blackhole) it locally.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s2">
+      <div class="section-label">SECTION 02</div>
+      <h2>OSPF <em>Areas</em> &amp; Router Roles</h2>
+
+      <div class="section-img-wrap">
+        <img src="images/s2-ospf-areas.png" class="section-img" alt="OSPF area types and router roles diagram"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s2-ospf-areas.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: Central oval labeled "Area 0.0.0.0 (Backbone)" in blue. Three satellite ovals connected to it: Area 0.0.0.1 (stub, green), Area 0.0.0.2 (regular, gray), Area 0.0.0.3 (NSSA, amber). Router icons at boundaries labeled ABR (blue), ASBR (red), Backbone Router (dark). RIP cloud connected to ASBR. Bold outlines, pastel palette, educational infographic style, no shadows.</div>
+        </div>
+        <p class="img-caption">All OSPF areas must connect to the backbone (Area 0). ABRs bridge non-backbone areas; ASBRs import external routes.</p>
+      </div>
+
+      <p>All OSPF networks require at least one area — <strong>Area 0 (0.0.0.0)</strong>, the backbone area. Routers with at least one interface in Area 0 are <strong>backbone routers</strong>. The backbone is the mandatory transit point for all inter-area routing — no area can route to another area without passing through Area 0.</p>
+      <p><strong>Area Border Routers (ABRs)</strong> connect non-backbone areas to the backbone. To reduce routing table size, ABRs can summarize routes using <code>config range</code>. For example, in a hub-and-spoke setup, setting the range to <code>10.10.10.0 255.255.255.0</code> causes the hub to advertise a single aggregate instead of individual /30 spoke subnets.</p>
+      <p><strong>Autonomous System Boundary Routers (ASBRs)</strong> import external (non-OSPF) routes into the OSPF domain. External routes on ASBRs can be summarized using <code>config summary-address</code>. By default, external routes imported via OSPF are <em>not load-balanced</em>.</p>
+
+      <p><strong>OSPF Area Types</strong> control which LSA types traverse area boundaries:</p>
+      <ul>
+        <li><strong>Regular</strong> — default; receives all LSA types including external routes</li>
+        <li><strong>Stub</strong> — blocks external routes (Type 5 LSAs); ABR injects a default route instead; set with <code>set type stub</code></li>
+        <li><strong>NSSA (Not-So-Stubby Area)</strong> — like stub, but allows an internal ASBR to redistribute external routes as Type 7 LSAs, which the ABR converts to Type 5 for the backbone; set with <code>set type nssa</code></li>
+      </ul>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Configure Area Types</div>
+        <pre><code>config router ospf
+    config area
+        edit 0.0.0.1
+            set type stub
+        next
+        edit 0.0.0.3
+            set type nssa
+        next
+    end
+end</code></pre>
+      </div>
+
+      <div class="callout"><strong>Exam tip:</strong> The default area type is <strong>regular</strong>. Know the difference: stub areas block external LSAs but still receive inter-area routes; totally stub areas replace ALL external and inter-area LSAs with a single default route. NSSA allows an internal ASBR — stub does not.</div>
+
+      <div class="analogy-box">
+        <div class="analogy-label">Analogy</div>
+        <div class="analogy-text">
+          <p class="analogy-summary">OSPF area hierarchy is like an airport hub system — all flights between regional airports must connect through a hub (Area 0), never directly.</p>
+          <ul>
+            <li><strong>Area 0 (Backbone)</strong> — the international hub airport that all regional airports must connect through</li>
+            <li><strong>ABR</strong> — the transfer desk that knows both the regional and hub terminal layouts</li>
+            <li><strong>ASBR</strong> — customs and immigration — the only point where external (non-OSPF) passengers can enter the domain</li>
+            <li><strong>Stub area</strong> — a regional airport with no international flights; all passengers bound for "outside" take a default shuttle to the hub</li>
+          </ul>
+        </div>
+        <div class="analogy-img" style="margin-top:14px;background:rgba(255,255,255,0.5);border-radius:10px;padding:14px;text-align:center;">
+          <img src="images/a1-ospf-hub-airport.png" alt="OSPF hub airport analogy"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='block';" style="max-width:100%;border-radius:8px;display:block;margin:0 auto 10px;">
+          <div class="img-missing-msg" style="display:none;font-size:12px;color:#92400e;padding:8px;background:rgba(146,64,14,0.1);border-radius:6px;">📷 <strong>images/a1-ospf-hub-airport.png</strong> — add this image to the folder</div>
+          <button class="prompt-toggle" onclick="togglePrompt(this)" type="button">▾ Show analogy image prompt</button>
+          <div class="prompt-content" hidden>Cartoon flat illustration in pastel style: Central airport hub (labeled "Area 0 / Backbone") connected by runways to four smaller regional airports. One regional airport has a "No International Flights" sign (stub area). One airport has a customs desk with a globe labeled "External Routes / ASBR". Bold outlines, pastel colors, short text labels, educational infographic feel, no shadows.</div>
+        </div>
+      </div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">3 area types: regular (all LSAs), stub (no Type 5, gets default), NSSA (no Type 5 from outside, but internal ASBR can use Type 7). ABRs summarize with "config range"; ASBRs summarize with "config summary-address". Default area type is regular.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s2" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s2','Areas & Router Roles')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s2" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s2')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SECTION 3 ═══════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · OSPF NETWORK TYPES</span>
+      </div>
+      <p class="socratic-insight">OSPF network types control how neighbors are discovered and how the DR/BDR election works. The default network type on FortiGate OSPF interfaces is point-to-point, which is correct for most direct connections. But when a single IPsec interface serves as a shared hub for multiple dial-up spokes, the rules change significantly.</p>
+      <ul class="socratic-questions">
+        <li>Why would the default point-to-point network type break OSPF in a dial-up hub-and-spoke IPsec scenario where net-device is disabled?</li>
+        <li>What is the advantage of point-to-multipoint over broadcast mode in an IPsec hub scenario — and when would broadcast actually be better?</li>
+      </ul>
+      <div class="answer-area" data-section="ospf-network-types">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">With net-device disabled, all dial-up spokes share the same virtual IPsec interface on the hub — there is no separate per-spoke tunnel interface. Point-to-point assumes exactly two routers on a link. When multiple spokes connect to the same interface, OSPF treats each as a separate point-to-point adjacency but cannot properly form adjacencies with all of them because the single interface can't be a point-to-point link to multiple routers simultaneously. Point-to-multipoint solves this by modeling the hub interface as a set of individual point-to-point links, one per spoke.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Point-to-multipoint does not require a DR/BDR election, which simplifies configuration in dynamic environments where spokes come and go. Broadcast mode would trigger DR/BDR election — useful when you want to reduce LSA flooding in a stable, large spoke environment, but problematic if spokes are dynamically connecting since a spoke could become DR and then disconnect, causing re-election delays.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s3">
+      <div class="section-label">SECTION 03</div>
+      <h2>OSPF <em>Network Types</em> — Point-to-Point vs. Point-to-Multipoint</h2>
+
+      <div class="section-img-wrap">
+        <img src="images/s3-ospf-network-types.png" class="section-img" alt="OSPF hub-and-spoke network type diagram"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s3-ospf-network-types.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: Two-panel layout. Left panel: hub router connected directly to a single spoke via a labeled "Point-to-Point" link (bold green). Right panel: hub router connected to two spokes via a shared IPsec cloud labeled "net-device disabled / Point-to-Multipoint" (bold amber). Both panels show OSPF area labels. Bold outlines, pastel colors, no shadows, educational infographic style.</div>
+        </div>
+        <p class="img-caption">When net-device is disabled on IPsec, the hub uses a single shared interface for all spokes — requiring point-to-multipoint network type.</p>
+      </div>
+
+      <p>The <strong>OSPF network type</strong> on an interface controls how OSPF discovers neighbors and whether a DR/BDR election occurs. The default FortiGate OSPF interface type is <strong>point-to-point</strong>, appropriate for direct connections between exactly two routers.</p>
+      <p>In a <strong>dial-up hub-and-spoke IPsec</strong> deployment where <code>net-device</code> is disabled, the hub creates a single shared virtual IPsec interface for all connecting spokes. All spokes share the same interface, making point-to-point unsuitable. The hub must be configured with <code>set network-type point-to-multipoint</code> on the To-Spokes interface to correctly model one logical link per spoke without requiring DR/BDR election.</p>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Hub Interface for Dial-Up OSPF</div>
+        <pre><code>config router ospf
+    config ospf-interface
+        edit Hub
+            set interface To-Spokes
+            set network-type point-to-multipoint
+        end
+    end
+end</code></pre>
+      </div>
+
+      <div class="callout callout-amber"><strong>Exam tip:</strong> Default OSPF network type on FortiGate is <strong>point-to-point</strong>. Change to <strong>point-to-multipoint</strong> when net-device is disabled and multiple spokes share one IPsec interface. Forgetting this causes OSPF adjacency failure on the hub.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Default OSPF interface type = point-to-point. Dial-up IPsec with net-device disabled = single shared interface for all spokes = must use point-to-multipoint on the hub. Point-to-multipoint eliminates the need for DR/BDR election.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s3" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s3','OSPF Network Types')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s3" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s3')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SECTION 4 ═══════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · OSPF ROUTE FILTERING</span>
+      </div>
+      <p class="socratic-insight">OSPF provides three levels of route filtering: access lists (simple prefix matching), prefix lists (prefix matching with length operators), and route maps (advanced, can also modify attributes). Each applies at different points in the routing process. The redistribution mechanism allows OSPF to "absorb" routes from other protocols — but by default, nothing is redistributed, including connected routes on the ASBR.</p>
+      <ul class="socratic-questions">
+        <li>By default, an OSPF router does not advertise its directly connected networks to OSPF unless they are explicitly configured under "config network". What does redistribute connected do differently than adding networks manually?</li>
+        <li>When would you choose a route map over a prefix list for OSPF route filtering, and what capability does a route map have that prefix lists cannot provide?</li>
+      </ul>
+      <div class="answer-area" data-section="ospf-filtering">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Adding a network under "config network" registers that prefix as an intra-area OSPF route (Type 1/2 LSA), making it part of the OSPF domain. Redistribute connected imports connected routes as external routes (Type 5 LSA), which appear with an "E" tag in routing tables and carry the external metric. The distinction matters for path selection — intra-area routes are preferred over external routes.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Choose a route map when you need to filter redistributed external routes (via distribute-route-map-in) or modify OSPF attributes like the metric or metric type during redistribution. Prefix lists can only permit or deny based on prefix and length — they cannot set or modify any routing attributes. Route maps provide the "if match X, then set Y" logic that prefix lists lack.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s4">
+      <div class="section-label">SECTION 04</div>
+      <h2>OSPF <em>Route Filtering</em> — Redistribution &amp; Access/Prefix Lists</h2>
+
+      <div class="section-img-wrap">
+        <img src="images/s4-ospf-filtering.png" class="section-img" alt="OSPF route filtering options comparison"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s4-ospf-filtering.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: Three-lane pipeline diagram. Lane 1 labeled "Access List" (blue) — simple filter, shows permit/deny boxes. Lane 2 labeled "Prefix List" (green) — filter with ge/le length operators added. Lane 3 labeled "Route Map" (amber) — shows match + set boxes indicating it can modify attributes. All three funneling into an OSPF routing table. Pastel palette, bold outlines, educational style, no shadows.</div>
+        </div>
+        <p class="img-caption">Three OSPF filtering tools: access lists (simple), prefix lists (with length operators), route maps (can also modify attributes).</p>
+      </div>
+
+      <p>OSPF provides <strong>protocol redistribution</strong> control through the <code>config redistribute</code> command. By default, all protocol redistribution — including connected routes — is <em>disabled</em> in OSPF. An ASBR must explicitly enable redistribution of BGP, connected, RIP, IS-IS, or static routes to inject them as external routes into OSPF.</p>
+
+      <table class="data-table">
+        <thead><tr><th>Filtering Method</th><th>Type</th><th>Parameter</th><th>Can Modify Attributes?</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Access Lists</strong></td><td>Simple — filter by prefix</td><td><code>distribute-list-in</code></td><td>No</td></tr>
+          <tr><td><strong>Prefix Lists</strong></td><td>Simple — prefix + ge/le operators</td><td><code>distribute-list-in</code></td><td>No</td></tr>
+          <tr><td><strong>Route Maps</strong></td><td>Advanced — match + set logic</td><td><code>distribute-route-map-in</code></td><td>Yes — metric, metric-type</td></tr>
+        </tbody>
+      </table>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Enable Redistribution in OSPF</div>
+        <pre><code>config router ospf
+    config redistribute connected
+        set status enable
+    end
+    config redistribute static
+        set status enable
+    end
+end</code></pre>
+      </div>
+
+      <div class="callout"><strong>Key distinction:</strong> Route maps apply to incoming <em>external</em> routes (via distribute-route-map-in) and can also be used during redistribution (config redistribute &lt;protocol&gt; set routemap). They can match on access lists, prefix lists, and set OSPF metrics. Access lists and prefix lists only permit/deny — they cannot set attributes.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">By default, OSPF redistributes nothing — including connected routes. All redistribution is disabled (status disable). Access lists and prefix lists filter via distribute-list-in. Route maps go via distribute-route-map-in and can also SET attributes during redistribution.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s4" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s4','OSPF Route Filtering')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s4" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s4')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SECTION 5 ═══════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · ADVANCED USE CASES</span>
+      </div>
+      <p class="socratic-insight">OSPF ECMP and virtual links solve two distinct scaling problems. ECMP RFC 1583 vs. RFC 2328 changes which paths are considered equal-cost. Virtual links let a disconnected area logically "reach" the backbone through another area acting as a transit — a workaround for physical topology constraints.</p>
+      <ul class="socratic-questions">
+        <li>OSPF defaults to RFC 2328 ECMP. When would you specifically need to enable RFC 1583 compatible mode, and what scenario does it unlock?</li>
+        <li>A virtual link connects two ABRs through a transit area. Why can a transit area for a virtual link NOT be a stub or NSSA area?</li>
+      </ul>
+      <div class="answer-area" data-section="ospf-advanced">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">RFC 2328 prefers intra-area paths over inter-area paths regardless of cost, which means external routes via different areas won't load-balance even if they have equal cost. RFC 1583 compatible mode selects paths based purely on cost, enabling load-balancing to external destinations via multiple areas. Enable it specifically when you need ECMP across external routes learned via different OSPF areas — a common requirement in multi-homed networks.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Virtual links run as part of the backbone (Area 0) logically, using the transit area's infrastructure to carry traffic. Stub and NSSA areas block certain LSA types — specifically the LSAs needed to carry backbone routing information through the virtual link. Since the virtual link must transport Type 3 and Type 5 LSAs from the backbone, the transit area must be a regular area that allows all LSA types to pass through it.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="s5">
+      <div class="section-label">SECTION 05</div>
+      <h2>OSPF <em>Advanced Use Cases</em> — ECMP, IPsec, &amp; Virtual Links</h2>
+
+      <div class="section-img-wrap">
+        <img src="images/s5-ospf-advanced.png" class="section-img" alt="OSPF ECMP and virtual link scenarios"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s5-ospf-advanced.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat colorful illustration: Two-panel layout. Left panel shows ECMP: two routers (R1 and R3) in different OSPF areas both advertising the same external route to R2, with a green "ECMP" label and "RFC 1583" badge. Right panel shows virtual link: Area 0.0.0.0 on left, Area 0.0.0.3 in middle as transit, Area 0.0.0.10 on right disconnected from backbone; dashed line labeled "Virtual Link" bridges the transit area. Bold outlines, pastel palette, educational style, no shadows.</div>
+        </div>
+        <p class="img-caption">RFC 1583 compatible mode enables ECMP for external routes. Virtual links reconnect isolated areas through a transit area.</p>
+      </div>
+
+      <p><strong>OSPF ECMP</strong> allows FortiGate to install multiple equal-cost external routes in the routing database. By default, OSPF uses <strong>RFC 2328</strong>, which has path preference rules: intra-area paths via non-backbone areas are most preferred, then backbone/inter-area paths equally. This RFC prevents load-balancing across external routes reached via different areas.</p>
+      <p>Enabling <strong>RFC 1583 compatible mode</strong> changes path selection to be based purely on cost, regardless of area type. This allows ECMP across external routes and is recommended when reaching external destinations via multiple OSPF areas.</p>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Enable RFC 1583 ECMP</div>
+        <pre><code>config router ospf
+    set rfc1583-compatible enable
+end
+
+# Verify ECMP routes installed:
+get router info routing-table all</code></pre>
+      </div>
+
+      <p><strong>OSPF over IPsec</strong> supports two modes: site-to-site (route-based tunnels, IPsec interfaces must be OSPF interfaces, VPN subnets in OSPF network config) and dial-up/hub-and-spoke (generic VPN setup, IPv4 range in phase1 assigns spoke IPs, hub redistributes static/connected routes).</p>
+
+      <p><strong>Virtual Links</strong> solve the problem of an OSPF area that is not directly connected to Area 0. A virtual link is configured between two ABRs through a regular transit area, making the isolated area logically adjacent to the backbone. Both routers must configure the virtual link — identifying each other by router ID.</p>
+
+      <div class="code-block">
+        <div class="code-label">FortiGate CLI — Virtual Link Configuration (R2 side)</div>
+        <pre><code>config router ospf
+    set router-id 2.2.2.2
+    config area
+        edit 0.0.0.3
+            config virtual-link
+                edit VLINK_area
+                    set peer 4.4.4.4
+                next
+            end
+        next
+    end
+end</code></pre>
+      </div>
+
+      <p><strong>Key OSPF diagnostic commands:</strong></p>
+      <table class="data-table">
+        <thead><tr><th>Command</th><th>Shows</th></tr></thead>
+        <tbody>
+          <tr><td><code>get router info ospf neighbor</code></td><td>All OSPF neighbors and adjacency states (DR, BDR, DROther)</td></tr>
+          <tr><td><code>get router info ospf interface</code></td><td>Status per interface, number of adjacencies, DR/BDR IDs</td></tr>
+          <tr><td><code>get router info ospf status</code></td><td>Router ID, features negotiated, areas, adjacent neighbor count</td></tr>
+          <tr><td><code>get router info ospf database brief</code></td><td>Full LSDB ordered by LSA type</td></tr>
+          <tr><td><code>get router info bfd neighbor</code></td><td>BFD negotiation status when BFD enabled on OSPF</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-amber"><strong>Exam tip:</strong> Virtual link transit areas CANNOT be stub or NSSA — they must be regular areas. The virtual link carries backbone LSAs through the transit area, and stub/NSSA areas block the LSA types required.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">OSPF ECMP: default = RFC 2328 (prefers intra-area); enable rfc1583-compatible for cost-based ECMP across external routes. Virtual links: configured on both ABRs via area transit area, peers identified by router-id. Transit area must be regular (not stub/NSSA).</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-s5" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('s5','Advanced Use Cases')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-s5" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('s5')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">ON THIS PAGE</div>
+      <nav class="ssnav">
+        <a class="ssnav-item" href="#s1">OSPF Overview</a>
+        <a class="ssnav-item" href="#s2">Areas &amp; Router Roles</a>
+        <a class="ssnav-item" href="#s3">Network Types</a>
+        <a class="ssnav-item" href="#s4">Route Filtering</a>
+        <a class="ssnav-item" href="#s5">Advanced Use Cases</a>
+      </nav>
+    </div>
+
+    <a class="hub-link" href="index.html">← Chapter 05 Hub</a>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">PROGRESS</div>
+      <div class="checklist" id="checklist">
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s1" onchange="toggleDone(this)">
+          <span class="check-label">OSPF Overview</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s2" onchange="toggleDone(this)">
+          <span class="check-label">Areas &amp; Router Roles</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s3" onchange="toggleDone(this)">
+          <span class="check-label">Network Types</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s4" onchange="toggleDone(this)">
+          <span class="check-label">Route Filtering</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="s5" onchange="toggleDone(this)">
+          <span class="check-label">Advanced Use Cases</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">QUICK REFERENCE</div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">LSDB</div>
+        <div class="quick-ref-def">Link State Database — identical synchronized topology database held by all routers in an OSPF area.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">ABR</div>
+        <div class="quick-ref-def">Area Border Router — connects a non-backbone area to Area 0; can summarize routes with "config range".</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">ASBR</div>
+        <div class="quick-ref-def">Autonomous System Boundary Router — imports external non-OSPF routes into the OSPF domain as Type 5 LSAs.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Stub Area</div>
+        <div class="quick-ref-def">Area type that blocks Type 5 (external) LSAs; ABR injects a default route instead. No ASBR allowed.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">NSSA</div>
+        <div class="quick-ref-def">Not-So-Stubby Area — like stub but permits an internal ASBR using Type 7 LSAs (converted to Type 5 at ABR).</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Point-to-Multipoint</div>
+        <div class="quick-ref-def">OSPF network type required on hub when dial-up spokes share one IPsec interface (net-device disabled).</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">RFC 1583 Compatible</div>
+        <div class="quick-ref-def">Enables pure cost-based ECMP for external routes. Default is RFC 2328 which prefers intra-area paths.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Virtual Link</div>
+        <div class="quick-ref-def">Logical backbone extension through a regular transit area — connects an isolated area to Area 0 via two ABRs.</div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="page-nav">
+  <a class="page-nav-btn page-nav-prev" href="index.html">
+    <span class="page-nav-label">← BACK TO HUB</span>
+    <span class="page-nav-title">Chapter 05 Hub</span>
+  </a>
+  <a class="page-nav-btn page-nav-next" href="subtopic-02-configure-bgp.html">
+    <span class="page-nav-label">NEXT →</span>
+    <span class="page-nav-title">Configure BGP</span>
+  </a>
+</div>
+
+<footer>
+  EF-NSE7<span>.</span> Chapter 05<span>.</span> Subtopic 01<span>.</span> Configure OSPF
+</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-ch05-sub01-configure-ospf';
+
+const SECTIONS = {
+  's1': 'OSPF Overview',
+  's2': 'Areas & Router Roles',
+  's3': 'OSPF Network Types',
+  's4': 'OSPF Route Filtering',
+  's5': 'Advanced Use Cases',
+};
+
+document.querySelectorAll('.socratic-header').forEach(function(h) {
+  h.addEventListener('click', function() { h.closest('.socratic-block').classList.toggle('soc-open'); });
+});
+
+function getQArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-qs') || '[]'); }
+function saveQArr(qs) { localStorage.setItem(PAGE_KEY+'-qs', JSON.stringify(qs)); }
+function addQuestion(key, name) {
+  const ta = document.getElementById('q-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const qs = getQArr(); qs.push({id: Date.now(), section: key, sectionName: name, text});
+  saveQArr(qs); ta.value = ''; renderQPanel();
+  if (!document.getElementById('qpanel-body').classList.contains('open')) toggleQPanel();
+}
+function deleteQ(id) { saveQArr(getQArr().filter(q => q.id !== id)); renderQPanel(); }
+function toggleQPanel() {
+  const body = document.getElementById('qpanel-body');
+  const header = document.getElementById('qpanel-header');
+  const chevron = document.getElementById('qpanel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-qpanel-open', open);
+}
+function renderQPanel() {
+  const qs = getQArr();
+  const count = document.getElementById('qpanel-count');
+  if (count) { count.textContent = qs.length; count.style.display = qs.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.qpanel-hint');
+  if (hint) hint.textContent = qs.length ? `— ${qs.length} question${qs.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('qpanel-body'); if (!body) return;
+  if (!qs.length) { body.innerHTML = '<p class="no-questions">No questions yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  qs.forEach(q => { if (groups[q.section]) groups[q.section].push(q); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(q => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${q.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteQ(${q.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function getNotesArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-notes') || '[]'); }
+function saveNotesArr(ns) { localStorage.setItem(PAGE_KEY+'-notes', JSON.stringify(ns)); }
+function addNote(key) {
+  const ta = document.getElementById('note-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const ns = getNotesArr(); ns.push({id: Date.now(), section: key, sectionName: SECTIONS[key]||key, text});
+  saveNotesArr(ns); ta.value = ''; renderNotesPanel();
+  if (!document.getElementById('notes-panel-body').classList.contains('open')) toggleNotesPanel();
+}
+function deleteNote(id) { saveNotesArr(getNotesArr().filter(n => n.id !== id)); renderNotesPanel(); }
+function toggleNotesPanel() {
+  const body = document.getElementById('notes-panel-body');
+  const header = document.getElementById('notes-panel-header');
+  const chevron = document.getElementById('notes-panel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-notes-panel-open', open);
+}
+function renderNotesPanel() {
+  const ns = getNotesArr();
+  const count = document.getElementById('notes-panel-count');
+  if (count) { count.textContent = ns.length; count.style.display = ns.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.notes-panel-hint');
+  if (hint) hint.textContent = ns.length ? `— ${ns.length} note${ns.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('notes-panel-body'); if (!body) return;
+  if (!ns.length) { body.innerHTML = '<p class="no-questions">No notes yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  ns.forEach(n => { if (groups[n.section]) groups[n.section].push(n); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(n => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteNote(${n.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function toggleDone(input) {
+  localStorage.setItem(PAGE_KEY+'-check-'+input.dataset.key, input.checked);
+}
+function initChecks() {
+  document.querySelectorAll('.check-input').forEach(function(inp) {
+    inp.checked = localStorage.getItem(PAGE_KEY+'-check-'+inp.dataset.key) === 'true';
+  });
+}
+
+function saveSocAnswer(btn) {
+  const area = btn.closest('.answer-area');
+  const ta = area.querySelector('.answer-textarea');
+  if (!ta.value.trim()) { ta.focus(); return; }
+  const key = PAGE_KEY+'-socans-'+area.dataset.section;
+  try { localStorage.setItem(key, ta.value); } catch(e) {}
+  ta.disabled = true; btn.textContent = '✓ Answer saved'; btn.disabled = true;
+  const seeBtn = area.querySelector('.btn-see-answer');
+  seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+}
+function revealSocAnswer(btn) {
+  if (btn.disabled) return;
+  const answers = btn.closest('.answer-area').querySelector('.model-answers');
+  const isHidden = answers.style.display === 'none' || !answers.style.display;
+  answers.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '▲ Hide Model Answer' : '💡 See Model Answer';
+}
+
+function togglePrompt(btn) {
+  const c = btn.nextElementSibling;
+  const isHidden = c.hasAttribute('hidden');
+  if (isHidden) { c.removeAttribute('hidden'); btn.textContent = '▴ Hide image prompt'; }
+  else { c.setAttribute('hidden', ''); btn.textContent = '▾ Show image prompt'; }
+}
+
+if (sessionStorage.getItem('pt')) {
+  document.body.style.opacity = '1';
+  sessionStorage.removeItem('pt');
+}
+document.querySelectorAll('a[href]').forEach(function(a) {
+  a.addEventListener('click', function() { sessionStorage.setItem('pt', '1'); });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderQPanel(); renderNotesPanel(); initChecks();
+  if (localStorage.getItem(PAGE_KEY+'-qpanel-open') === 'true') toggleQPanel();
+  if (localStorage.getItem(PAGE_KEY+'-notes-panel-open') === 'true') toggleNotesPanel();
+  document.querySelectorAll('.answer-area').forEach(function(area) {
+    const key = PAGE_KEY+'-socans-'+area.dataset.section;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const ta = area.querySelector('.answer-textarea'); ta.value = saved; ta.disabled = true;
+        const addBtn = area.querySelector('.btn-add-answer'); addBtn.textContent = '✓ Answer saved'; addBtn.disabled = true;
+        const seeBtn = area.querySelector('.btn-see-answer'); seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+      }
+    } catch(e) {}
+  });
+  document.querySelectorAll('.analogy-box').forEach(function(box) {
+    if (box.dataset.collapsibleInit) return;
+    box.dataset.collapsibleInit = '1';
+    box.classList.add('expanded');
+    const label = box.querySelector(':scope > .analogy-label');
+    if (label) label.addEventListener('click', () => box.classList.toggle('expanded'));
+  });
+  document.querySelectorAll('.analogy-img img').forEach(function(img) {
+    if (img.dataset.zoomInit) return;
+    img.dataset.zoomInit = '1';
+    img.addEventListener('click', () => img.classList.toggle('zoomed'));
+  });
+  document.querySelectorAll('.section-img').forEach(function(img) {
+    img.addEventListener('click', () => img.classList.toggle('si-expanded'));
+  });
+});
+
+(function() {
+  var items = document.querySelectorAll('.ssnav-item');
+  if (!items.length) return;
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      var lnk = document.querySelector('.ssnav-item[href="#'+e.target.id+'"]');
+      if (lnk) lnk.classList.toggle('active', e.isIntersecting);
+    });
+  }, { rootMargin: '-10% 0% -70% 0%' });
+  document.querySelectorAll('.section-block[id]').forEach(function(el) { obs.observe(el); });
+})();
+</script>
+</body>
+</html>

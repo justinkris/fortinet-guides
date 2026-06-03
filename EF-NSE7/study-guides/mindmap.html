@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EF-NSE7 — Mind Map</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0101;
+  --surface:#1a0606;
+  --surface2:#220808;
+  --red:#c0392b;
+  --red-vivid:#e03e2d;
+  --accent:#e87070;
+  --text:#f5e8e8;
+  --text-soft:rgba(245,232,232,0.72);
+  --text-muted:rgba(245,232,232,0.38);
+  --border:rgba(192,57,43,0.2);
+  --border-s:rgba(192,57,43,0.42);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html.pt-init body{opacity:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* ── TOP BAR ── */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 28px;background:var(--surface);
+  border-bottom:1px solid var(--border);flex-shrink:0;z-index:10;
+}
+.topbar-l{display:flex;align-items:center;gap:18px;}
+.back-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:10.5px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--text-muted);text-decoration:none;padding:5px 13px;
+  border-radius:20px;border:1px solid var(--border);transition:color 0.2s,border-color 0.2s;
+}
+.back-btn:hover{color:var(--accent);border-color:var(--border-s);}
+.topbar-title{
+  font-family:'Fraunces',serif;font-size:16px;font-weight:700;color:var(--text);
+}
+.topbar-title em{font-style:italic;font-weight:400;color:var(--accent);}
+.topbar-hint{font-size:10px;color:var(--text-muted);letter-spacing:0.04em;}
+.zoom-row{display:flex;gap:6px;align-items:center;}
+.zbtn{
+  width:30px;height:30px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;color:var(--text-muted);font-size:15px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:color 0.2s,border-color 0.2s;
+}
+.zbtn:hover{color:var(--text);border-color:var(--border-s);}
+#zLabel{
+  font-size:10px;font-weight:600;letter-spacing:0.06em;color:var(--text-muted);
+  min-width:36px;text-align:center;cursor:pointer;
+}
+#zLabel:hover{color:var(--accent);}
+
+/* ── OUTER (pan + scroll) ── */
+.mm-outer{
+  flex:1;overflow:auto;cursor:grab;position:relative;
+  background:radial-gradient(ellipse at 50% 50%, #1a0404 0%, var(--bg) 70%);
+}
+.mm-outer.dragging{cursor:grabbing;}
+
+/* ── CANVAS (scaled) ── */
+.mm-canvas{
+  transform-origin:0 0;
+  display:flex;align-items:center;
+  padding:56px 48px;gap:0;
+  position:relative;width:max-content;
+}
+
+/* ── SVG lines overlay ── */
+#svgLines{position:absolute;top:0;left:0;pointer-events:none;overflow:visible;}
+
+/* ── COLUMNS ── */
+.mm-left{display:flex;flex-direction:column;gap:18px;align-items:flex-end;}
+.mm-right{display:flex;flex-direction:column;gap:18px;align-items:flex-start;}
+.mm-center{padding:0 36px;flex-shrink:0;display:flex;align-items:center;}
+
+/* ── ROOT NODE ── */
+.root-node{
+  background:linear-gradient(135deg,#2a0808,#1e0505);
+  border:2px solid var(--red);border-radius:20px;
+  padding:22px 32px;text-align:center;
+  box-shadow:0 0 48px rgba(192,57,43,0.28),0 0 100px rgba(192,57,43,0.08);
+  min-width:152px;
+}
+.root-node .r-title{
+  font-family:'Fraunces',serif;font-size:24px;font-weight:700;
+  color:var(--text);line-height:1.1;display:block;letter-spacing:-0.01em;
+}
+.root-node .r-sub{
+  font-size:10px;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--accent);margin-top:7px;display:block;opacity:0.8;
+}
+
+/* ── CHAPTER GROUP ── */
+.ch-group{display:flex;align-items:center;gap:10px;}
+.mm-left .ch-group{flex-direction:row;}   /* subs left, ch right */
+.mm-right .ch-group{flex-direction:row;}  /* ch left, subs right */
+
+/* ── SUB LIST ── */
+.sub-list{display:flex;flex-direction:column;gap:5px;}
+.mm-left  .sub-list{align-items:flex-end;}
+.mm-right .sub-list{align-items:flex-start;}
+
+/* ── CHAPTER NODE ── */
+.ch-node{
+  padding:8px 15px;border-radius:10px;font-size:11.5px;font-weight:600;
+  white-space:nowrap;border:1.5px solid;letter-spacing:0.01em;flex-shrink:0;
+}
+
+/* ── SUBTOPIC NODE ── */
+a.sub-node{
+  display:block;padding:5px 11px;border-radius:7px;font-size:10.5px;font-weight:500;
+  text-decoration:none;white-space:nowrap;border:1px solid;
+  transition:transform 0.14s,box-shadow 0.14s,filter 0.14s;
+}
+a.sub-node:hover{transform:translateY(-2px);box-shadow:0 5px 16px rgba(0,0,0,0.5);filter:brightness(1.25);}
+
+/* ── COLORS PER CHAPTER ── */
+/* Ch01 warm coral */
+[data-ch="1"] .ch-node {background:rgba(224,112,80,.13);border-color:rgba(224,112,80,.42);color:#e07050;}
+[data-ch="1"] .sub-node{background:rgba(224,112,80,.07);border-color:rgba(224,112,80,.26);color:rgba(224,112,80,.82);}
+/* Ch02 violet */
+[data-ch="2"] .ch-node {background:rgba(196,118,184,.13);border-color:rgba(196,118,184,.42);color:#c476b8;}
+[data-ch="2"] .sub-node{background:rgba(196,118,184,.07);border-color:rgba(196,118,184,.26);color:rgba(196,118,184,.82);}
+/* Ch03 sky blue */
+[data-ch="3"] .ch-node {background:rgba(90,162,210,.13);border-color:rgba(90,162,210,.42);color:#5aa2d2;}
+[data-ch="3"] .sub-node{background:rgba(90,162,210,.07);border-color:rgba(90,162,210,.26);color:rgba(90,162,210,.82);}
+/* Ch04 green */
+[data-ch="4"] .ch-node {background:rgba(90,178,136,.13);border-color:rgba(90,178,136,.42);color:#5ab288;}
+[data-ch="4"] .sub-node{background:rgba(90,178,136,.07);border-color:rgba(90,178,136,.26);color:rgba(90,178,136,.82);}
+/* Ch05 gold */
+[data-ch="5"] .ch-node {background:rgba(210,165,65,.13);border-color:rgba(210,165,65,.42);color:#d2a541;}
+[data-ch="5"] .sub-node{background:rgba(210,165,65,.07);border-color:rgba(210,165,65,.26);color:rgba(210,165,65,.82);}
+/* Ch06 red */
+[data-ch="6"] .ch-node {background:rgba(232,112,112,.13);border-color:rgba(232,112,112,.42);color:#e87070;}
+[data-ch="6"] .sub-node{background:rgba(232,112,112,.07);border-color:rgba(232,112,112,.26);color:rgba(232,112,112,.82);}
+/* Ch07 indigo */
+[data-ch="7"] .ch-node {background:rgba(106,138,208,.13);border-color:rgba(106,138,208,.42);color:#6a8ad0;}
+[data-ch="7"] .sub-node{background:rgba(106,138,208,.07);border-color:rgba(106,138,208,.26);color:rgba(106,138,208,.82);}
+/* Ch08 teal */
+[data-ch="8"] .ch-node {background:rgba(82,180,196,.13);border-color:rgba(82,180,196,.42);color:#52b4c4;}
+[data-ch="8"] .sub-node{background:rgba(82,180,196,.07);border-color:rgba(82,180,196,.26);color:rgba(82,180,196,.82);}
+/* Ch09 purple */
+[data-ch="9"] .ch-node {background:rgba(152,120,200,.13);border-color:rgba(152,120,200,.42);color:#9878c8;}
+[data-ch="9"] .sub-node{background:rgba(152,120,200,.07);border-color:rgba(152,120,200,.26);color:rgba(152,120,200,.82);}
+/* Ch10 lime */
+[data-ch="10"] .ch-node {background:rgba(154,186,106,.13);border-color:rgba(154,186,106,.42);color:#9aba6a;}
+[data-ch="10"] .sub-node{background:rgba(154,186,106,.07);border-color:rgba(154,186,106,.26);color:rgba(154,186,106,.82);}
+
+/* ── BOTTOM LEGEND ── */
+.legend{
+  display:flex;flex-wrap:wrap;gap:14px;padding:12px 28px;
+  border-top:1px solid var(--border);background:var(--surface);
+  justify-content:center;flex-shrink:0;
+}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);}
+.leg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+
+/* ── PAGE TRANSITION ── */
+@keyframes pgIn{from{opacity:0;transform:scale(1.03)}to{opacity:1;transform:scale(1)}}
+body{animation:pgIn 0.4s cubic-bezier(.15,.85,.2,1) both;}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-l">
+    <a class="back-btn" href="nse7-ef-study-guide-hub.html">← Hub</a>
+    <span class="topbar-title">EF&#8209;NSE7 <em>Mind Map</em></span>
+    <span class="topbar-hint">Scroll · drag · pinch or use +/− to zoom · click any node to open</span>
+  </div>
+  <div class="zoom-row">
+    <button class="zbtn" id="zIn" title="Zoom in">+</button>
+    <span id="zLabel" title="Reset zoom">100%</span>
+    <button class="zbtn" id="zOut" title="Zoom out">−</button>
+  </div>
+</div>
+
+<!-- OUTER (pan area) -->
+<div class="mm-outer" id="mmOuter">
+  <div class="mm-canvas" id="mmCanvas">
+
+    <svg id="svgLines"></svg>
+
+    <!-- ════ LEFT: Ch 01–05 ════ -->
+    <div class="mm-left">
+
+      <div class="ch-group" data-ch="1">
+        <div class="sub-list">
+          <a class="sub-node" href="Chapter 01 - Network Security Architecture/subtopic-01-enterprise-firewall-solution.html" data-to="ch1">Enterprise Firewall Solution</a>
+          <a class="sub-node" href="Chapter 01 - Network Security Architecture/subtopic-02-design-secure-networks.html"          data-to="ch1">Design Secure Networks</a>
+        </div>
+        <div class="ch-node" id="ch1" data-side="left">01 · Network Security Architecture</div>
+      </div>
+
+      <div class="ch-group" data-ch="2">
+        <div class="sub-list">
+          <a class="sub-node" href="Chapter 02 - Central Management/subtopic-01-examine-fortimanager-architecture.html" data-to="ch2">FortiManager Architecture</a>
+          <a class="sub-node" href="Chapter 02 - Central Management/subtopic-02-explore-dynamic-objects.html"           data-to="ch2">Dynamic Objects</a>
+          <a class="sub-node" href="Chapter 02 - Central Management/subtopic-03-use-scripts.html"                       data-to="ch2">Use Scripts</a>
+        </div>
+        <div class="ch-node" id="ch2" data-side="left">02 · Central Management</div>
+      </div>
+
+      <div class="ch-group" data-ch="3">
+        <div class="sub-list">
+          <a class="sub-node" href="Chapter 03 - VLANs and VDOMs/subtopic-01-configure-vlans.html"              data-to="ch3">Configure VLANs</a>
+          <a class="sub-node" href="Chapter 03 - VLANs and VDOMs/subtopic-02-implement-enterprise-vdoms.html"   data-to="ch3">Implement VDOMs</a>
+          <a class="sub-node" href="Chapter 03 - VLANs and VDOMs/subtopic-03-inter-vdom-routing.html"           data-to="ch3">Inter-VDOM Routing</a>
+        </div>
+        <div class="ch-node" id="ch3" data-side="left">03 · VLANs and VDOMs</div>
+      </div>
+
+      <div class="ch-group" data-ch="4">
+        <div class="sub-list">
+          <a class="sub-node" href="Chapter 04 - High Availability/subtopic-01-configure-ha-clusters.html" data-to="ch4">Configure HA Clusters</a>
+          <a class="sub-node" href="Chapter 04 - High Availability/subtopic-02-fgcp-and-fgsp.html"         data-to="ch4">FGCP and FGSP</a>
+          <a class="sub-node" href="Chapter 04 - High Availability/subtopic-03-vrrp.html"                   data-to="ch4">VRRP</a>
+        </div>
+        <div class="ch-node" id="ch4" data-side="left">04 · High Availability</div>
+      </div>
+
+      <div class="ch-group" data-ch="5">
+        <div class="sub-list">
+          <a class="sub-node" href="Chapter 05 - Dynamic Routing Protocols/subtopic-01-configure-ospf.html"        data-to="ch5">Configure OSPF</a>
+          <a class="sub-node" href="Chapter 05 - Dynamic Routing Protocols/subtopic-02-configure-bgp.html"         data-to="ch5">Configure BGP</a>
+          <a class="sub-node" href="Chapter 05 - Dynamic Routing Protocols/subtopic-03-route-redistribution.html"  data-to="ch5">Route Redistribution</a>
+        </div>
+        <div class="ch-node" id="ch5" data-side="left">05 · Dynamic Routing Protocols</div>
+      </div>
+
+    </div><!-- /mm-left -->
+
+    <!-- ════ CENTER ROOT ════ -->
+    <div class="mm-center">
+      <div class="root-node" id="rootNode">
+        <span class="r-title">EF&#8209;NSE7</span>
+        <span class="r-sub">Enterprise Firewall</span>
+      </div>
+    </div>
+
+    <!-- ════ RIGHT: Ch 06–10 ════ -->
+    <div class="mm-right">
+
+      <div class="ch-group" data-ch="6">
+        <div class="ch-node" id="ch6" data-side="right">06 · Security Profiles</div>
+        <div class="sub-list">
+          <a class="sub-node" href="Chapter 06 - Security Profiles/subtopic-01-ssl-ssh-inspection.html"      data-to="ch6">SSL/SSH Inspection</a>
+          <a class="sub-node" href="Chapter 06 - Security Profiles/subtopic-02-web-filter-app-control.html"  data-to="ch6">Web Filter &amp; App Control</a>
+          <a class="sub-node" href="Chapter 06 - Security Profiles/subtopic-03-integrate-ips.html"           data-to="ch6">Integrate IPS</a>
+        </div>
+      </div>
+
+      <div class="ch-group" data-ch="7">
+        <div class="ch-node" id="ch7" data-side="right">07 · IPsec</div>
+        <div class="sub-list">
+          <a class="sub-node" href="Chapter 07 - IPsec/subtopic-01-configure-ipsec-tunnels.html"       data-to="ch7">Configure IPsec Tunnels</a>
+          <a class="sub-node" href="Chapter 07 - IPsec/subtopic-02-ike-and-phase-negotiation.html"     data-to="ch7">IKE &amp; Phase Negotiation</a>
+          <a class="sub-node" href="Chapter 07 - IPsec/subtopic-03-ipsec-troubleshooting.html"         data-to="ch7">IPsec Troubleshooting</a>
+        </div>
+      </div>
+
+      <div class="ch-group" data-ch="8">
+        <div class="ch-node" id="ch8" data-side="right">08 · Auto-Discovery VPN</div>
+        <div class="sub-list">
+          <a class="sub-node" href="Chapter 08 - Auto-Discovery VPN/subtopic-01-configure-advpn.html"     data-to="ch8">Configure ADVPN</a>
+          <a class="sub-node" href="Chapter 08 - Auto-Discovery VPN/subtopic-02-advpn-shortcuts.html"     data-to="ch8">ADVPN Shortcuts</a>
+          <a class="sub-node" href="Chapter 08 - Auto-Discovery VPN/subtopic-03-advpn-with-bgp.html"      data-to="ch8">ADVPN with BGP</a>
+        </div>
+      </div>
+
+      <div class="ch-group" data-ch="9">
+        <div class="ch-node" id="ch9" data-side="right">09 · Security Fabric</div>
+        <div class="sub-list">
+          <a class="sub-node" href="Chapter 09 - Security Fabric/subtopic-01-configure-security-fabric.html" data-to="ch9">Configure Security Fabric</a>
+          <a class="sub-node" href="Chapter 09 - Security Fabric/subtopic-02-fabric-connectors.html"          data-to="ch9">Fabric Connectors</a>
+          <a class="sub-node" href="Chapter 09 - Security Fabric/subtopic-03-automation-stitches.html"        data-to="ch9">Automation Stitches</a>
+        </div>
+      </div>
+
+      <div class="ch-group" data-ch="10">
+        <div class="ch-node" id="ch10" data-side="right">10 · Hardware Acceleration</div>
+        <div class="sub-list">
+          <a class="sub-node" href="Chapter 10 - Hardware Acceleration/subtopic-01-np-and-cp-processors.html"    data-to="ch10">NP and CP Processors</a>
+          <a class="sub-node" href="Chapter 10 - Hardware Acceleration/subtopic-02-offloading-configuration.html" data-to="ch10">Offloading Configuration</a>
+          <a class="sub-node" href="Chapter 10 - Hardware Acceleration/subtopic-03-performance-monitoring.html"   data-to="ch10">Performance Monitoring</a>
+        </div>
+      </div>
+
+    </div><!-- /mm-right -->
+
+  </div><!-- /mm-canvas -->
+</div><!-- /mm-outer -->
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="leg-item"><div class="leg-dot" style="background:#e07050"></div>Network Security</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#c476b8"></div>Central Mgmt</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#5aa2d2"></div>VLANs &amp; VDOMs</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#5ab288"></div>High Availability</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#d2a541"></div>Dynamic Routing</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#e87070"></div>Security Profiles</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#6a8ad0"></div>IPsec</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#52b4c4"></div>ADVPN</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#9878c8"></div>Security Fabric</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#9aba6a"></div>HW Acceleration</div>
+</div>
+
+<script>
+// ── PER-CHAPTER STROKE COLORS ──
+const CH_COLORS = {
+  ch1:'224,112,80', ch2:'196,118,184', ch3:'90,162,210',
+  ch4:'90,178,136', ch5:'210,165,65',  ch6:'232,112,112',
+  ch7:'106,138,208',ch8:'82,180,196',  ch9:'152,120,200', ch10:'154,186,106'
+};
+
+// ── COORDINATE HELPER ──
+// Returns position of el relative to canvas, correcting for current scale.
+let scale = 1;
+function rel(el) {
+  const er = el.getBoundingClientRect();
+  const cr = document.getElementById('mmCanvas').getBoundingClientRect();
+  return {
+    cx: (er.left - cr.left + er.width  / 2) / scale,
+    cy: (er.top  - cr.top  + er.height / 2) / scale,
+    l:  (er.left  - cr.left) / scale,
+    r:  (er.right - cr.left) / scale,
+    t:  (er.top   - cr.top)  / scale,
+    b:  (er.bottom- cr.top)  / scale,
+  };
+}
+
+// ── BEZIER PATH ──
+function curve(x1,y1,x2,y2,col,alpha){
+  const p = document.createElementNS('http://www.w3.org/2000/svg','path');
+  const mx=(x1+x2)/2;
+  p.setAttribute('d',`M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`);
+  p.setAttribute('stroke',`rgba(${col},${alpha})`);
+  p.setAttribute('stroke-width','1.5');
+  p.setAttribute('fill','none');
+  p.setAttribute('stroke-linecap','round');
+  return p;
+}
+
+// ── DRAW ──
+function draw(){
+  const canvas = document.getElementById('mmCanvas');
+  const svg    = document.getElementById('svgLines');
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+
+  // Size SVG to canvas logical size
+  const cw = canvas.offsetWidth, ch = canvas.offsetHeight;
+  svg.setAttribute('width', cw);
+  svg.setAttribute('height', ch);
+  svg.setAttribute('viewBox',`0 0 ${cw} ${ch}`);
+
+  const root = rel(document.getElementById('rootNode'));
+
+  // Root dot
+  const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  dot.setAttribute('cx', root.cx); dot.setAttribute('cy', root.cy);
+  dot.setAttribute('r','5'); dot.setAttribute('fill','rgba(192,57,43,0.6)');
+  svg.appendChild(dot);
+
+  // Left chapters → root, then subtopics → chapter
+  ['ch1','ch2','ch3','ch4','ch5'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    const c=rel(el), col=CH_COLORS[id];
+    svg.appendChild(curve(c.r,c.cy, root.l,root.cy, col,'0.48'));
+    document.querySelectorAll(`[data-to="${id}"]`).forEach(sub=>{
+      const s=rel(sub);
+      svg.appendChild(curve(s.r,s.cy, c.l,c.cy, col,'0.26'));
+    });
+  });
+
+  // Right chapters ← root, then chapter → subtopics
+  ['ch6','ch7','ch8','ch9','ch10'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    const c=rel(el), col=CH_COLORS[id];
+    svg.appendChild(curve(root.r,root.cy, c.l,c.cy, col,'0.48'));
+    document.querySelectorAll(`[data-to="${id}"]`).forEach(sub=>{
+      const s=rel(sub);
+      svg.appendChild(curve(c.r,c.cy, s.l,s.cy, col,'0.26'));
+    });
+  });
+}
+
+// ── ZOOM ──
+const canvas = document.getElementById('mmCanvas');
+const outer  = document.getElementById('mmOuter');
+const zLabel = document.getElementById('zLabel');
+
+function applyZoom(){
+  canvas.style.transform = `scale(${scale})`;
+  zLabel.textContent = Math.round(scale*100)+'%';
+  requestAnimationFrame(draw);
+}
+document.getElementById('zIn').onclick  = ()=>{ scale=Math.min(2,+(scale+0.1).toFixed(1)); applyZoom(); };
+document.getElementById('zOut').onclick = ()=>{ scale=Math.max(0.3,+(scale-0.1).toFixed(1)); applyZoom(); };
+zLabel.onclick = ()=>{ scale=1; applyZoom(); };
+
+// Wheel zoom (centred on cursor)
+outer.addEventListener('wheel', e=>{
+  e.preventDefault();
+  const delta = e.deltaY < 0 ? 0.08 : -0.08;
+  scale = Math.max(0.3, Math.min(2, +(scale+delta).toFixed(2)));
+  applyZoom();
+},{passive:false});
+
+// ── PAN (drag) ──
+let drag=false,sx,sy,slx,sly;
+outer.addEventListener('mousedown',e=>{
+  if(e.target.tagName==='A') return;
+  drag=true; outer.classList.add('dragging');
+  sx=e.clientX; sy=e.clientY; slx=outer.scrollLeft; sly=outer.scrollTop;
+});
+window.addEventListener('mousemove',e=>{
+  if(!drag) return;
+  outer.scrollLeft=slx-(e.clientX-sx);
+  outer.scrollTop =sly-(e.clientY-sy);
+});
+window.addEventListener('mouseup',()=>{ drag=false; outer.classList.remove('dragging'); });
+
+// Touch pinch-to-zoom
+let lastPinch=null;
+outer.addEventListener('touchstart',e=>{
+  if(e.touches.length===2) lastPinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+},{passive:true});
+outer.addEventListener('touchmove',e=>{
+  if(e.touches.length===2 && lastPinch){
+    const dist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    scale=Math.max(0.3,Math.min(2,+(scale*(dist/lastPinch)).toFixed(2)));
+    lastPinch=dist; applyZoom();
+  }
+},{passive:true});
+outer.addEventListener('touchend',()=>{ lastPinch=null; },{passive:true});
+
+// ── INIT: wait for fonts + fully-settled layout before drawing ──
+function drawWhenReady(){
+  // Draw once fonts are loaded, then again on the next two frames to
+  // catch any late reflows (the root cause of lines being off on refresh).
+  document.fonts.ready.then(()=>{
+    draw();
+    requestAnimationFrame(()=>{ draw(); requestAnimationFrame(draw); });
+  });
+}
+
+window.addEventListener('load',()=>{
+  drawWhenReady();
+  if(sessionStorage.getItem('pt')){ document.body.style.opacity='1'; sessionStorage.removeItem('pt'); }
+});
+
+// Redraw whenever the canvas changes size (e.g. scrollbar appearing/disappearing)
+new ResizeObserver(draw).observe(document.getElementById('mmCanvas'));
+
+window.addEventListener('resize', draw);
+document.querySelectorAll('a').forEach(a=>{
+  a.addEventListener('click',()=>sessionStorage.setItem('pt','1'));
+});
+</script>
+</body>
+</html>

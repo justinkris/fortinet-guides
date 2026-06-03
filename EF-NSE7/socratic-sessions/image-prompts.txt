@@ -1,0 +1,103 @@
+NSE7 Socratic Sessions — Image Prompts
+============================================================
+Total: 33 images
+
+[01] Save to: socratic-sessions/images/session-01-enterprise-firewall-solution.png
+Prompt:  Flat illustration of an enterprise firewall solution: FortiGate at center with color-coded security zones radiating out (Internet zone top, DMZ left, LAN right, OT bottom). Security profile icons (AV shield, IPS sword, Web Filter eye, App Control lock) layered on the FortiGate as stacked badges. Pastel coral/gray palette, bold outlines, minimal text labels, no shadows.
+
+[02] Save to: socratic-sessions/images/session-02-design-secure-networks.png
+Prompt:  Flat illustration of a Fortinet secure network design: FortiGate as core firewall with distinct color-coded zones (User zone green, Server/DMZ zone blue, OT/IoT zone orange, Management zone gray). SDWAN dual-ISP connection at top. Branch sites shown smaller below. Clean node-based layout, pastel coral/blue palette, bold outlines.
+
+[03] Save to: socratic-sessions/images/session-03-fortimanager-architecture.png
+Prompt:  Flat illustration of FortiManager architecture: FortiManager server at top center with three ADOM boxes below (Customer A violet, Customer B blue, Customer C green). Each ADOM contains a policy package icon and device icons. Arrows from policy packages pointing down to FortiGate devices at the bottom. Pastel violet/gray palette, bold outlines.
+
+[04] Save to: socratic-sessions/images/session-04-dynamic-objects.png
+Prompt:  Flat illustration of FortiManager dynamic objects: left panel shows a single policy template with an orange "dynamic-server" address object placeholder. Right panel shows three site FortiGates each resolving the placeholder to a different real IP (Site A=10.1.0.0/24, Site B=172.16.0.0/24, Site C=192.168.0.0/24). Arrow labeled "metadata mapping" points from template to sites. Pastel violet/orange palette.
+
+[05] Save to: socratic-sessions/images/session-05-scripts-fortimanager.png
+Prompt:  Flat illustration of FortiManager script execution: left side shows a CLI script text block (a few lines of config commands). Center shows FortiManager choosing a run target (three options labeled: Device DB, Policy Package, Remote CLI). Right shows four FortiGate device icons with green checkmark badges as the script applies. Arrow flows left to right. Pastel violet/green palette, clean layout.
+
+[06] Save to: socratic-sessions/images/session-06-configure-vlans.png
+Prompt:  Flat illustration of 802.1Q VLAN tagging: a FortiGate on the right receiving a trunk link from a switch on the left. Three color-coded VLAN interfaces shown on FortiGate (VLAN 10 orange, VLAN 20 green, VLAN 30 blue). Tagged packets flowing in from the switch labeled with their VLAN IDs. Access ports on the switch side connecting to a PC, a server, and an IoT device. Pastel sky blue palette, bold outlines.
+
+[07] Save to: socratic-sessions/images/session-07-configure-vdoms.png
+Prompt:  Flat illustration of FortiGate VDOMs: a FortiGate box divided into three clearly labeled VDOM panels (VDOM-Customer-A left blue, VDOM-Customer-B center violet, VDOM-Customer-C right green). Each panel contains mini routing table icon, policy table icon, and dedicated interface icon. Management VDOM shown at top in gray with admin icon. Pastel sky blue palette, bold section dividers, no shadows.
+
+[08] Save to: socratic-sessions/images/session-08-inter-vdom-routing.png
+Prompt:  Flat illustration of inter-VDOM routing: two VDOM boxes side by side (VDOM-A left, VDOM-B right). A software VDOM link shown as a bold internal pipe connecting them. A firewall policy icon shown on the link (indicating inspection occurs). Small routing table icons in each VDOM showing routes pointing via the vdom-link. A red dotted "bad path" showing physical cable hairpin labeled "avoid this". Pastel sky blue palette.
+
+[09] Save to: socratic-sessions/images/session-09-ha-clusters.png
+Prompt:  Flat illustration of FortiGate HA cluster: two FortiGate units side by side. Primary unit has a star/crown badge, secondary has a standby clock icon. Heartbeat cable between them labeled "FGCP Heartbeat". Session sync double-arrow between units. Upstream router above and downstream switch below both connected to both units. Pastel green palette, clean layout.
+
+[10] Save to: socratic-sessions/images/session-10-fgcp.png
+Prompt:  Flat illustration of FGCP master election: three FortiGate units arranged vertically with a ranking chart beside them showing election criteria (1. Priority 2. HA uptime 3. Serial number). Top-ranked unit gets a crown icon. Heartbeat packets shown as dotted pulse lines between all units. Failover arrow showing primary crown transferring if top unit fails. Pastel green palette.
+
+[11] Save to: socratic-sessions/images/session-11-fgsp.png
+Prompt:  Flat illustration of FGSP asymmetric routing: a client at bottom sends traffic → FortiGate-1 (left) → server at top. Server's response comes back via a different path → FortiGate-2 (right) → client. A bidirectional sync bus labeled "FGSP Session Sync" connects FG1 and FG2. Shared session table icon shown between them with matching entries. Pastel green/teal palette.
+
+[12] Save to: socratic-sessions/images/session-12-vrrp.png
+Prompt:  Flat illustration of VRRP: two FortiGate routers side by side (left = Master with crown, right = Backup with standby icon). A virtual IP badge hovering above both units labeled "VIP 10.0.0.1". Client devices below pointing to the VIP. VRRP advertisement heartbeat pulses shown between units. A failover arrow shows VIP crown moving to Backup if Master fails. Pastel green palette.
+
+[13] Save to: socratic-sessions/images/session-13-ospf.png
+Prompt:  Flat illustration of OSPF areas: center backbone Area 0 (dark gray circle), surrounded by Area 1 labeled "Stub" (gold circle, external LSAs blocked with X), Area 2 labeled "NSSA" (warm yellow, type-7 LSAs shown), Area 3 labeled "Normal" (light gold). ABR routers at boundaries labeled. LSA type numbers (1,2,3,5,7) shown as small labeled icons flowing between areas. Pastel gold palette, bold outlines.
+
+[14] Save to: socratic-sessions/images/session-14-bgp-fundamentals.png
+Prompt:  Flat illustration of BGP peering: left panel shows iBGP full mesh (4 routers in same AS connected with dashed lines, AS number labeled). Right panel shows eBGP peering across AS boundary (two routers, solid line between them, different AS numbers labeled on each side). BGP UPDATE packet icons shown flowing between routers. Pastel gold/blue palette, bold outlines, minimal text.
+
+[15] Save to: socratic-sessions/images/session-15-bgp-advanced.png
+Prompt:  Flat illustration of BGP path selection decision tree: a vertical flowchart with boxes labeled in order: "1. Weight (highest wins)" → "2. LOCAL_PREF (highest)" → "3. Locally originated?" → "4. AS-path length (shortest)" → "5. Origin code" → "6. MED (lowest)" → "7. eBGP over iBGP" → "SELECTED". Two competing paths enter from top, one is highlighted green at bottom as selected. Pastel gold palette, clean flowchart style.
+
+[16] Save to: socratic-sessions/images/session-16-route-redistribution.png
+Prompt:  Flat illustration of route redistribution: three protocol clouds (OSPF cloud left gold, BGP cloud right blue, Static/Connected cloud bottom gray). Arrows between them labeled "redistribute". A route-map filter icon on each arrow (small funnel). A red dashed warning zone showing a feedback loop arrow between OSPF and BGP labeled "danger: loop". Pastel gold palette.
+
+[17] Save to: socratic-sessions/images/session-17-ssl-inspection.png
+Prompt:  Flat illustration of SSL deep inspection man-in-the-middle: user laptop (left) connects via HTTPS to internet server (right). FortiGate center intercepts the TLS handshake, shown re-signing with its own CA cert. Decrypted payload inspection shown as magnifying glass icon. Re-encrypted and forwarded to server. Two padlocks shown (one user-to-FG, one FG-to-server). Pastel red/gray palette, bold flow arrows.
+
+[18] Save to: socratic-sessions/images/session-18-web-filter-app-control.png
+Prompt:  Flat illustration of web filter and app control pipeline: user request enters from left. First gate: FortiGuard URL category filter (book with checkmark icon — green pass or red block). Second gate: Application Control signature match (app icons shown: Tor, BitTorrent, tunneling app). Third: combined decision shown as allow/block/log badge. Flow left to right. Pastel red palette, bold icons.
+
+[19] Save to: socratic-sessions/images/session-19-ips-integration.png
+Prompt:  Flat illustration of IPS pipeline: network packets enter from left. IPS signature engine checks against a signature book icon. Anomaly detector shown as a rate/threshold graph icon. A red malicious packet gets a block badge (red X). Clean green packets pass through. IPS log icon shown at bottom collecting events. Pastel red palette.
+
+[20] Save to: socratic-sessions/images/session-20-ipsec-tunnels.png
+Prompt:  Flat illustration of policy-based vs route-based VPN comparison: split layout. Left: "Policy-Based" — traffic matched by a policy rule, no tunnel interface shown, implicit routing. Right: "Route-Based" — explicit tunnel interface (virtual link icon), routing table entry pointing to tunnel. Same endpoints at top and bottom of each side. Pastel indigo/blue palette, clear comparison labels.
+
+[21] Save to: socratic-sessions/images/session-21-ike-phase1.png
+Prompt:  Flat illustration of IKE Phase 1 main mode exchange: a horizontal timeline between "Initiator" (left) and "Responder" (right). Three pairs of messages shown (6 total): 1-2 SA proposal exchange, 3-4 DH key exchange (Diffie-Hellman key icon), 5-6 authentication exchange (padlock icon). Phase 1 SA shown as a lock at the end. Pastel indigo palette, clear message labels.
+
+[22] Save to: socratic-sessions/images/session-22-ike-phase2.png
+Prompt:  Flat illustration of IKE Phase 2 quick mode: a 3-message exchange timeline between two VPN peers. Phase 2 elements labeled: PFS key icon (shown as optional branching path), proxy ID matching shown as two overlapping subnet ranges that must align, IPsec SA established shown as a bidirectional encrypted pipe at the end. AH vs ESP shown as two protocol options. Pastel indigo palette.
+
+[23] Save to: socratic-sessions/images/session-23-ipsec-troubleshooting.png
+Prompt:  Flat illustration of IPsec troubleshooting state machine: a vertical flow diagram showing SA states: Phase1 Negotiating → Phase1 UP → Phase2 Negotiating → Phase2 UP → Traffic Flowing. Red X marks shown at potential failure points at each transition. CLI command labels (like `diagnose vpn tunnel list`) pointing to each stage. Pastel dark indigo palette, clean state-machine style.
+
+[24] Save to: socratic-sessions/images/session-24-configure-advpn.png
+Prompt:  Flat illustration of ADVPN hub-and-spoke architecture: central hub FortiGate at top with 4 spoke FortiGates below connected via hub tunnels (dashed lines). A bold direct shortcut tunnel shown between two spokes labeled "shortcut". Hub tunnel path shown as a dotted expensive path, shortcut shown as a bold direct efficient path. "150ms vs 5ms" latency labels. Pastel teal palette.
+
+[25] Save to: socratic-sessions/images/session-25-advpn-shortcuts.png
+Prompt:  Flat illustration of ADVPN shortcut establishment flow: step-by-step numbered sequence. Step 1: Spoke A traffic destined for Spoke B → Hub (hub arrow). Step 2: Hub sends shortcut offer to Spoke B (dashed arrow with offer icon). Step 3: Spoke B accepts and responds (response arrow). Step 4: Direct shortcut tunnel established between Spoke A and Spoke B (bold teal tunnel). Steps numbered clearly. Pastel teal palette.
+
+[26] Save to: socratic-sessions/images/session-26-advpn-bgp-setup.png
+Prompt:  Flat illustration of ADVPN with BGP setup: hub FortiGate at top center with BGP peering session lines (dashed with BGP icon) going to 4 spoke FortiGates below. BGP UPDATE packets shown flowing from hub to spokes (route advertisement icons). Each spoke has a routing table showing routes learned via BGP. Hub labeled "Route Reflector" with a reflect symbol. Pastel teal/blue palette.
+
+[27] Save to: socratic-sessions/images/session-27-advpn-bgp-routes.png
+Prompt:  Flat illustration of ADVPN BGP next-hop problem: before/after split layout. Before: spoke receives route with next-hop = hub overlay IP (arrow pointing to hub). After shortcut forms: next-hop should update to spoke's direct tunnel IP (arrow pointing directly to other spoke). A "stale next-hop" warning icon shown in the before state. Pastel teal/dark palette, clear before-after comparison.
+
+[28] Save to: socratic-sessions/images/session-28-security-fabric.png
+Prompt:  Flat illustration of Security Fabric topology: root FortiGate at top center with downstream FortiGates connected in a tree (branches for each office). FortiAnalyzer and FortiManager connected on the side. A shared threat intel broadcast signal (WiFi icon) emanating from root and reaching all devices. All devices have matching purple border indicating Fabric membership. Pastel purple palette.
+
+[29] Save to: socratic-sessions/images/session-29-fabric-connectors.png
+Prompt:  Flat illustration of Fabric Connectors: FortiGate in center with labeled connector arrows pointing to three cloud/SDN platforms (AWS logo box, Azure logo box, VMware NSX box). Dynamic address object shown updating automatically as VMs spin up and down (green VM appearing, IP auto-populating in address object). Real-time polling clock icon. Pastel purple/blue palette.
+
+[30] Save to: socratic-sessions/images/session-30-automation-stitches.png
+Prompt:  Flat illustration of automation stitch: a left-to-right conveyor belt flow. Left: Trigger icons (IOC detected clock, event type badge). Center: Conditions filter (funnel icon checking criteria). Right: Action panel (quarantine host badge, webhook Slack icon, block IP badge). Each component shown as a distinct station. Pastel purple palette, clean pipeline style.
+
+[31] Save to: socratic-sessions/images/session-31-np-cp-processors.png
+Prompt:  Flat illustration of FortiGate NP and CP processor packet flow: a horizontal packet processing pipeline. Packet enters from left. Decision diamond: can it be NP offloaded? Yes → NP processor (hardware chip icon, fast lane, green). No → CP processor for crypto (hardware chip icon) → main CPU (software path, slower, orange). Output exits right. Pastel lime/green palette, clear decision flow.
+
+[32] Save to: socratic-sessions/images/session-32-offloading-config.png
+Prompt:  Flat illustration of flow vs proxy mode: split comparison diagram. Left "Flow Mode" panel: packets pass straight through NP hardware chip (fast, green path). Right "Proxy Mode" panel: packets buffered in memory, full inspection by CPU, no NP (slower, orange path). Same firewall policy box shown above both panels. nTurbo label shown as a hybrid option. Pastel lime palette.
+
+[33] Save to: socratic-sessions/images/session-33-performance-monitoring.png
+Prompt:  Flat illustration of FortiGate performance monitoring dashboard: clean CLI-style readout panel with labeled metrics (CPU bar 45%, Memory bar 62%, Session Count graph going up, NP Offload Rate gauge at 78%, Interface utilization bars for WAN/LAN). CLI command labels (`get sys performance status`, `diagnose sys top`) pointing to each metric. Pastel lime/dark palette.
+

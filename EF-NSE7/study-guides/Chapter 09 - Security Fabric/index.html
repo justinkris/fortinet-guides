@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 09 — Security Fabric</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Epilogue:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--cream:#fff5f5;--cream-dark:#fde8e8;--ink:#1a0606;--ink-soft:#4a1212;--ink-muted:#8a3a3a;--red:#c0392b;--red-vivid:#e03e2d;--red-light:#fef2f2;--red-border:#f8b4b4;--border:#f0c8c8;--card-bg:#1a0606;--card-border:#2e0c0c;}
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}html.pt-init body{opacity:0;}
+  body{font-family:'Epilogue',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:72px 40px 96px;}
+  .back-link{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-muted);text-decoration:none;margin-bottom:48px;align-self:flex-start;padding:8px 16px;border-radius:20px;border:1px solid var(--border);background:rgba(255,255,255,0.6);transition:color 0.2s,border-color 0.2s,background 0.2s;}
+  .back-link:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);}
+  .content{width:100%;max-width:860px;display:flex;flex-direction:column;}
+  .chapter-label{display:inline-flex;align-items:center;gap:6px;background:var(--ink);color:var(--cream);padding:6px 16px;border-radius:20px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;align-self:flex-start;margin-bottom:20px;}
+  .label-dot{width:5px;height:5px;background:var(--red-vivid);border-radius:50%;}
+  .chapter-title{font-family:'Fraunces',serif;font-size:48px;font-weight:700;line-height:1.05;color:var(--ink);letter-spacing:-0.02em;margin-bottom:8px;}
+  .chapter-title em{font-style:italic;font-weight:400;color:var(--red);}
+  .chapter-subtitle{font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:18px;color:var(--ink-muted);margin-bottom:36px;}
+  .quick-nav{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:40px;}
+  .nav-pill{display:inline-flex;align-items:center;gap:7px;padding:8px 18px;border-radius:100px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-muted);text-decoration:none;border:1px solid var(--border);background:rgba(255,255,255,0.6);transition:color 0.2s,border-color 0.2s,background 0.2s,box-shadow 0.2s;}
+  .nav-pill svg{flex-shrink:0;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+  .nav-pill:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);box-shadow:0 2px 10px rgba(192,57,43,0.12);}
+  .nav-pill:hover svg{transform:translateY(3px);}
+  .nav-dropdown-wrap{position:relative;}
+  .nav-dropdown{position:absolute;top:calc(100% + 8px);left:0;background:#fff;border:1px solid var(--border);border-radius:14px;padding:6px;min-width:280px;box-shadow:0 8px 28px rgba(26,6,6,0.10),0 2px 8px rgba(26,6,6,0.06);opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity 0.18s ease,transform 0.22s cubic-bezier(0.34,1.56,0.64,1);z-index:100;}
+  .nav-dropdown::before{content:'';position:absolute;top:-10px;left:0;right:0;height:10px;}
+  .nav-dropdown-wrap:hover .nav-dropdown{opacity:1;pointer-events:auto;transform:translateY(0);}
+  .nav-dropdown a{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:9px;font-size:12px;font-weight:500;color:var(--ink-soft);text-decoration:none;line-height:1.3;transition:background 0.15s,color 0.15s;}
+  .nav-dropdown a:hover{background:var(--red-light);color:var(--red);}
+  .nav-dropdown a .dd-num{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-muted);flex-shrink:0;opacity:0.6;transition:color 0.15s,opacity 0.15s;}
+  .nav-dropdown a:hover .dd-num{color:var(--red);opacity:1;}
+  .nav-dropdown-divider{height:1px;background:var(--border);margin:4px 6px;}
+  .hero-image-wrap{width:100%;border-radius:24px;overflow:hidden;border:2px solid var(--card-border);background:var(--card-bg);margin-bottom:16px;}
+  .hero-image-wrap img{width:100%;display:block;min-height:340px;object-fit:cover;}
+  .hero-placeholder{width:100%;min-height:340px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:48px 40px;border:2px dashed rgba(192,57,43,0.32);border-radius:22px;background:repeating-linear-gradient(-45deg,transparent,transparent 10px,rgba(192,57,43,0.025) 10px,rgba(192,57,43,0.025) 20px);}
+  .ph-icon{width:52px;height:52px;border-radius:14px;background:rgba(192,57,43,0.13);border:1.5px solid rgba(192,57,43,0.28);display:flex;align-items:center;justify-content:center;color:#e87070;}
+  .ph-label{font-family:'Fraunces',serif;font-style:italic;font-size:18px;color:rgba(255,255,255,0.45);text-align:center;}
+  .ph-filename{font-size:11px;font-weight:600;letter-spacing:0.1em;color:rgba(192,57,43,0.55);font-family:monospace;}
+  .prompt-box{background:var(--card-bg);border:1.5px solid var(--card-border);border-radius:14px;padding:18px 22px;margin-bottom:56px;}
+  .prompt-header{display:flex;align-items:center;gap:8px;font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:rgba(192,57,43,0.65);margin-bottom:10px;}
+  .prompt-dot{width:5px;height:5px;border-radius:50%;background:var(--red-vivid);}
+  .prompt-text{font-size:12.5px;line-height:1.7;color:rgba(255,255,255,0.5);font-style:italic;}
+  .prompt-text strong{color:rgba(255,255,255,0.78);font-style:normal;font-weight:600;}
+  .prompt-filename{color:#e87070;font-family:monospace;font-style:normal;font-size:11px;}
+  .section-label{font-size:10px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:28px;display:flex;align-items:center;gap:10px;}
+  .section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+  .overview{display:flex;flex-direction:column;gap:0;margin-bottom:56px;}
+  .topic-block{padding-bottom:48px;}
+  .topic-block:last-child{padding-bottom:0;}
+  .topic-heading{font-family:'Fraunces',serif;font-size:26px;font-weight:700;line-height:1.15;color:var(--ink);letter-spacing:-0.01em;margin-bottom:14px;padding-left:18px;border-left:3px solid var(--red);}
+  .topic-heading em{font-style:italic;font-weight:400;color:var(--red);}
+  .topic-body{font-size:15.5px;line-height:1.8;color:var(--ink-soft);margin-bottom:28px;}
+  .topic-body strong{color:var(--ink);font-weight:600;}
+  .topic-body em{color:var(--red);font-style:italic;}
+  .callout{border-left:3px solid var(--red-border);background:var(--red-light);border-radius:0 12px 12px 0;padding:14px 20px;margin:20px 0 28px;font-size:14px;line-height:1.65;color:var(--ink-soft);}
+  .callout strong{color:var(--ink);}
+  .topic-divider{height:1px;background:var(--border);margin:0 0 48px;}
+  .inline-img-wrap{margin-bottom:12px;}
+  .inline-image{width:100%;display:block;border-radius:18px;border:2px solid var(--card-border);background:var(--card-bg);object-fit:cover;}
+  .inline-placeholder{width:100%;border-radius:18px;border:2px dashed var(--red-border);background:var(--red-light);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:36px 32px;text-align:center;position:relative;overflow:hidden;}
+  .inline-placeholder::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(-45deg,transparent,transparent 12px,rgba(192,57,43,0.04) 12px,rgba(192,57,43,0.04) 24px);pointer-events:none;}
+  .inline-ph-icon{width:44px;height:44px;border-radius:12px;background:rgba(192,57,43,0.12);border:1.5px solid rgba(192,57,43,0.26);display:flex;align-items:center;justify-content:center;color:var(--red);position:relative;z-index:1;}
+  .inline-ph-label{font-family:'Fraunces',serif;font-style:italic;font-size:16px;color:var(--ink-muted);position:relative;z-index:1;}
+  .inline-ph-file{font-size:10.5px;font-weight:600;letter-spacing:0.1em;color:var(--red);font-family:monospace;position:relative;z-index:1;}
+  .inline-prompt{background:var(--card-bg);border:1.5px solid var(--card-border);border-radius:0 0 14px 14px;border-top:none;padding:16px 22px;margin-bottom:28px;}
+  .inline-prompt .prompt-header{margin-bottom:8px;}
+  .inline-prompt .prompt-text{font-size:12px;}
+  .concepts-wrap{margin-top:8px;}
+  .concepts-heading{font-size:10px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:12px;}
+  .concepts{display:flex;flex-wrap:wrap;gap:8px;}
+  .concept-pill{font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;padding:6px 14px;border-radius:20px;background:var(--red-light);border:1px solid var(--red-border);color:var(--red);transition:background 0.2s,border-color 0.2s;}
+  .concept-pill:hover{background:#fde0e0;border-color:#f0a0a0;}
+  .subtopic-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:80px;}
+  .subtopic-card{position:relative;background:var(--card-bg);border:2px solid var(--card-border);border-radius:18px;padding:26px 28px 22px;text-decoration:none;color:inherit;display:flex;flex-direction:column;overflow:hidden;will-change:transform;transition:transform 0.42s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.35s ease,border-color 0.28s ease,background 0.3s ease;}
+  .subtopic-card::before{content:'';position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(to right,transparent,rgba(255,255,255,0.05) 50%,transparent);transform:skewX(-15deg);pointer-events:none;z-index:1;}
+  @keyframes card-shine{to{left:160%;}}
+  .subtopic-card:hover::before{animation:card-shine 0.5s ease forwards;}
+  .subtopic-card:hover{transform:translateY(-10px) scale(1.016);background:#260808;border-color:var(--red);box-shadow:0 24px 50px rgba(192,57,43,0.34),0 0 0 2px rgba(192,57,43,0.12);}
+  .sub-icon{width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(192,57,43,0.13);border:1.5px solid rgba(192,57,43,0.26);color:#e87070;margin-bottom:16px;transition:background 0.3s,border-color 0.3s,color 0.3s,box-shadow 0.32s,transform 0.5s cubic-bezier(0.34,1.56,0.64,1);}
+  .subtopic-card:hover .sub-icon{background:var(--red);border-color:var(--red-vivid);color:#fff;box-shadow:0 5px 18px rgba(192,57,43,0.48);transform:scale(1.12) rotate(360deg);}
+  .sub-num{font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.24);margin-bottom:5px;transition:color 0.3s;}
+  .subtopic-card:hover .sub-num{color:rgba(192,57,43,0.6);}
+  .sub-title{font-family:'Fraunces',serif;font-size:20px;font-weight:700;line-height:1.15;color:#fff;margin-bottom:10px;transition:color 0.3s;}
+  .subtopic-card:hover .sub-title{color:#ffe0e0;}
+  .sub-desc{font-size:12.5px;line-height:1.5;color:rgba(255,255,255,0.4);flex:1;margin-bottom:20px;transition:color 0.3s;}
+  .subtopic-card:hover .sub-desc{color:rgba(255,255,255,0.62);}
+  .sub-cta{display:inline-flex;align-items:center;gap:5px;align-self:flex-start;padding:6px 14px;border-radius:100px;font-size:10.5px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;background:rgba(192,57,43,0.16);border:1.5px solid rgba(192,57,43,0.32);color:#e87070;transition:background 0.3s,border-color 0.3s,color 0.3s,box-shadow 0.3s;}
+  .sub-arrow{display:inline-block;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+  .subtopic-card:hover .sub-cta{background:var(--red);border-color:var(--red-vivid);color:#fff;box-shadow:0 4px 14px rgba(192,57,43,0.46);}
+  .subtopic-card:hover .sub-arrow{transform:translateX(4px);}
+  @keyframes pageEnter{from{opacity:0;transform:scale(1.03) translateY(-16px);}to{opacity:1;transform:scale(1) translateY(0);}}
+  body{animation:pageEnter 0.5s cubic-bezier(0.15,0.85,0.2,1.08) both;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+  .hero-image-wrap{animation:fadeUp 0.48s 0.06s both;}.prompt-box{animation:fadeUp 0.48s 0.10s both;}.overview{animation:fadeUp 0.48s 0.14s both;}
+  .subtopic-card:nth-child(1){animation:fadeUp 0.44s 0.20s both;}.subtopic-card:nth-child(2){animation:fadeUp 0.44s 0.26s both;}.subtopic-card:nth-child(3){animation:fadeUp 0.44s 0.30s both;}
+  .back-to-top{display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border-radius:100px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-muted);text-decoration:none;border:1px solid var(--border);background:rgba(255,255,255,0.6);transition:color 0.2s,border-color 0.2s,background 0.2s,box-shadow 0.2s,transform 0.25s cubic-bezier(0.34,1.56,0.64,1);margin-top:56px;margin-bottom:32px;}
+  .back-to-top svg{transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+  .back-to-top:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);box-shadow:0 4px 14px rgba(192,57,43,0.14);transform:translateY(-2px);}
+  .back-to-top:hover svg{transform:translateY(-3px);}
+  footer{font-size:11px;letter-spacing:0.12em;color:var(--ink-muted);text-transform:uppercase;margin-bottom:60px;}
+  footer span{color:var(--red);}
+  @media(max-width:720px){body{padding:56px 20px 72px;}.chapter-title{font-size:34px;}.subtopic-grid{grid-template-columns:1fr;}.topic-heading{font-size:22px;}}
+</style>
+</head>
+<body>
+
+  <a class="back-link" href="../nse7-ef-study-guide-hub.html" id="top">← NSE7 Study Hub</a>
+
+  <div class="content">
+    <div class="chapter-label"><span class="label-dot"></span>EF-NSE7 &nbsp;·&nbsp; Chapter 09</div>
+    <h1 class="chapter-title">Security <em>Fabric</em></h1>
+    <p class="chapter-subtitle">Connecting Fortinet and third-party products into a unified, automated security ecosystem</p>
+
+    <nav class="quick-nav">
+      <a class="nav-pill" href="#subtopics">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        Subtopics
+      </a>
+      <div class="nav-dropdown-wrap">
+        <a class="nav-pill" href="#overview">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          Chapter Overview
+        </a>
+        <div class="nav-dropdown">
+          <a href="#topic-1"><span class="dd-num">01</span>Fabric &amp; External Connectors</a>
+          <div class="nav-dropdown-divider"></div>
+          <a href="#topic-2"><span class="dd-num">02</span>Security Fabric Use Cases</a>
+          <div class="nav-dropdown-divider"></div>
+          <a href="#topic-3"><span class="dd-num">03</span>Configure Automation Stitches</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="hero-image-wrap">
+      <img id="heroImg" src="images/chapter-09-hero.png" alt="Security Fabric — overview illustration"/>
+      <div class="hero-placeholder" style="display:none;">
+        <div class="ph-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+        <div class="ph-label">Hero image not generated yet</div>
+        <div class="ph-filename">images/chapter-09-hero.png</div>
+      </div>
+    </div>
+
+    <div class="prompt-box">
+      <div class="prompt-header"><span class="prompt-dot"></span>Image Generation Prompt &nbsp;→&nbsp; <span class="prompt-filename">images/chapter-09-hero.png</span></div>
+      <p class="prompt-text">
+        Detailed cartoon flat illustration of the <strong>Fortinet Security Fabric ecosystem</strong>. Light cream background. In the center, a large cartoon <strong>FortiGate root appliance</strong> (red boxy device labeled 'Root FortiGate') sits like a sun, with multiple connector lines radiating outward like rays. Each ray connects to a different cartoon product/service icon: <strong>FortiAnalyzer</strong> (log book character, lavender), <strong>FortiManager</strong> (console/server, teal), <strong>FortiClient EMS</strong> (laptop with agent shield, mint green), <strong>FortiSandbox</strong> (a cartoon sandbox box with suspicious files inside, peach), <strong>FortiNDR</strong> (a neural network brain icon, soft purple). On the outer ring, external connector icons: <strong>AWS / GCP clouds</strong> (cloud shapes in baby blue), <strong>Kubernetes</strong> (helm wheel, teal), <strong>FSSO</strong> (user group icon), <strong>Threat Feeds</strong> (threat shield with feed arrows). A banner at the top reads <em>'Broad · Integrated · Automated'</em> in three colored badges. Automation stitch arrows connect products with lightning bolt icons. <strong>Fully detailed cartoon style, soft flat fills, pastel palette (red, lavender, teal, mint, peach, cream), bold outlines, white background.</strong>
+      </p>
+    </div>
+
+    <div class="section-label" id="subtopics">Subtopics</div>
+    <div class="subtopic-grid">
+
+      <a class="subtopic-card" href="subtopic-01-configure-security-fabric.html">
+        <div class="sub-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="sub-num">Subtopic 01</div>
+        <div class="sub-title">Configure the Security Fabric</div>
+        <div class="sub-desc">Building the Security Fabric root and downstream FortiGate topology, trusted list configuration, FortiAnalyzer logging without duplicates, and SAML SSO with root FortiGate as IdP.</div>
+        <div class="sub-cta">Study <span class="sub-arrow">→</span></div>
+      </a>
+
+      <a class="subtopic-card" href="subtopic-02-fabric-connectors.html">
+        <div class="sub-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+          </svg>
+        </div>
+        <div class="sub-num">Subtopic 02</div>
+        <div class="sub-title">Fabric Connectors</div>
+        <div class="sub-desc">Core Security Fabric connectors (FortiAnalyzer, EMS, Sandbox), external connectors (AWS, GCP, Kubernetes, VMware, FSSO), threat feed integration, FortiNDR, and FortiNAC dynamic addressing.</div>
+        <div class="sub-cta">Study <span class="sub-arrow">→</span></div>
+      </a>
+
+      <a class="subtopic-card" href="subtopic-03-automation-stitches.html">
+        <div class="sub-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+        <div class="sub-num">Subtopic 03</div>
+        <div class="sub-title">Automation Stitches</div>
+        <div class="sub-desc">Trigger-action-stitch architecture, built-in triggers (compromised host, high CPU, IOC), action types, the %%results%% variable, and designing automated response workflows.</div>
+        <div class="sub-cta">Study <span class="sub-arrow">→</span></div>
+      </a>
+
+    </div>
+
+    <div class="section-label" id="overview">Chapter Overview</div>
+    <div class="overview">
+
+      <div class="topic-block">
+        <h2 class="topic-heading" id="topic-1">Fabric Connectors &amp; <em>External Connectors</em></h2>
+        <p class="topic-body">
+          The <strong>Security Fabric</strong> is Fortinet's platform for <em>broad</em> visibility across the attack surface, <em>integrated</em> product communication, and <em>automated</em> response. At its core, FortiGate acts as the root — downstream FortiGate units, FortiAnalyzer, FortiManager, FortiClient EMS, and FortiSandbox all join the Fabric and share telemetry, context, and enforcement signals through a common API fabric.
+        </p>
+        <p class="topic-body">
+          <strong>Fabric connectors</strong> connect Fortinet products: <em>core network security connectors</em> include FortiGate, FortiAnalyzer, and EMS; <em>security fabric connectors</em> add FortiManager and FortiSandbox. <strong>External connectors</strong> extend the Fabric to third-party platforms: <em>Public SDN</em> (AWS, GCP), <em>Private SDN</em> (Kubernetes, VMware, SAP), <em>Endpoint/Identity</em> (FSSO, RADIUS SSO), and <em>Threat Feeds</em> (FortiGuard, external malware hash lists via HTTP/HTTPS, STIX/TAXII, or Push API). External threat feeds dynamically populate address objects used in firewall policies — when FortiGuard or a third-party feed updates a malware hash or malicious IP list, FortiGate automatically updates the associated policy without any manual intervention.
+        </p>
+
+        <div class="inline-img-wrap">
+          <img class="inline-image" src="images/chapter-09-connectors.png" alt="Security Fabric connector types diagram illustration"/>
+          <div class="inline-placeholder" style="display:none;">
+            <div class="inline-ph-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+            <div class="inline-ph-label">Image not generated yet</div>
+            <div class="inline-ph-file">images/chapter-09-connectors.png</div>
+          </div>
+          <div class="inline-prompt">
+            <div class="prompt-header"><span class="prompt-dot"></span>Image Generation Prompt &nbsp;→&nbsp; <span class="prompt-filename">images/chapter-09-connectors.png</span></div>
+            <p class="prompt-text">
+              Detailed cartoon flat illustration of <strong>Security Fabric connector categories</strong>. Light cream background. Four colored quadrant panels arranged in a 2×2 grid, each representing a connector category. <strong>Top-left — Core Fabric</strong> (soft red): FortiGate, FortiAnalyzer, EMS icons with connecting lines. <strong>Top-right — Security Fabric</strong> (soft lavender): FortiManager, FortiSandbox icons, with a sandboxed file cartoon. <strong>Bottom-left — External SDN/Cloud</strong> (baby blue): AWS cloud logo (simplified), GCP logo, Kubernetes helm wheel, VMware vSphere icon, all connected to a FortiGate via REST API arrows. <strong>Bottom-right — Threat Feeds &amp; Identity</strong> (soft mint): A threat feed scroll icon (malware hashes), FSSO person icon, FortiGuard shield. Each quadrant has a label chip in bold. Connector arrows cross the center where FortiGate sits as a hub. <strong>Fully detailed cartoon style, pastel palette, bold outlines, cream background.</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="topic-divider"></div>
+
+      <div class="topic-block">
+        <h2 class="topic-heading" id="topic-2">Security Fabric <em>Use Cases</em></h2>
+        <p class="topic-body">
+          <strong>FortiAnalyzer</strong> centralized logging within the Security Fabric avoids duplicate log entries — only the first FortiGate that handles a session logs it; downstream FortiGates that see the same session (in asymmetric routing scenarios) do not log it again. This requires the session to be marked as handled by the root/upstream FortiGate.
+        </p>
+        <p class="topic-body">
+          <strong>FortiNDR</strong> (Network Detection and Response) uses machine learning and artificial neural network (ANN) models to detect anomalous network behavior. In <em>inline blocking mode</em>, FortiNDR sits in-path and can actively block detected threats. <strong>FortiNAC</strong> enforces network access control — when a device is tagged by FortiNAC, it uses the REST API to push a <em>dynamic firewall address</em> to FortiGate, which is automatically associated with policies. The FortiNAC tag identifies the device's access tier, and FortiGate applies matching policies without administrator intervention. <strong>SAML SSO</strong> using the root FortiGate as Identity Provider (IdP) allows downstream FortiGate units and FortiManager to delegate authentication — a user logs in once and accesses all Fabric-integrated management consoles with a single identity.
+        </p>
+
+        <div class="callout">
+          <strong>FortiNDR inline mode:</strong> Unlike out-of-band (tap/mirror) mode where FortiNDR can only detect but not block, inline mode inserts FortiNDR into the traffic path. This adds inspection latency but enables active threat prevention — use cases include detecting and blocking file-based malware, ransomware communications, and lateral movement.
+        </div>
+
+        <div class="inline-img-wrap">
+          <img class="inline-image" src="images/chapter-09-automation.png" alt="Security Fabric automation stitches diagram illustration"/>
+          <div class="inline-placeholder" style="display:none;">
+            <div class="inline-ph-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+            <div class="inline-ph-label">Image not generated yet</div>
+            <div class="inline-ph-file">images/chapter-09-automation.png</div>
+          </div>
+          <div class="inline-prompt">
+            <div class="prompt-header"><span class="prompt-dot"></span>Image Generation Prompt &nbsp;→&nbsp; <span class="prompt-filename">images/chapter-09-automation.png</span></div>
+            <p class="prompt-text">
+              Detailed cartoon flat illustration of <strong>Security Fabric automation stitch pipeline</strong>. Light cream background. A left-to-right pipeline diagram with three cartoon stations connected by a conveyor belt. <strong>Station 1 — Trigger</strong> (soft red box): a cartoon alarm bell rings above a FortiGate; labels show trigger types: 'Compromised Host', 'High CPU', 'IOC Detected'. A small LED indicator blinks. <strong>Station 2 — Stitch</strong> (soft lavender box): a cartoon sewing machine labeled 'Automation Stitch' connects trigger to action; a needle with thread labeled '%%results%%' stitches them together. <strong>Station 3 — Action</strong> (soft teal box): shows three action icons stacked — a ban icon (quarantine host), an email envelope (alert email), and a webhook curl icon (call external API). An animated lightning bolt flows through the belt from Trigger to Stitch to Action. Below, a timeline strip shows the automated response completing in under 1 second. <strong>Fully detailed cartoon style, pastel palette (red, lavender, teal), bold outlines, cream background.</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="topic-divider"></div>
+
+      <div class="topic-block">
+        <h2 class="topic-heading" id="topic-3">Configure <em>Automation Stitches</em></h2>
+        <p class="topic-body">
+          Automation stitches are FortiGate's event-driven response engine. Each stitch binds a <strong>trigger</strong> (an event or condition) to one or more <strong>actions</strong> (responses). Built-in triggers include: <em>compromised host detection</em> (FortiClient endpoint quarantine), <em>high CPU</em> (performance threshold breach), <em>IOC (Indicators of Compromise) match</em> from threat feeds, <em>FortiOS event log patterns</em>, and <em>scheduled time</em>. Actions include quarantining a host, sending an email or webhook notification, running a custom script, or calling a FortiAnalyzer API.
+        </p>
+        <p class="topic-body">
+          The <strong><code>%%results%%</code></strong> variable in action templates expands to the trigger's output data — for example, if the trigger is a compromised host detection, <code>%%results%%</code> contains the host IP, username, and threat name. This lets you embed context-specific information in notification emails or API payloads without hardcoding values. Stitches run on the FortiGate itself and do not require FortiManager, though FortiManager can centrally push and manage stitches across the entire Fabric.
+        </p>
+
+        <div class="concepts-wrap">
+          <div class="concepts-heading">Key Concepts</div>
+          <div class="concepts">
+            <span class="concept-pill">Security Fabric</span>
+            <span class="concept-pill">Fabric Connectors</span>
+            <span class="concept-pill">External Connectors</span>
+            <span class="concept-pill">FortiAnalyzer</span>
+            <span class="concept-pill">FortiNDR</span>
+            <span class="concept-pill">FortiNAC</span>
+            <span class="concept-pill">SAML SSO</span>
+            <span class="concept-pill">Automation Stitches</span>
+            <span class="concept-pill">Threat Feeds</span>
+            <span class="concept-pill">FSSO</span>
+            <span class="concept-pill">%%results%%</span>
+            <span class="concept-pill">REST API</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <a class="back-to-top" href="#top">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+    Back to Top
+  </a>
+  <footer>EF-NSE7<span>.</span> Chapter 09<span>.</span> Security Fabric</footer>
+
+  <script>
+    if(sessionStorage.getItem('pt')){document.body.style.opacity='1';sessionStorage.removeItem('pt');}
+    document.querySelectorAll('.subtopic-card,.back-link').forEach(el=>{el.addEventListener('click',()=>sessionStorage.setItem('pt','1'));});
+    (function(){var img=document.getElementById('heroImg'),ph=document.querySelector('.hero-placeholder'),prompt=document.querySelector('.prompt-box');if(!img)return;function onLoad(){if(ph)ph.style.display='none';if(prompt)prompt.style.display='none';}function onError(){img.style.display='none';if(ph)ph.style.display='flex';}img.addEventListener('load',onLoad);img.addEventListener('error',onError);if(img.complete){img.naturalWidth>0?onLoad():onError();}})();
+    document.querySelectorAll('.inline-img-wrap').forEach(function(wrap){var img=wrap.querySelector('.inline-image'),ph=wrap.querySelector('.inline-placeholder'),prompt=wrap.querySelector('.inline-prompt');if(!img)return;function onLoad(){if(ph)ph.style.display='none';if(prompt)prompt.style.display='none';}function onError(){img.style.display='none';if(ph)ph.style.display='flex';if(prompt){prompt.style.display='block';prompt.style.borderRadius='14px';prompt.style.borderTop='1.5px solid var(--card-border)';prompt.style.marginTop='8px';}}img.addEventListener('load',onLoad);img.addEventListener('error',onError);if(img.complete){img.naturalWidth>0?onLoad():onError();}});
+  </script>
+</body>
+</html>

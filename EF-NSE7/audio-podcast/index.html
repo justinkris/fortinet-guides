@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EF-NSE7 — Audio Podcast Prompts</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Epilogue:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream:#fff5f5; --cream-dark:#fde8e8;
+    --ink:#1a0606; --ink-soft:#4a1212; --ink-muted:#8a3a3a;
+    --red:#c0392b; --red-vivid:#e03e2d; --red-light:#fef2f2; --red-border:#f8b4b4;
+    --border:#f0c8c8;
+    --green:#22c55e; --green-bg:rgba(34,197,94,0.14); --green-border:rgba(34,197,94,0.32);
+    --amber:#f59e0b; --amber-bg:rgba(245,158,11,0.14); --amber-border:rgba(245,158,11,0.32);
+    --purple:#a855f7; --purple-bg:rgba(168,85,247,0.14); --purple-border:rgba(168,85,247,0.32);
+  }
+
+  *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+  html.pt-init body { opacity:0; }
+  html { scroll-behavior:smooth; }
+
+  body {
+    font-family:'Epilogue',sans-serif;
+    background:var(--cream); color:var(--ink);
+    min-height:100vh;
+    display:flex; flex-direction:column; align-items:center;
+    padding:60px 32px 100px;
+  }
+
+  /* ── BACK NAV ── */
+  .top-nav { width:100%; max-width:1080px; display:flex; justify-content:space-between; margin-bottom:48px; }
+  .back-link {
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:11px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--ink-muted); text-decoration:none;
+    padding:8px 16px; border-radius:20px;
+    border:1px solid var(--border);
+    background:rgba(255,255,255,0.6);
+    transition:color 0.2s, border-color 0.2s, background 0.2s;
+  }
+  .back-link:hover { color:var(--red); border-color:var(--red-border); background:var(--red-light); }
+
+  /* ── HEADER ── */
+  .page-header { text-align:center; margin-bottom:48px; max-width:760px; }
+  .course-tag {
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--ink); color:var(--cream);
+    padding:6px 16px; border-radius:20px;
+    font-size:11px; letter-spacing:0.18em; margin-bottom:20px;
+    text-transform:uppercase;
+  }
+  .course-tag-dot { width:5px; height:5px; background:var(--red-vivid); border-radius:50%; }
+  h1 {
+    font-family:'Fraunces',serif;
+    font-size:48px; font-weight:700;
+    line-height:1.05; color:var(--ink); letter-spacing:-0.02em;
+    margin-bottom:14px;
+  }
+  h1 em { font-style:italic; font-weight:400; color:var(--red); }
+  .subtitle {
+    font-family:'Fraunces',serif; font-style:italic;
+    font-size:18px; color:var(--ink-muted); font-weight:400;
+    line-height:1.5;
+  }
+
+  /* ── HOW TO USE ── */
+  .how-to-use {
+    width:100%; max-width:1080px;
+    background:#fff; border:1px solid var(--border);
+    border-radius:18px; padding:24px 28px; margin-bottom:32px;
+    display:flex; gap:24px; align-items:flex-start;
+  }
+  .how-to-icon {
+    width:42px; height:42px; border-radius:12px;
+    background:var(--red-light); border:1.5px solid var(--red-border);
+    color:var(--red); display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .how-to-body h3 {
+    font-family:'Fraunces',serif; font-size:18px; font-weight:700;
+    color:var(--ink); margin-bottom:6px;
+  }
+  .how-to-body p { font-size:13px; line-height:1.6; color:var(--ink-soft); }
+  .how-to-body strong { color:var(--red); font-weight:600; }
+
+  /* ── PROGRESS ── */
+  .progress-wrap {
+    width:100%; max-width:1080px;
+    display:flex; align-items:center; gap:16px;
+    margin-bottom:32px;
+    padding:18px 24px;
+    background:var(--ink); border-radius:16px;
+  }
+  .progress-label {
+    font-size:10px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase;
+    color:rgba(255,255,255,0.42); white-space:nowrap;
+  }
+  .progress-track {
+    flex:1; height:4px; background:rgba(255,255,255,0.08); border-radius:2px; overflow:hidden;
+  }
+  .progress-fill {
+    height:100%; width:0%; background:var(--green); border-radius:2px;
+    transition:width 0.9s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .progress-count {
+    font-size:10px; font-weight:600; letter-spacing:0.08em;
+    color:rgba(255,255,255,0.45); white-space:nowrap;
+  }
+  .reset-btn {
+    background:transparent; border:1px solid rgba(255,255,255,0.18);
+    color:rgba(255,255,255,0.55); font-size:10px; font-weight:600;
+    padding:6px 12px; border-radius:14px; cursor:pointer;
+    letter-spacing:0.1em; text-transform:uppercase;
+    font-family:'Epilogue',sans-serif;
+    transition:border-color 0.2s, color 0.2s, background 0.2s;
+  }
+  .reset-btn:hover { color:var(--red-vivid); border-color:rgba(224,62,45,0.5); background:rgba(224,62,45,0.08); }
+
+  /* ── FILTER TABS ── */
+  .filter-tabs {
+    width:100%; max-width:1080px;
+    display:flex; gap:8px; margin-bottom:36px;
+    flex-wrap:wrap;
+  }
+  .filter-tab {
+    background:#fff; border:1.5px solid var(--border);
+    color:var(--ink-muted);
+    font-family:'Epilogue',sans-serif;
+    font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase;
+    padding:10px 20px; border-radius:24px;
+    cursor:pointer;
+    display:inline-flex; align-items:center; gap:8px;
+    transition:all 0.22s ease;
+  }
+  .filter-tab:hover { border-color:var(--red-border); color:var(--red); background:var(--red-light); }
+  .filter-tab.active {
+    background:var(--ink); color:#fff; border-color:var(--ink);
+  }
+  .filter-tab .count {
+    background:rgba(0,0,0,0.08); color:inherit;
+    padding:2px 8px; border-radius:10px; font-size:10px; font-weight:700;
+  }
+  .filter-tab.active .count { background:rgba(255,255,255,0.18); color:#fff; }
+
+  /* ── THEME SECTIONS ── */
+  .themes-wrap { width:100%; max-width:1080px; display:flex; flex-direction:column; gap:48px; }
+
+  .theme-section {
+    display:flex; flex-direction:column; gap:18px;
+  }
+  .theme-header {
+    display:flex; align-items:center; gap:16px;
+    padding-bottom:14px; border-bottom:2px solid var(--border);
+  }
+  .theme-icon {
+    width:44px; height:44px; border-radius:12px;
+    background:var(--red-light); border:1.5px solid var(--red-border);
+    color:var(--red); display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .theme-title {
+    font-family:'Fraunces',serif; font-size:28px; font-weight:700;
+    color:var(--ink); letter-spacing:-0.01em;
+  }
+  .theme-subtitle {
+    font-size:12px; color:var(--ink-muted); margin-top:2px;
+    letter-spacing:0.04em;
+  }
+  .theme-stats {
+    margin-left:auto;
+    font-size:11px; font-weight:600; color:var(--ink-muted);
+    letter-spacing:0.08em; text-transform:uppercase;
+  }
+  .theme-stats span { color:var(--green); }
+
+  /* ── PROMPT CARD ── */
+  .prompt-grid { display:flex; flex-direction:column; gap:14px; }
+
+  .prompt-card {
+    background:#fff; border:1.5px solid var(--border);
+    border-radius:18px; padding:22px 26px;
+    display:flex; flex-direction:column; gap:14px;
+    transition:border-color 0.22s, box-shadow 0.22s, transform 0.22s;
+  }
+  .prompt-card:hover {
+    border-color:var(--red-border);
+    box-shadow:0 12px 32px rgba(192,57,43,0.08);
+  }
+  .prompt-card.is-mastered {
+    background:rgba(34,197,94,0.04);
+    border-color:var(--green-border);
+  }
+
+  .prompt-head {
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  }
+  .prompt-type {
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase;
+    padding:5px 12px; border-radius:14px;
+  }
+  .type-long  { background:var(--amber-bg);  border:1px solid var(--amber-border);  color:var(--amber); }
+  .type-short { background:var(--green-bg);  border:1px solid var(--green-border);  color:var(--green); }
+  .type-debate{ background:var(--purple-bg); border:1px solid var(--purple-border); color:var(--purple); }
+
+  .prompt-title {
+    font-family:'Fraunces',serif; font-size:18px; font-weight:700;
+    color:var(--ink); flex:1; line-height:1.3;
+  }
+  .copy-btn {
+    background:var(--ink); color:#fff; border:none;
+    font-family:'Epilogue',sans-serif;
+    font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
+    padding:8px 14px; border-radius:12px;
+    cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px;
+    transition:background 0.2s, transform 0.15s;
+  }
+  .copy-btn:hover { background:var(--red); }
+  .copy-btn:active { transform:scale(0.96); }
+  .copy-btn.copied { background:var(--green); }
+
+  .prompt-body {
+    font-family:'JetBrains Mono', monospace;
+    font-size:12.5px; line-height:1.7;
+    color:var(--ink-soft);
+    background:var(--cream-dark);
+    border:1px dashed var(--red-border);
+    border-radius:12px;
+    padding:16px 18px;
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+
+  /* ── CHECKBOX ROW ── */
+  .check-row {
+    display:flex; gap:10px; flex-wrap:wrap;
+    padding-top:6px; border-top:1px dashed var(--border);
+  }
+  .check-item {
+    display:inline-flex; align-items:center; gap:8px;
+    cursor:pointer; user-select:none;
+    padding:6px 12px; border-radius:14px;
+    border:1.5px solid var(--border);
+    background:#fff;
+    font-size:11px; font-weight:600; letter-spacing:0.05em;
+    color:var(--ink-muted);
+    transition:all 0.18s ease;
+  }
+  .check-item:hover { border-color:var(--red-border); color:var(--red); }
+  .check-item input { display:none; }
+  .check-box {
+    width:14px; height:14px; border-radius:4px;
+    border:1.5px solid currentColor;
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+    transition:background 0.18s, border-color 0.18s;
+  }
+  .check-box svg { width:10px; height:10px; opacity:0; transition:opacity 0.18s; }
+  .check-item.checked {
+    background:var(--green-bg); border-color:var(--green); color:var(--green);
+  }
+  .check-item.checked .check-box { background:var(--green); border-color:var(--green); color:#fff; }
+  .check-item.checked .check-box svg { opacity:1; }
+
+  /* ── FOOTER ── */
+  footer {
+    margin-top:80px; font-size:11px;
+    letter-spacing:0.12em; color:var(--ink-muted); text-transform:uppercase;
+  }
+  footer span { color:var(--red); }
+
+  /* ── PAGE ENTER ── */
+  @keyframes pageEnter {
+    from { opacity:0; transform:scale(1.02) translateY(-12px); }
+    to   { opacity:1; transform:scale(1) translateY(0); }
+  }
+  body { animation:pageEnter 0.5s cubic-bezier(0.15,0.85,0.2,1.08) both; }
+
+  /* hidden via filter */
+  .prompt-card.is-hidden { display:none; }
+  .theme-section.is-empty { display:none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width:760px) {
+    body { padding:48px 18px 80px; }
+    h1 { font-size:34px; }
+    .how-to-use { flex-direction:column; gap:14px; padding:20px; }
+    .progress-wrap { flex-wrap:wrap; gap:10px; padding:14px 18px; }
+    .prompt-card { padding:18px 20px; }
+    .prompt-head { gap:10px; }
+    .copy-btn { margin-left:auto; }
+    .theme-title { font-size:22px; }
+    .theme-icon { width:38px; height:38px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="top-nav">
+    <a class="back-link" href="../index.html">← EF-NSE7 Hub</a>
+    <a class="back-link" href="../study-guides/nse7-ef-study-guide-hub.html">Study Guides →</a>
+  </div>
+
+  <!-- ── HEADER ── -->
+  <div class="page-header">
+    <div class="course-tag">
+      <span class="course-tag-dot"></span>
+      EF-NSE7 &nbsp;·&nbsp; NotebookLM Prompts
+    </div>
+    <h1>Audio <em>Podcast</em> Prompts</h1>
+    <div class="subtitle">Ready-to-paste prompts for NotebookLM Audio Overviews — long deep dives, short dives, and debates across the highest-yield NSE7 exam themes.</div>
+  </div>
+
+  <!-- ── HOW TO USE ── -->
+  <div class="how-to-use">
+    <div class="how-to-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="16" x2="12" y2="12"/>
+        <line x1="12" y1="8" x2="12.01" y2="8"/>
+      </svg>
+    </div>
+    <div class="how-to-body">
+      <h3>How to use this page</h3>
+      <p>
+        1. Open <strong>NotebookLM</strong> and add the relevant chapter PDF or study-guide pages as sources.
+        2. Click <strong>Copy</strong> on a prompt below and paste it into the Audio Overview customize dialog.
+        3. Track your progress with the five-step checklist: <strong>Started Generation → Generated → Renamed → Listen To → Mastered</strong>.
+        Progress is saved automatically in your browser.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── PROGRESS ── -->
+  <div class="progress-wrap">
+    <span class="progress-label">Mastered</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="progress-count" id="progressCount">0 / 0</span>
+    <button class="reset-btn" id="resetBtn" title="Clear all progress">Reset</button>
+  </div>
+
+  <!-- ── FILTER TABS ── -->
+  <div class="filter-tabs" id="filterTabs">
+    <button class="filter-tab active" data-filter="all">All <span class="count" id="count-all">0</span></button>
+    <button class="filter-tab" data-filter="long">Long Deep Dives <span class="count" id="count-long">0</span></button>
+    <button class="filter-tab" data-filter="short">Short Dives <span class="count" id="count-short">0</span></button>
+    <button class="filter-tab" data-filter="debate">Debates <span class="count" id="count-debate">0</span></button>
+  </div>
+
+  <!-- ── THEMES (rendered via JS) ── -->
+  <div class="themes-wrap" id="themesWrap"></div>
+
+  <footer>
+    Fortinet NSE7<span>.</span> Enterprise Firewall<span>.</span> Audio Study Prompts
+  </footer>
+
+<script>
+/* ============================================================
+   THEME + PROMPT DATA
+   ============================================================ */
+const CHECK_STEPS = ['Started Generation','Generated','Renamed','Listen To','Mastered'];
+
+const ICONS = {
+  ha:       '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  ipsec:    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+  advpn:    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+  utm:      '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>',
+  fabric:   '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>',
+  routing:  '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+  vdom:     '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>',
+  hardware: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>',
+  manager:  '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>'
+};
+
+const THEMES = [
+  {
+    id:'ha', name:'High Availability', icon:ICONS.ha,
+    subtitle:'FGCP · FGSP · VRRP — clustering, failover & session sync',
+    prompts:[
+      { type:'long', title:'FortiGate HA From the Ground Up',
+        prompt:`Generate a 20-25 minute deep dive on FortiGate High Availability. Cover FGCP in both active-passive and active-active modes, FGSP for session synchronization across independent clusters, and VRRP for gateway redundancy. Walk through how the primary is elected using device priority, override, port monitoring, and uptime tie-breakers. Explain heartbeat interfaces, the role of HA monitor priorities, virtual MAC behavior, and how full-mesh HA improves resilience. Discuss session pickup scope (TCP, UDP, multicast, asymmetric, expectation sessions) and what survives failover vs what gets re-established. Use a data center scenario throughout. Make it conversational with two hosts — one experienced engineer, one asking the questions a junior would ask.` },
+      { type:'long', title:'HA Failover, Convergence & Real-World Gotchas',
+        prompt:`Produce a 20-minute in-depth episode focused on what actually happens during a FortiGate HA failover event. Cover heartbeat loss detection, override behavior, the difference between graceful upgrade and unexpected failure, vMAC takeover and gratuitous ARP, port monitoring decisions, and convergence time expectations. Spend real time on common production gotchas: asymmetric routing breaking sessions, link-monitor flapping, HA reserved management interface confusion, the 'monitor priority drops below override threshold' loop, and why session sync may silently fail. Reference diag sys ha status, diag sys ha checksum, and how engineers troubleshoot in the field. Two-host format, problem-solving tone.` },
+      { type:'short', title:'HA in 7 Minutes — Exam Cheat Sheet',
+        prompt:`Create a focused 6-8 minute Audio Overview that distills FortiGate HA to exactly what shows up on the NSE7 exam. Hit: FGCP vs FGSP vs VRRP (when to use each), active-passive vs active-active load balancing methods, primary election order (override → priority → monitored ports → uptime → serial), heartbeat interface requirements, virtual cluster concept with VDOMs, and session pickup defaults. Be fast-paced and exam-focused, not exhaustive. Single host explaining clearly, like a study buddy quizzing you the night before.` },
+      { type:'short', title:'HA Exam Traps & Misconceptions',
+        prompt:`Generate a 5-7 minute short episode that calls out the top mistakes students make on HA exam questions. Examples: confusing FGCP active-active with true load balancing, forgetting that override changes election dynamics, assuming all session types sync by default, mixing up FGSP and FGCP, misunderstanding when VRRP is appropriate vs FGCP, and the role of the HA reserved management port. Two hosts in a quick myth-busting format — one states a common misconception, the other corrects it with the actual exam-correct answer.` },
+      { type:'debate', title:'FGCP vs FGSP — Which One Should You Deploy?',
+        prompt:`Stage a structured 10-12 minute debate between two engineers. Host A argues FGCP is the right choice for most enterprises (simpler, integrated, single management plane, vMAC failover). Host B argues FGSP is superior for modern multi-site or asymmetric routing designs (no vMAC limitation, works across L3 boundaries, independent units, supports geo-redundancy). Each host should give 2-3 strong arguments, then rebut. Conclude with the exam-correct guidance on when each protocol is actually the right answer per Fortinet documentation. Keep it sharp and respectful.` },
+      { type:'debate', title:'Active-Active vs Active-Passive HA',
+        prompt:`Run a 10-minute debate framed as a design review meeting. Host A pushes for active-active HA (better hardware utilization, session-based load balancing, perceived performance). Host B counters with active-passive (simpler troubleshooting, predictable failover, no asymmetric flow issues, lower licensing complexity). Force each host to address: UTM inspection behavior in each mode, session sync overhead, vMAC implications, and what Fortinet actually recommends. End with a verdict: when active-active is genuinely justified vs when active-passive should win by default.` }
+    ]
+  },
+  {
+    id:'ipsec', name:'IPsec VPN', icon:ICONS.ipsec,
+    subtitle:'Site-to-site · IKEv1/v2 · phase 1 & 2 · FortiManager templates',
+    prompts:[
+      { type:'long', title:'IPsec End-to-End — From Phase 1 to Production',
+        prompt:`Produce a 22-25 minute deep dive on FortiGate IPsec VPN. Start from the protocol fundamentals: IKE phases, SA negotiation, DH groups, PFS, encryption/integrity algorithms, NAT-T, and DPD. Then move to FortiGate-specific implementation: route-based vs policy-based tunnels, interface mode, tunnel interfaces in the routing table, phase 1 and phase 2 selector behavior, and when to use IKEv1 vs IKEv2. Cover topology designs — site-to-site, hub-and-spoke, dual-hub, and full-mesh — with the tradeoffs of each. Include FortiManager IPsec templates and how they enable scale. Two-host conversational style with one driving the explanation and one asking realistic deployment questions.` },
+      { type:'long', title:'IPsec Troubleshooting Masterclass',
+        prompt:`Build a 20-minute troubleshooting-focused episode. Walk through real-world IPsec failures and how to diagnose them on FortiGate. Cover: phase 1 mismatches (encryption, hashing, DH group, lifetime, peer ID), phase 2 selector mismatches, NAT-T issues, MTU/MSS problems causing tunnel-up-but-no-traffic, asymmetric routing, and overlapping subnets. Reference diagnostic commands: diag vpn ike gateway list, diag debug application ike -1, diag vpn tunnel list, and how to read the output. Frame each segment as a customer support call where one host plays the engineer and the other plays the user describing symptoms.` },
+      { type:'short', title:'IPsec Essentials in 6 Minutes',
+        prompt:`Create a fast 5-7 minute Audio Overview hitting only the highest-yield IPsec exam points. Focus on: IKE phase 1 vs phase 2 purpose, main vs aggressive mode, IKEv1 vs IKEv2 differences, route-based vs policy-based on FortiGate, the role of the tunnel interface and static routes, and what NAT-T does. Skip deep theory — assume the listener already knows networking and just needs the exam-relevant distinctions. Single host, rapid pace.` },
+      { type:'short', title:'IPsec Parameter Mismatches — The Hit List',
+        prompt:`Generate a 5-6 minute episode listing the most common IPsec parameter mismatches that break tunnels and that the NSE7 exam loves to test. Cover phase 1 encryption/hash/DH/lifetime, phase 2 PFS and selector subnets, peer ID and remote gateway behavior, and how a single mismatch fails the negotiation. End each item with the exact symptom you'd see in logs. Two-host quick-fire format.` },
+      { type:'debate', title:'Route-Based vs Policy-Based VPN',
+        prompt:`Host a 10-minute debate. Host A defends policy-based VPN (simpler config for small static deployments, fewer interfaces, traditional approach). Host B argues for route-based VPN (modern best practice, supports dynamic routing, ADVPN, redundant tunnels, OSPF/BGP over IPsec, better visibility). Make each host explain what they actually lose by not choosing the other. Conclude with the Fortinet-recommended approach for enterprise NSE7-level deployments and why policy-based is essentially legacy.` },
+      { type:'debate', title:'IKEv1 vs IKEv2 — Is Anyone Still Defending IKEv1?',
+        prompt:`Stage a 9-minute debate. Host A makes the case that IKEv1 is still valid (broad interop, well-understood, every device speaks it). Host B counters with IKEv2 advantages (single phase exchange, built-in NAT-T, MOBIKE, EAP, better rekey behavior, required for ADVPN). Force a real exchange on backward compatibility, performance, and security posture. End with the verdict: when IKEv1 is the answer on an exam vs when IKEv2 is mandatory.` }
+    ]
+  },
+  {
+    id:'advpn', name:'Auto-Discovery VPN (ADVPN)', icon:ICONS.advpn,
+    subtitle:'Shortcut tunnels · IKEv2 · hub-and-spoke at full-mesh speed',
+    prompts:[
+      { type:'long', title:'ADVPN Explained — Why It Exists and How It Works',
+        prompt:`Produce a 20-22 minute deep dive on ADVPN. Start by establishing the problem ADVPN solves — full-mesh management overhead vs hub-and-spoke hairpinning. Then explain the architecture: hub as IKEv2 server and route reflector, spokes registering with the hub, shortcut messages, on-demand spoke-to-spoke tunnels, and how IBGP route reflection on the hub enables traffic steering. Cover the role of net-device, mode-cfg, IKEv2, and why ADVPN essentially requires IKEv2. Include real deployment patterns and how FortiManager streamlines the spoke provisioning. Two hosts, one driving the concept story and one asking how this would actually work for a 50-spoke retail chain.` },
+      { type:'long', title:'ADVPN Routing & Shortcut Triggers — A Deep Dive',
+        prompt:`Build a 20-minute episode focused entirely on what triggers a shortcut tunnel in ADVPN and how routing reacts. Walk through the IKE shortcut-query and shortcut-reply exchange, how the hub identifies the right next-hop, what the spoke does with the resulting tunnel, and how BGP next-hop manipulation steers traffic across the new path. Discuss dynamic spoke-to-spoke teardown, idle timeouts, and what happens when shortcuts fail. Cover BGP design choices: IBGP with route reflection on the hub, next-hop-self behavior, and why EBGP isn't typical here. Use a multi-region scenario.` },
+      { type:'short', title:'ADVPN in 6 Minutes — The Core Idea',
+        prompt:`Produce a 5-7 minute Audio Overview that explains ADVPN to someone hearing about it for the first time. Cover the problem (full-mesh doesn't scale, hub-and-spoke hairpins), the solution (on-demand shortcut tunnels), the requirement (IKEv2 + dynamic routing on the hub), and the result (hub-and-spoke admin simplicity + full-mesh data path). Skip implementation details. Single host, clean and conceptual.` },
+      { type:'short', title:'ADVPN Exam Traps',
+        prompt:`Generate a 5-6 minute short episode covering the things students get wrong on ADVPN exam questions. Topics: assuming ADVPN works with IKEv1, forgetting BGP route reflection on the hub, misunderstanding net-device and mode-cfg, confusing shortcut tunnels with permanent tunnels, and thinking the hub is bypassed for control traffic. Two-host myth-busting format.` },
+      { type:'debate', title:'ADVPN vs Traditional Hub-and-Spoke',
+        prompt:`Stage an 8-10 minute debate. Host A defends classic hub-and-spoke (simple, well-understood, hub-centric inspection enforces policy). Host B argues ADVPN is strictly better for modern deployments (no hairpinning, lower hub bandwidth, faster spoke-to-spoke, easier to scale past 50 spokes). Force each to address: hub inspection requirements, MPLS migration scenarios, troubleshooting complexity, and FortiManager template effort. Verdict at the end.` },
+      { type:'debate', title:'ADVPN vs SD-WAN Overlay',
+        prompt:`Host a 9-minute debate comparing ADVPN to a full SD-WAN overlay design. Host A argues ADVPN is the simpler, cleaner answer when you mostly want shortcut spoke-to-spoke and don't need application-aware path selection. Host B argues SD-WAN is the future and ADVPN is just a feature inside it. Force discussion on overlay diversity, application steering, performance SLAs, and operational overhead. Conclude with when each is the exam-correct deployment choice.` }
+    ]
+  },
+  {
+    id:'utm', name:'Security Profiles & UTM', icon:ICONS.utm,
+    subtitle:'SSL inspection · IPS · web filter · app control · AV',
+    prompts:[
+      { type:'long', title:'Inside the UTM Inspection Pipeline',
+        prompt:`Generate a 22-minute deep dive on how FortiGate processes traffic through UTM. Start at packet arrival, walk through stateful inspection, flow vs proxy inspection modes, and where each profile sits in the pipeline. Cover SSL/SSH deep inspection (certificate-inspection vs full SSL inspection, TLS 1.3 considerations, certificate handling), then web filter, application control, IPS, antivirus, and DLP. Explain how engine resource allocation works and where CPU bottlenecks appear. Tie everything to the difference between flow and proxy mode and what features each unlocks. Two hosts, technical and architecture-focused.` },
+      { type:'long', title:'SSL Inspection — The Make-or-Break Topic',
+        prompt:`Produce a 20-minute deep dive on SSL/SSH inspection. Explain certificate-inspection (SNI-based, no decryption) vs full SSL inspection (man-in-the-middle with the FortiGate CA), the role of the CA cert installed on clients, and what breaks without it. Cover TLS 1.3 challenges (encrypted SNI, encrypted handshake, ESNI/ECH), exemption categories, certificate validation, and HSTS/pinned-certificate failures. Discuss enterprise deployment patterns and the security-vs-operational-pain tradeoff. Two-host format with practical war stories.` },
+      { type:'short', title:'UTM Profiles in 6 Minutes',
+        prompt:`Create a 5-7 minute Audio Overview hitting the essentials of FortiGate security profiles. Touch antivirus, IPS, web filter, application control, DLP, and SSL inspection — one minute each. For each, describe what it inspects, flow vs proxy support, and one common gotcha. Single host, fast pace, exam-focused.` },
+      { type:'short', title:'Flow vs Proxy Mode — When It Matters',
+        prompt:`Generate a 5-7 minute short episode clarifying flow-based vs proxy-based inspection on FortiGate. Cover which profiles support each mode, the performance differences, which features (like full antivirus, DLP, certain web-filter actions) require proxy, and how the chosen inspection mode is set on the firewall policy. End with the exam-correct rule of thumb for picking one.` },
+      { type:'debate', title:'Flow Mode vs Proxy Mode — Which Should Be Default?',
+        prompt:`Host a 10-minute debate. Host A argues flow mode should be the default everywhere (faster, lower latency, NP offload friendly, sufficient for most threats). Host B counters that proxy mode delivers deeper inspection, full AV scanning, DLP, and is required for serious enterprises. Each defends with concrete examples. Conclude with Fortinet's actual guidance and when each mode is the exam-correct answer.` },
+      { type:'debate', title:'Certificate Inspection vs Full SSL Inspection',
+        prompt:`Stage a 9-minute debate on SSL inspection depth. Host A argues certificate inspection is enough for most enterprises (privacy-friendly, no MITM, less breakage, still catches category-based threats). Host B argues full SSL inspection is non-negotiable for real security (you can't inspect what you can't decrypt, malware lives in encrypted streams). Force discussion on privacy, banking/health exemptions, certificate pinning failures, and operational cost. End with the exam answer.` }
+    ]
+  },
+  {
+    id:'fabric', name:'Security Fabric', icon:ICONS.fabric,
+    subtitle:'Fabric connectors · automation stitches · topology integration',
+    prompts:[
+      { type:'long', title:'Security Fabric — Architecture and the Bigger Picture',
+        prompt:`Produce a 20-22 minute deep dive on the Fortinet Security Fabric. Cover the fabric architecture — root FortiGate, downstream FortiGates, FortiAnalyzer integration, FortiManager visibility, and external connectors. Explain fabric connectors (SDN, cloud, identity, ITSM) and what each enables. Walk through the topology view, the security rating service, and how the fabric exposes a single management surface across multiple devices. Then explain automation stitches — triggers, actions, and real use cases (quarantine compromised hosts, notify on critical IPS hits, auto-update group membership). Two-host format, architecture-focused with practical examples.` },
+      { type:'long', title:'Automation Stitches & Fabric Connectors — Hands-On',
+        prompt:`Build a 20-minute deep dive on the operational side of Security Fabric. Walk through building an automation stitch end-to-end: choose a trigger (FortiOS event, compromised host, configuration change, IOC detection), define the action (email, webhook, CLI script, AWS Lambda, FortiExplorer notification), and tie it to a real incident response workflow. Then cover fabric connectors in depth — SDN connectors for AWS/Azure/GCP, ESXi, and how dynamic address objects update automatically. End with the security rating service and how it scores your fabric. Two hosts, operational tone.` },
+      { type:'short', title:'Security Fabric in 6 Minutes',
+        prompt:`Create a 5-7 minute Audio Overview explaining the Security Fabric concept. Cover: what the fabric is (a coordinated set of Fortinet devices), how root and downstream FortiGates discover each other, what fabric connectors do, what an automation stitch is, and what the security rating service tells you. Skip configuration detail. Single host, clean and conceptual.` },
+      { type:'short', title:'Automation Stitches — Triggers & Actions Cheat Sheet',
+        prompt:`Generate a 5-6 minute episode that drills the automation stitch trigger/action pairs the NSE7 exam tests. Cover compromised host triggers, IOC events, FortiOS event log triggers, configuration change triggers; and email, webhook, CLI script, quarantine, and AWS Lambda actions. End with the common-sense exam pattern: matching the right action to the right trigger. Two-host quick-fire format.` },
+      { type:'debate', title:'Security Fabric vs Best-of-Breed Multi-Vendor',
+        prompt:`Stage a 10-minute debate. Host A defends the Security Fabric all-Fortinet approach (single pane of glass, automation, integrated threat intel, lower operational overhead). Host B argues for best-of-breed multi-vendor (no lock-in, pick the best tool for each layer, vendor competition keeps costs honest). Force discussion on integration cost, automation depth, and what the NSE7 exam would consider the 'correct' architectural answer. Verdict at the end.` },
+      { type:'debate', title:'Automation Stitches vs External SOAR Platform',
+        prompt:`Host a 9-minute debate comparing FortiGate automation stitches to a dedicated SOAR platform. Host A argues stitches are sufficient for most SOC workflows when you live in the Fortinet ecosystem. Host B argues SOAR is necessary once you have multiple vendors, complex playbooks, and analyst-driven response. Cover where stitches stop scaling and where SOAR justifies its cost.` }
+    ]
+  },
+  {
+    id:'routing', name:'Dynamic Routing (OSPF & BGP)', icon:ICONS.routing,
+    subtitle:'OSPF areas · BGP path selection · redistribution · convergence',
+    prompts:[
+      { type:'long', title:'OSPF on FortiGate — Areas, LSAs, and SPF',
+        prompt:`Produce a 20-22 minute deep dive on OSPF as implemented on FortiGate. Cover the OSPF state machine (down → init → 2-way → exstart → exchange → loading → full), area types (backbone, standard, stub, totally stubby, NSSA), LSA types and what each carries, the role of the DR/BDR on broadcast networks, and how the Dijkstra SPF calculation produces the routing table. Then cover FortiGate-specific details: enabling OSPF on interfaces, network commands vs interface mode, authentication, and route redistribution. End with troubleshooting (diag ip ospf neighbor, get router info ospf). Two hosts, conceptual then practical.` },
+      { type:'long', title:'BGP for Enterprise FortiGate Deployments',
+        prompt:`Build a 22-25 minute deep dive on BGP on FortiGate. Cover EBGP vs IBGP, neighbor establishment (OPEN, KEEPALIVE, UPDATE), path attributes (weight, local-pref, AS-path, MED, origin, next-hop), and the path selection algorithm in order. Explain route reflection, confederations, communities, and how communities drive policy. Then move to FortiGate-specific applications: BGP over IPsec, ADVPN with IBGP route reflection on the hub, multi-homed internet with BGP, and convergence tuning (BFD, keepalive/hold timers, soft-reconfiguration). Two hosts, with enterprise scenarios throughout.` },
+      { type:'short', title:'OSPF Essentials in 7 Minutes',
+        prompt:`Create a 6-8 minute Audio Overview covering only what NSE7 expects you to know about OSPF. Hit: area types and what each blocks, LSA types, DR election, neighbor states (especially what 'full' means), router-id selection, and basic redistribution with route-map. Skip deep theory. Single host, exam-focused.` },
+      { type:'short', title:'BGP Path Selection — The Order Matters',
+        prompt:`Generate a 5-7 minute episode that drills the BGP best-path selection algorithm in exact order: weight → local-pref → locally originated → AS-path length → origin → MED → EBGP over IBGP → IGP metric → router ID. For each step, give a one-line example of when it actually decides the outcome. Two hosts, quiz-style.` },
+      { type:'debate', title:'OSPF vs BGP for the Enterprise Core',
+        prompt:`Stage a 10-minute debate. Host A defends OSPF as the right IGP for most enterprises (fast convergence, simple, well-understood, automatic). Host B argues BGP is the future even internally (policy control, scales beyond single AS, required for ADVPN and multi-cloud, more granular). Force a discussion on complexity, convergence, scalability, and what Fortinet's reference designs actually use. Verdict at the end.` },
+      { type:'debate', title:'Redistribution — Necessary Evil or Architecture Smell?',
+        prompt:`Host a 9-minute debate on route redistribution between OSPF and BGP. Host A argues redistribution is fine and often required (legacy integration, multi-protocol environments, BGP-to-OSPF for branch summarization). Host B counters that redistribution is the source of nearly all routing incidents — loops, suboptimal paths, summarization gone wrong — and should be avoided wherever possible with route-maps and clear boundaries. End with the exam-correct guidance on when redistribution is the right answer.` }
+    ]
+  },
+  {
+    id:'vdom', name:'VLANs & VDOMs', icon:ICONS.vdom,
+    subtitle:'802.1Q tagging · VDOMs · inter-VDOM links · multi-tenancy',
+    prompts:[
+      { type:'long', title:'VDOMs from Concept to Configuration',
+        prompt:`Produce a 20-minute deep dive on VDOMs. Start with the concept — virtual firewalls inside one physical box, independent routing/policy/admin domains, the management VDOM, and the global vs VDOM CLI scope. Explain split-task VDOM mode vs multi-VDOM mode, when to use each, and the per-VDOM resource limits. Cover inter-VDOM links — how they work, when they're needed, the difference between standard inter-VDOM links and NP-accelerated ones, and how routing/policies must exist in both VDOMs for traffic to pass. Tie it to enterprise multi-tenant and segmentation use cases. Two hosts, conceptual then practical.` },
+      { type:'long', title:'VLANs, Inter-VDOM Links & Traffic Steering',
+        prompt:`Build a 20-minute episode on the networking side of VDOMs and VLANs on FortiGate. Cover 802.1Q VLAN tagging, sub-interfaces, software switch vs hardware switch behavior, virtual switches, and the relationship between physical interfaces, VLAN interfaces, and VDOMs. Then drill inter-VDOM links: how to design hub-and-spoke VDOM topologies, NP-accelerated VDOM links, and why a packet may need two policy lookups to traverse two VDOMs. End with troubleshooting common 'traffic disappears between VDOMs' issues. Two hosts, practical tone.` },
+      { type:'short', title:'VDOMs in 6 Minutes',
+        prompt:`Create a 5-7 minute Audio Overview explaining VDOMs to someone who knows firewalls but is new to FortiGate. Cover: what a VDOM is, the management VDOM concept, global vs VDOM scope, when you'd actually use them, split-task vs multi-VDOM, and the basic inter-VDOM link idea. Single host, conceptual.` },
+      { type:'short', title:'VLAN & VDOM Exam Gotchas',
+        prompt:`Generate a 5-6 minute episode listing the common mistakes around VLANs and VDOMs on the NSE7 exam. Examples: confusing software switch with hardware switch, forgetting that inter-VDOM links need policy on both sides, mixing up split-task and multi-VDOM mode, forgetting the management VDOM constraints, and 802.1Q sub-interface naming pitfalls. Two-host quick-fire format.` },
+      { type:'debate', title:'VDOMs vs Separate Physical FortiGates',
+        prompt:`Stage a 9-minute debate. Host A defends VDOMs (cost savings, single chassis, easier management, lower power/rack, sufficient isolation). Host B argues for physically separate FortiGates per tenant/zone (true isolation, blast radius, independent maintenance windows, no noisy-neighbor CPU contention). Force discussion on compliance, operations, and licensing. Verdict for typical enterprise NSE7 scenarios.` },
+      { type:'debate', title:'Split-Task Mode vs Multi-VDOM Mode',
+        prompt:`Host a 7-9 minute debate. Host A defends split-task mode for simple segmentation (separate management and traffic planes, easier than full multi-VDOM). Host B argues multi-VDOM is almost always the right choice when you're already considering split-task (more flexible, future-proof, only marginally more complex). End with the exam-correct rule of thumb for when each mode is the right answer.` }
+    ]
+  },
+  {
+    id:'hardware', name:'Hardware Acceleration (NP/CP/SPU)', icon:ICONS.hardware,
+    subtitle:'NP7 fast path · CP9 content processing · SPU offload behavior',
+    prompts:[
+      { type:'long', title:'Inside FortiGate Hardware Acceleration',
+        prompt:`Produce a 22-minute deep dive on FortiGate hardware acceleration. Cover the SPU (Security Processing Unit) family — NP (Network Processor) for session offload, CP (Content Processor) for crypto and pattern matching, and SoC for entry-level. Explain how a session starts in the kernel and gets offloaded to NP, the conditions that prevent offload (UTM in proxy mode, certain features, asymmetric routing, encrypted traffic without CP offload), and how to verify with diag npu np6 / np7 commands. Cover when traffic stays on CPU vs offloaded and why a VM FortiGate behaves differently. Two hosts, performance-focused.` },
+      { type:'long', title:'Offload Decisions & Performance Troubleshooting',
+        prompt:`Build a 20-minute episode focused on troubleshooting FortiGate performance issues related to hardware offload. Walk through diagnosing high CPU when sessions should be offloaded, identifying which features broke offload, and using diag sys session list, diag npu, and per-session NPU status. Cover real-world traps: enabling a profile that disables offload chain-wide, IPsec offload behavior, GRE-in-IPsec, multicast offload, and how flow vs proxy mode interacts with NP. Two hosts, problem-solving format.` },
+      { type:'short', title:'NP, CP, and SPU in 6 Minutes',
+        prompt:`Create a 5-7 minute Audio Overview explaining what NP, CP, and the broader SPU concept actually do. Cover: NP for fast-path session offload, CP for crypto/signature acceleration, what gets offloaded, what disables offload, and how this differs on VM FortiGates with no hardware. Single host, conceptual.` },
+      { type:'short', title:'What Breaks NP Offload — The Hit List',
+        prompt:`Generate a 5-6 minute episode listing the most common things that break NP session offload on FortiGate, in priority order. Cover proxy-mode UTM, certain IPS features, asymmetric routing, sessions in dirty state, GRE/multicast edge cases, and platform-specific limits. End with the practical exam-relevant takeaway. Two-host quick-fire.` },
+      { type:'debate', title:'Hardware FortiGate vs VM FortiGate',
+        prompt:`Stage a 10-minute debate. Host A argues VM FortiGates are increasingly the right choice (cloud-native, elastic, no hardware refresh, same FortiOS). Host B counters that hardware FortiGates win for performance at any meaningful scale (NP/CP offload, predictable throughput, lower per-Gbps cost at high volumes). Force them to discuss UTM throughput, IPsec performance, and when each is the exam-correct deployment answer.` },
+      { type:'debate', title:'Maximum UTM vs Maximum Offload',
+        prompt:`Host a 9-minute design debate. Host A argues for maximum security inspection (proxy mode, full SSL inspection, every UTM profile enabled), accepting the offload cost. Host B argues for maximum offload (flow mode, certificate inspection only, NP-friendly profiles) to maintain line-rate performance. Force discussion on real enterprise risk vs throughput tradeoffs. End with how Fortinet positions the answer on the NSE7 exam.` }
+    ]
+  },
+  {
+    id:'manager', name:'Central Management (FortiManager)', icon:ICONS.manager,
+    subtitle:'ADOMs · policy packages · dynamic objects · scripts',
+    prompts:[
+      { type:'long', title:'FortiManager Architecture & Operational Model',
+        prompt:`Produce a 20-22 minute deep dive on FortiManager. Cover the architecture — ADOMs as administrative containers, device manager vs policy & objects, the difference between database changes and pushed config, and the role of revision history. Walk through policy packages, shared objects vs ADOM objects, dynamic objects with mapping, and how install previews work. Discuss workflow mode, scripts (CLI and TCL), provisioning templates (IPsec, SD-WAN, system), and FortiManager-as-FortiGuard-source. End with backup and high availability for FortiManager itself. Two hosts, architecture-focused.` },
+      { type:'long', title:'Policy Packages, Dynamic Objects & Install Workflows',
+        prompt:`Build a 20-minute episode focused on the day-to-day operations of FortiManager. Walk through building a policy package, attaching it to multiple FortiGates, using dynamic objects (per-device IP mappings, dynamic interfaces), and previewing the install before pushing. Cover script execution, the difference between TCL and CLI scripts, and when each is appropriate. Discuss device-level overrides vs ADOM-level policies, lock/unlock workflow, and the rollback mechanism via revisions. Two hosts, operational tone with examples.` },
+      { type:'short', title:'FortiManager in 6 Minutes',
+        prompt:`Create a 5-7 minute Audio Overview explaining FortiManager. Cover: what it manages, ADOMs, policy packages, dynamic objects, the install workflow (database vs device), and revision history. Skip detail. Single host, conceptual.` },
+      { type:'short', title:'Dynamic Objects & Per-Device Mapping',
+        prompt:`Generate a 5-6 minute episode on dynamic objects in FortiManager — what they solve, per-device IP mapping, dynamic interface mapping, and how they let one policy package serve many FortiGates with different local subnets. End with the exam-correct pattern. Two-host quick-fire.` },
+      { type:'debate', title:'FortiManager Centralized vs Local FortiGate Management',
+        prompt:`Stage a 9-minute debate. Host A argues every multi-FortiGate environment should be on FortiManager (consistency, audit, scale, templates, automation). Host B argues small or single-site deployments are simpler managed directly on the FortiGate (no extra license, no extra appliance, no install workflow). Force discussion on operational overhead, audit/compliance, and when FortiManager genuinely pays off. Verdict at the end.` },
+      { type:'debate', title:'CLI Scripts vs TCL Scripts vs Templates',
+        prompt:`Host a 7-9 minute debate on the three ways to push config from FortiManager. Host A argues CLI scripts are sufficient and easiest to read. Host B argues TCL scripts are necessary for any real logic (conditionals, loops, per-device variation). A third position: provisioning templates are the modern answer and scripts are legacy. End with the exam-correct guidance on which tool fits which scenario.` }
+    ]
+  }
+];
+
+/* ============================================================
+   STATE + RENDER
+   ============================================================ */
+const themesWrap = document.getElementById('themesWrap');
+const STORAGE_PREFIX = 'ef-podcast-';
+
+function stateKey(themeId, idx) { return STORAGE_PREFIX + themeId + '-' + idx; }
+
+function loadState(themeId, idx) {
+  const raw = localStorage.getItem(stateKey(themeId, idx));
+  if (!raw) return CHECK_STEPS.map(() => false);
+  try { return JSON.parse(raw); } catch { return CHECK_STEPS.map(() => false); }
+}
+
+function saveState(themeId, idx, arr) {
+  localStorage.setItem(stateKey(themeId, idx), JSON.stringify(arr));
+}
+
+function render() {
+  themesWrap.innerHTML = '';
+  THEMES.forEach(theme => {
+    const section = document.createElement('section');
+    section.className = 'theme-section';
+    section.dataset.themeId = theme.id;
+
+    const total = theme.prompts.length;
+    let mastered = 0;
+    theme.prompts.forEach((_, i) => {
+      const s = loadState(theme.id, i);
+      if (s[CHECK_STEPS.length - 1]) mastered++;
+    });
+
+    section.innerHTML = `
+      <div class="theme-header">
+        <div class="theme-icon">${theme.icon}</div>
+        <div>
+          <div class="theme-title">${theme.name}</div>
+          <div class="theme-subtitle">${theme.subtitle}</div>
+        </div>
+        <div class="theme-stats"><span>${mastered}</span> / ${total} mastered</div>
+      </div>
+      <div class="prompt-grid"></div>
+    `;
+
+    const grid = section.querySelector('.prompt-grid');
+
+    theme.prompts.forEach((p, idx) => {
+      const state = loadState(theme.id, idx);
+      const isMastered = state[CHECK_STEPS.length - 1];
+
+      const card = document.createElement('article');
+      card.className = 'prompt-card' + (isMastered ? ' is-mastered' : '');
+      card.dataset.type = p.type;
+      card.dataset.themeId = theme.id;
+      card.dataset.idx = idx;
+
+      const typeLabel = p.type === 'long' ? 'Long Deep Dive' : p.type === 'short' ? 'Short Dive' : 'Debate';
+      const typeClass = 'type-' + p.type;
+
+      const checkHTML = CHECK_STEPS.map((step, i) => `
+        <label class="check-item ${state[i] ? 'checked' : ''}" data-step="${i}">
+          <input type="checkbox" ${state[i] ? 'checked' : ''}>
+          <span class="check-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </span>
+          ${step}
+        </label>
+      `).join('');
+
+      card.innerHTML = `
+        <div class="prompt-head">
+          <span class="prompt-type ${typeClass}">${typeLabel}</span>
+          <span class="prompt-title">${p.title}</span>
+          <button class="copy-btn">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            Copy
+          </button>
+        </div>
+        <div class="prompt-body">${p.prompt}</div>
+        <div class="check-row">${checkHTML}</div>
+      `;
+
+      grid.appendChild(card);
+
+      // copy
+      const copyBtn = card.querySelector('.copy-btn');
+      copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(p.prompt).then(() => {
+          copyBtn.classList.add('copied');
+          copyBtn.innerHTML = `
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Copied
+          `;
+          setTimeout(() => {
+            copyBtn.classList.remove('copied');
+            copyBtn.innerHTML = `
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              Copy
+            `;
+          }, 1600);
+        });
+      });
+
+      // checkboxes
+      card.querySelectorAll('.check-item').forEach(item => {
+        item.addEventListener('click', e => {
+          e.preventDefault();
+          const stepIdx = parseInt(item.dataset.step, 10);
+          const cur = loadState(theme.id, idx);
+          cur[stepIdx] = !cur[stepIdx];
+          saveState(theme.id, idx, cur);
+          item.classList.toggle('checked', cur[stepIdx]);
+          const cb = item.querySelector('input');
+          cb.checked = cur[stepIdx];
+
+          if (stepIdx === CHECK_STEPS.length - 1) {
+            card.classList.toggle('is-mastered', cur[stepIdx]);
+          }
+          updateProgress();
+          updateThemeStats();
+        });
+      });
+    });
+
+    themesWrap.appendChild(section);
+  });
+}
+
+/* ============================================================
+   PROGRESS + STATS
+   ============================================================ */
+function totalPrompts() {
+  return THEMES.reduce((a, t) => a + t.prompts.length, 0);
+}
+function totalMastered() {
+  let m = 0;
+  THEMES.forEach(t => t.prompts.forEach((_, i) => {
+    if (loadState(t.id, i)[CHECK_STEPS.length - 1]) m++;
+  }));
+  return m;
+}
+function countByType(type) {
+  return THEMES.reduce((a, t) => a + t.prompts.filter(p => p.type === type).length, 0);
+}
+
+function updateProgress() {
+  const total = totalPrompts();
+  const done = totalMastered();
+  document.getElementById('progressFill').style.width = (done / total * 100) + '%';
+  document.getElementById('progressCount').textContent = done + ' / ' + total;
+}
+
+function updateThemeStats() {
+  document.querySelectorAll('.theme-section').forEach(section => {
+    const themeId = section.dataset.themeId;
+    const theme = THEMES.find(t => t.id === themeId);
+    let m = 0;
+    theme.prompts.forEach((_, i) => {
+      if (loadState(themeId, i)[CHECK_STEPS.length - 1]) m++;
+    });
+    section.querySelector('.theme-stats').innerHTML = `<span>${m}</span> / ${theme.prompts.length} mastered`;
+  });
+}
+
+function updateTabCounts() {
+  document.getElementById('count-all').textContent    = totalPrompts();
+  document.getElementById('count-long').textContent   = countByType('long');
+  document.getElementById('count-short').textContent  = countByType('short');
+  document.getElementById('count-debate').textContent = countByType('debate');
+}
+
+/* ============================================================
+   FILTER TABS
+   ============================================================ */
+document.querySelectorAll('.filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const filter = tab.dataset.filter;
+    document.querySelectorAll('.prompt-card').forEach(card => {
+      card.classList.toggle('is-hidden', filter !== 'all' && card.dataset.type !== filter);
+    });
+    document.querySelectorAll('.theme-section').forEach(sec => {
+      const visible = sec.querySelectorAll('.prompt-card:not(.is-hidden)').length;
+      sec.classList.toggle('is-empty', visible === 0);
+    });
+  });
+});
+
+/* ============================================================
+   RESET
+   ============================================================ */
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (!confirm('Reset all podcast progress? This cannot be undone.')) return;
+  THEMES.forEach(t => t.prompts.forEach((_, i) => {
+    localStorage.removeItem(stateKey(t.id, i));
+  }));
+  render();
+  updateProgress();
+  updateTabCounts();
+});
+
+/* ============================================================
+   PAGE TRANSITION
+   ============================================================ */
+if (sessionStorage.getItem('pt')) {
+  document.body.style.opacity = '1';
+  sessionStorage.removeItem('pt');
+}
+document.querySelectorAll('.back-link').forEach(link => {
+  link.addEventListener('click', () => sessionStorage.setItem('pt', '1'));
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+render();
+updateProgress();
+updateTabCounts();
+</script>
+
+</body>
+</html>

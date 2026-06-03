@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subtopic 02 — Explore Dynamic Objects · EF-NSE7 Ch02</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Epilogue:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff5f5;--surface:#ffffff;--surface-2:#fef2f2;--border:#f0c8c8;--border-dim:#fde8e8;
+  --text:#1a0606;--text-soft:#4a1212;--text-muted:#8a3a3a;
+  --red:#c0392b;--red-vivid:#e03e2d;--red-glow:rgba(192,57,43,0.07);--red-dim:#f8b4b4;
+  --red-deep:#7f1d1d;--red-light:#fef2f2;--red-border:#f8b4b4;
+  --green:#1a7c4a;--green-light:#d4f0e0;--green-border:#a7e0c0;
+  --amber:#b45309;--amber-light:#fef9c3;--amber-border:#fde68a;
+}
+html{scroll-behavior:smooth;}
+html.pt-init body{opacity:0;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Epilogue',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+header{padding:48px 60px 36px;background:#1a0606;display:flex;align-items:flex-end;gap:32px;}
+.header-left{flex:1;}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);letter-spacing:0.08em;margin-bottom:12px;flex-wrap:wrap;}
+.breadcrumb a{color:#e87070;text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.breadcrumb-sep{color:rgba(232,112,112,0.35);}
+.header-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(232,112,112,0.1);border:1px solid rgba(232,112,112,0.25);padding:5px 14px;border-radius:20px;font-size:11px;color:#e87070;letter-spacing:0.08em;margin-bottom:14px;}
+.dot-live{width:6px;height:6px;background:#e87070;border-radius:50%;display:inline-block;animation:blink 2.4s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+header h1{font-family:'Fraunces',serif;font-size:44px;font-weight:700;line-height:1.0;color:#fff;margin-bottom:10px;}
+header h1 em{font-style:italic;font-weight:400;color:#e87070;}
+header p{font-size:13px;color:rgba(255,255,255,0.42);margin-top:10px;line-height:1.7;}
+.motivation-banner{padding:20px 60px;min-height:84px;display:flex;flex-direction:column;justify-content:center;border-bottom:1px solid var(--border);background:var(--surface);}
+.motivation-text{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--text);}
+.motivation-text em{font-style:italic;color:var(--red);}
+.motivation-sub{font-size:12px;color:var(--text-muted);line-height:1.7;margin-top:4px;}
+.top-panels{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+.top-panels .qpanel{border-bottom:none;border-right:1px solid var(--border);}
+.top-panels .qpanel-header{padding-left:32px;padding-right:32px;}
+.top-panels .qpanel-body{padding-left:32px;padding-right:32px;}
+.qpanel{background:var(--surface);}
+.qpanel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 20px;cursor:pointer;background:var(--surface);border:none;font-family:'Epilogue',sans-serif;text-align:left;}
+.qpanel-header:hover,.qpanel-header.open{background:var(--surface-2);}
+.qpanel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.qpanel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.qpanel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.qpanel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.qpanel-body{display:none;padding:0 20px 22px;}
+.qpanel-body.open{display:block;}
+.notes-panel{background:var(--surface);}
+.notes-panel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 32px;cursor:pointer;background:var(--surface);border:none;font-family:'Epilogue',sans-serif;text-align:left;}
+.notes-panel-header:hover,.notes-panel-header.open{background:var(--surface-2);}
+.notes-panel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+.notes-panel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+.notes-panel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+.notes-panel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+.notes-panel-body{display:none;padding:0 32px 22px;}
+.notes-panel-body.open{display:block;}
+.q-group{margin-bottom:16px;}
+.q-group-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+.q-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-dim);}
+.q-item:last-child{border-bottom:none;}
+.q-num{font-size:10px;font-weight:700;color:var(--red);min-width:16px;margin-top:2px;}
+.q-text{font-size:12px;color:var(--text-soft);line-height:1.5;flex:1;}
+.q-del{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 4px;margin-top:1px;}
+.q-del:hover{color:var(--red);}
+.no-questions{font-size:12px;color:var(--text-muted);padding:8px 0;}
+.btn-add-q{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Epilogue',sans-serif;}
+.btn-add-q:hover{opacity:0.85;}
+.section-nav{position:sticky;top:0;z-index:90;display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);padding:0 32px;overflow-x:auto;}
+.nav-tab{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:12px 18px;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--red);border-bottom-color:var(--red);}
+main{display:grid;grid-template-columns:1fr 320px;gap:0;align-items:start;max-width:1200px;margin:0 auto;padding:0;}
+.main-content{padding:36px 40px 60px 60px;}
+.sidebar{padding:32px 24px 60px 20px;position:sticky;top:57px;max-height:calc(100vh - 57px);overflow-y:auto;}
+.section-block{margin-bottom:48px;}
+.section-label{font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.section-block h2{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1.15;margin-bottom:16px;padding-left:16px;border-left:3px solid var(--red);}
+.section-block h2 em{font-style:italic;font-weight:400;color:var(--red);}
+.section-block p{font-size:14px;line-height:1.8;color:var(--text-soft);margin-bottom:14px;}
+.section-block p strong{color:var(--text);font-weight:600;}
+.section-block p em{color:var(--red);font-style:italic;}
+.section-block ul,.section-block ol{padding-left:22px;margin-bottom:14px;}
+.section-block li{font-size:14px;line-height:1.75;color:var(--text-soft);margin-bottom:4px;}
+.section-block li strong{color:var(--text);font-weight:600;}
+.callout{border-left:3px solid var(--red-border);background:var(--red-light);border-radius:0 10px 10px 0;padding:12px 18px;margin:16px 0;font-size:13.5px;line-height:1.65;color:var(--text-soft);}
+.callout strong{color:var(--text);}
+.callout-green{border-left-color:var(--green-border);background:var(--green-light);}
+.callout-amber{border-left-color:var(--amber-border);background:var(--amber-light);}
+.section-img-wrap{margin:0 0 20px;display:flex;flex-direction:column;align-items:center;}
+.section-img{width:260px;max-width:100%;border-radius:12px;cursor:zoom-in;transition:width 0.3s ease;border:1px solid var(--border);display:block;}
+.section-img.si-expanded{width:100%;cursor:zoom-out;border-radius:16px;}
+.si-placeholder{display:none;width:260px;max-width:100%;border:2px dashed var(--border);border-radius:12px;background:var(--surface-2);padding:14px 16px;flex-direction:column;align-items:flex-start;gap:8px;}
+.si-placeholder.si-show{display:flex;}
+.si-filename{font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'SF Mono','Fira Code',monospace;}
+.img-caption{font-size:11px;color:var(--text-muted);text-align:center;margin-top:6px;line-height:1.4;font-style:italic;}
+.data-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;}
+.data-table th{background:#1a0606;color:#e87070;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:10px 14px;text-align:left;}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-soft);line-height:1.55;vertical-align:top;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:nth-child(even) td{background:var(--surface-2);}
+.data-table td strong{color:var(--text);font-weight:600;}
+.socratic-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:16px;border-top:3px solid var(--red);}
+.socratic-header{display:flex;align-items:center;gap:8px;margin-bottom:0;cursor:pointer;user-select:none;}
+.socratic-header::after{content:'▸ Expand';margin-left:auto;font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'Epilogue',sans-serif;}
+.socratic-block.soc-open .socratic-header{margin-bottom:10px;}
+.socratic-block.soc-open .socratic-header::after{content:'▾ Collapse';}
+.socratic-block:not(.soc-open) .socratic-insight,.socratic-block:not(.soc-open) .socratic-questions,.socratic-block:not(.soc-open) .answer-area{display:none;}
+.socratic-icon{font-size:17px;flex-shrink:0;}
+.socratic-label{font-size:9px;font-weight:700;letter-spacing:0.18em;color:var(--text-muted);}
+.socratic-insight{font-size:13px;color:var(--text-soft);line-height:1.75;margin-bottom:12px;border-left:3px solid var(--border);padding-left:12px;font-style:italic;}
+.socratic-questions{list-style:none;padding:0;margin:0;}
+.socratic-questions li{font-size:12.5px;color:var(--text);padding:7px 0 7px 22px;position:relative;border-bottom:1px solid var(--border-dim);line-height:1.6;}
+.socratic-questions li:last-child{border-bottom:none;}
+.socratic-questions li::before{content:'?';position:absolute;left:0;font-weight:700;font-size:12px;top:8px;color:var(--red);}
+.answer-area{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.answer-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Epilogue',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.answer-textarea:focus{border-color:var(--text);}
+.answer-textarea:disabled{opacity:0.7;background:var(--surface-2);cursor:default;}
+.answer-buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.btn-add-answer{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Epilogue',sans-serif;}
+.btn-add-answer:hover:not(:disabled){opacity:0.85;}
+.btn-add-answer:disabled{opacity:0.5;cursor:default;}
+.btn-see-answer{background:var(--surface);color:var(--text-muted);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Epilogue',sans-serif;}
+.btn-see-answer:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-see-answer:not(:disabled){color:var(--red);border-color:var(--red);}
+.btn-see-answer:hover:not(:disabled){background:var(--red-glow);}
+.model-answers{margin-top:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.model-answer-item{padding:10px 0;border-bottom:1px solid var(--border-dim);}
+.model-answer-item:first-child{padding-top:0;}
+.model-answer-item:last-child{border-bottom:none;padding-bottom:0;}
+.model-answer-q{font-size:9px;font-weight:700;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:4px;}
+.model-answer-text{font-size:13px;color:var(--text-soft);line-height:1.7;}
+.mental-note-block{border-radius:10px;padding:12px 16px;margin:16px 0;display:flex;gap:10px;align-items:flex-start;background:rgba(192,57,43,0.07);border:1px solid var(--border);}
+.mental-note-block-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.mental-note-block-inner{flex:1;}
+.mental-note-block-label{font-size:9px;font-weight:700;letter-spacing:0.16em;color:var(--red);margin-bottom:3px;}
+.mental-note-block-text{font-size:13px;font-weight:600;line-height:1.55;color:var(--text);}
+.prompt-toggle{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:10px;font-weight:600;letter-spacing:0.08em;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'Epilogue',sans-serif;text-transform:uppercase;}
+.prompt-toggle:hover{color:var(--text);border-color:var(--text);}
+.prompt-content{margin-top:10px;padding:10px 14px;background:rgba(0,0,0,0.04);border-radius:8px;font-size:11.5px;color:var(--text-muted);font-style:italic;line-height:1.65;text-align:left;}
+.prompt-content[hidden]{display:none;}
+.lesson-tools{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:40px;}
+.lesson-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.tool-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.tool-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Epilogue',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+.tool-textarea:focus{border-color:var(--red);}
+.tool-row{margin-top:8px;display:flex;gap:8px;}
+.sidebar-section{margin-bottom:28px;}
+.sidebar-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;}
+.ssnav{display:flex;flex-direction:column;gap:2px;margin-top:4px;}
+.ssnav-item{font-size:12px;color:var(--text-soft);padding:6px 10px;border-radius:6px;text-decoration:none;line-height:1.4;display:block;transition:background 0.15s,color 0.15s;}
+.ssnav-item:hover,.ssnav-item.active{background:var(--red-glow);color:var(--red);}
+.hub-link{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);margin-bottom:16px;transition:color 0.15s,border-color 0.15s,background 0.15s;}
+.hub-link:hover{color:var(--red);border-color:var(--red-border);background:var(--red-light);}
+.check-item{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;}
+.check-input{accent-color:var(--red);width:14px;height:14px;flex-shrink:0;cursor:pointer;}
+.check-label{font-size:12px;color:var(--text-soft);line-height:1.4;}
+.check-item:has(.check-input:checked) .check-label{color:var(--text-muted);text-decoration:line-through;}
+.quick-ref{background:#1a0606;border-radius:10px;padding:12px 16px;margin-bottom:8px;}
+.quick-ref-term{font-size:10px;font-weight:700;letter-spacing:0.12em;color:#e87070;margin-bottom:3px;text-transform:uppercase;}
+.quick-ref-def{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;}
+.page-nav{display:flex;border-top:2px solid var(--border);background:var(--surface);}
+.page-nav-btn{flex:1;display:flex;flex-direction:column;gap:4px;padding:16px 28px;text-decoration:none;transition:background 0.15s;}
+.page-nav-btn:hover:not(.page-nav-disabled){background:var(--surface-2);}
+.page-nav-prev{border-right:1px solid var(--border);}
+.page-nav-next{text-align:right;}
+.page-nav-disabled{opacity:0.3;pointer-events:none;}
+.page-nav-label{font-size:10px;font-weight:600;letter-spacing:0.14em;color:var(--text-muted);display:block;}
+.page-nav-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;color:var(--red);display:block;}
+footer{font-size:11px;letter-spacing:0.12em;color:var(--text-muted);text-transform:uppercase;padding:20px 60px;border-top:1px solid var(--border);}
+footer span{color:var(--red);}
+@media(max-width:1000px){main{grid-template-columns:1fr;}.sidebar{position:static;max-height:none;padding:0 40px 40px;}}
+@media(max-width:720px){header{padding:28px 24px 24px;}header h1{font-size:32px;}.motivation-banner{padding:16px 24px;}.main-content{padding:24px 24px 40px;}.section-nav{padding:0 16px;}.top-panels{grid-template-columns:1fr;}.top-panels .qpanel{border-right:none;border-bottom:1px solid var(--border);}.lesson-tools-grid{grid-template-columns:1fr;}footer{padding:16px 24px;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="breadcrumb">
+      <a href="../nse7-ef-study-guide-hub.html">EF-NSE7</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="index.html">Chapter 02 — Central Management</a>
+      <span class="breadcrumb-sep">›</span>
+      Subtopic 02
+    </div>
+    <div class="header-eyebrow"><span class="dot-live"></span> Study Guide · EF-NSE7</div>
+    <h1>Explore <em>Dynamic Objects</em></h1>
+    <p>Normalized interfaces, per-device and per-platform mapping, mapping conflicts, and metadata variables — how FortiManager applies a single policy template across diverse hardware.</p>
+  </div>
+</header>
+
+<div class="motivation-banner">
+  <div class="motivation-text">One policy, many firewalls — <em>dynamic objects</em> are how FortiManager makes that work without duplicating every rule.</div>
+  <p class="motivation-sub">The exam tests whether you know which objects support per-device mapping and what happens when they don't — conflict scenarios are common question territory.</p>
+</div>
+
+<div class="top-panels">
+  <div class="qpanel" id="qpanel">
+    <button class="qpanel-header" onclick="toggleQPanel()" id="qpanel-header">
+      <span class="qpanel-title">MY QUESTIONS</span>
+      <span class="qpanel-count" id="qpanel-count">0</span>
+      <span class="qpanel-hint">— click to expand</span>
+      <span class="qpanel-chevron" id="qpanel-chevron">▾</span>
+    </button>
+    <div class="qpanel-body" id="qpanel-body"></div>
+  </div>
+  <div class="notes-panel" id="notes-panel">
+    <button class="notes-panel-header" onclick="toggleNotesPanel()" id="notes-panel-header">
+      <span class="notes-panel-title">MY NOTES</span>
+      <span class="notes-panel-count" id="notes-panel-count">0</span>
+      <span class="notes-panel-hint">— click to expand</span>
+      <span class="notes-panel-chevron" id="notes-panel-chevron">▾</span>
+    </button>
+    <div class="notes-panel-body" id="notes-panel-body"></div>
+  </div>
+</div>
+
+<nav class="section-nav" id="section-nav">
+  <a class="nav-tab active" href="#section-normalized-interfaces">Normalized Interfaces</a>
+  <a class="nav-tab" href="#section-per-device-mapping">Per-Device Mapping</a>
+  <a class="nav-tab" href="#section-mapping-conflicts">Mapping Conflicts</a>
+  <a class="nav-tab" href="#section-metadata-variables">Metadata Variables</a>
+</nav>
+
+<main>
+  <div class="main-content">
+
+    <!-- SECTION 1 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · NORMALIZED INTERFACES</span>
+      </div>
+      <p class="socratic-insight">FortiManager uses a single policy package across many FortiGate models — but every model has different physical interface names (port1, port3, lan, wan1). Without a way to abstract these differences, you'd need a separate policy package for every hardware model. Normalized interfaces solve this.</p>
+      <ul class="socratic-questions">
+        <li>What is a normalized interface, and what two mapping methods does FortiManager provide?</li>
+        <li>Why are normalized interfaces case-sensitive, and in which layers can they be assigned?</li>
+      </ul>
+      <div class="answer-area" data-section="normalized-interfaces">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">A normalized interface is an abstract interface name defined in FortiManager that maps to actual physical interface names on individual FortiGate devices. It lets you write a single policy using the abstract name (e.g., "LAN") and FortiManager translates it to the correct physical port per device. Two mapping methods: per-platform (uniform mapping across all devices of the same model) and per-device (customized mapping for an individual device).</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Normalized interfaces are case-sensitive because they are matched as strings — "LAN" and "lan" are treated as two completely different interfaces, which can cause unexpected behavior if inconsistent naming is used. They can be assigned in both the policy layer and the device layer, giving you flexibility to apply normalization at either level depending on your use case.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="section-normalized-interfaces">
+      <div class="section-label">SECTION 01</div>
+      <h2>Normalized <em>Interfaces</em></h2>
+      <div class="section-img-wrap">
+        <img src="images/s1-normalized-interfaces.png" class="section-img" alt="Diagram showing a normalized interface name mapping to different physical ports on different FortiGate models"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s1-normalized-interfaces.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat illustration, pastel palette, bold outlines. Center: a large label "LAN" (abstract normalized interface name in a rounded pill shape). Left: FortiGate 500E icon connected by arrow labeled "Per-platform → port3." Below it: FortiGate 600H icon connected by arrow labeled "Per-platform → port3." Right: FortiGate VM64 icon connected by arrow labeled "Per-device → port4." Bottom callout: "Case-sensitive — LAN ≠ lan." Two-column result: policy layer uses "LAN," FortiGate receives the specific physical port. Clean labels, no shadows, educational infographic.</div>
+        </div>
+        <p class="img-caption">A normalized interface (e.g., "LAN") maps to different physical ports per platform or per device — FortiManager translates the name automatically at install time.</p>
+      </div>
+
+      <p>The <strong>Normalized Interfaces</strong> feature (found at Policy &amp; Objects → Normalized Interfaces) standardizes interface naming across devices for easier management. Instead of writing separate policies per hardware model, you define an abstract interface name and map it to actual ports on each device.</p>
+
+      <p>Two mapping methods are available:</p>
+      <ul>
+        <li><strong>Per-platform mapping:</strong> Applies a uniform interface mapping across all devices of the same hardware model. Example: all FortiGate-500E devices map "LAN" to port3.</li>
+        <li><strong>Per-device mapping:</strong> Allows customized interface mapping for a specific individual device. Example: FortiGate-VM64 at HQ maps "LAN" to port4.</li>
+      </ul>
+
+      <p>Using normalized interfaces does <em>not</em> automatically change the interface names on the FortiGate. When FortiManager references "LAN" in a policy and it is configured as a normalized interface mapped to port4, the actual interface name on FortiGate remains port4 — FortiManager substitutes it during install. You must approve the substitution in the installation preview.</p>
+
+      <p>Critical exam point: normalized interfaces are <strong>case-sensitive</strong>. "LAN" and "lan" are treated as completely different interfaces. Use consistent naming across device layer and policy layer to avoid hard-to-diagnose assignment issues. Normalized interfaces can be assigned in <em>both</em> the policy layer and the device layer.</p>
+
+      <div class="callout callout-amber"><strong>Naming pitfall:</strong> Using a normalized interface to replace an original interface name means FortiManager will substitute that name with the mapped port in all policies for that device. Keep names consistent — per-device mapping silently overrides whatever the policy layer specifies for that firewall.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Normalized interfaces: per-platform (all same-model devices) vs. per-device (one specific device). Case-sensitive — "LAN" ≠ "lan." Assigned in both policy layer and device layer. FortiManager substitutes the abstract name with the real port at install time.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-section-normalized-interfaces" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('section-normalized-interfaces','Normalized Interfaces')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-section-normalized-interfaces" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('section-normalized-interfaces')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · PER-DEVICE MAPPING</span>
+      </div>
+      <p class="socratic-insight">Per-device mapping extends beyond interfaces — it also applies to firewall address objects. This lets Branch1 and Branch2 share the same policy and the same object name "LAN_SUBNET" while each resolving to a completely different IP range behind the scenes.</p>
+      <ul class="socratic-questions">
+        <li>What types of objects support per-device mapping, and why does it matter which do and which don't?</li>
+        <li>If two branches need different web filter settings, but web filter profiles don't support per-device mapping, what is the correct approach?</li>
+      </ul>
+      <div class="answer-area" data-section="per-device-mapping">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Objects that support per-device mapping include firewall address objects (Addresses, Virtual IPs, IP Pools), certain user and authentication objects (User Groups, LDAP Servers, RADIUS Servers, TACACS+), FortiNAC, FortiSingle Sign-On Agent, metadata variables, and dynamic local certificates. It matters because objects that don't support per-device mapping cannot have different values per firewall under the same name — if you try to use the same object name for two different configs in the policy layer, FortiManager has to choose one, causing a conflict.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Since web filter profiles don't support per-device mapping, you cannot differentiate them per device under the same profile name. The correct approach is to create uniquely named web filter profiles for each variation — for example "webfilter-branch1" and "webfilter-branch2" — and reference the correct profile in each device's policy. This is the only way to achieve different configurations without triggering a policy layer conflict.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="section-per-device-mapping">
+      <div class="section-label">SECTION 02</div>
+      <h2>Per-Device Mapping <em>for Objects</em></h2>
+      <div class="section-img-wrap">
+        <img src="images/s2-per-device-mapping.png" class="section-img" alt="Example of the LAN address object with per-device mapping showing different IP ranges for Branch1 and Branch2"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s2-per-device-mapping.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat illustration, pastel palette, bold outlines. Center: one object box labeled "LAN (Firewall Address)" with a "Per-Device Mapping" badge. Two arrows branch out. Left arrow → "Branch1 [root]" → IP label "172.16.0.0/24" (green badge). Right arrow → "Branch2 [root]" → IP label "192.168.0.0/24" (blue badge). Below: a crossed-out object labeled "Web Filter Profile" with label "No per-device mapping — must use unique names." Clean, minimal, educational infographic, no shadows.</div>
+        </div>
+        <p class="img-caption">The same "LAN" address object maps to different IP ranges on Branch1 vs. Branch2 — per-device mapping handles the difference under one shared object name.</p>
+      </div>
+
+      <p>Beyond interfaces, <strong>per-device mapping</strong> can be applied to a range of object types, allowing the same object name to resolve to different values for each managed FortiGate. This is the mechanism that lets a single policy package work across firewalls with different network configurations.</p>
+
+      <p>Three categories of dynamic configuration in FortiManager:</p>
+      <ul>
+        <li><strong>Interface mapping</strong> — normalized interfaces (covered in the previous section)</li>
+        <li><strong>Object per-device mapping</strong> — address objects, VIPs, IP pools, user groups, LDAP/RADIUS/TACACS+ servers, FortiNAC, metadata variables, dynamic local certificates, dynamic VPN tunnels</li>
+        <li><strong>Metadata variable mapping</strong> — dynamic values inserted into object fields using the $ prefix (covered in Section 04)</li>
+      </ul>
+
+      <p>Example: The firewall address object named <strong>LAN</strong> can be configured with per-device mapping so Branch1 resolves to <em>172.16.0.0/24</em> and Branch2 resolves to <em>192.168.0.0/24</em>. Both branches use the same policy referencing "LAN," and FortiManager substitutes the correct range at install time.</p>
+
+      <div class="callout callout-amber"><strong>Important restriction:</strong> Not all objects support per-device mapping. Security profile objects (Web Filter, Antivirus, Application Control, IPS, DNS Filter, etc.), most User &amp; Authentication objects (User Definitions, POP3 Users, FortiTokens, SMS Server), and most Security Fabric connectors do not support it. For these, you must create uniquely named objects for each variation.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Per-device mapping supports: address objects, VIPs, IP pools, user groups, LDAP/RADIUS/TACACS+ servers, metadata variables, dynamic certs. Does NOT support: security profiles (web filter, AV, IPS, AppCtrl), Internet Service, network services, most auth servers. If unsupported, create uniquely named objects per device.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-section-per-device-mapping" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('section-per-device-mapping','Per-Device Mapping')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-section-per-device-mapping" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('section-per-device-mapping')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · MAPPING CONFLICTS</span>
+      </div>
+      <p class="socratic-insight">When FortiManager imports a configuration from a device, it may encounter an object in the device database that shares a name with an object already in the policy layer — but with different values. FortiManager can't have two different objects with the same name in the policy layer, so it is forced to choose between them.</p>
+      <ul class="socratic-questions">
+        <li>What causes a per-device mapping conflict during import, and what does FortiManager do when it encounters one?</li>
+        <li>What is the correct resolution when a conflict occurs?</li>
+      </ul>
+      <div class="answer-area" data-section="mapping-conflicts">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">A conflict occurs when you import a configuration from the device layer and the policy layer already has an object with the same name but configured for per-device mapping that the policy layer doesn't support — or with a different value the policy layer can't reconcile. FortiManager is forced to choose between the FortiGate's value and its own existing policy layer value. This is why it's important to know which objects support per-device mapping before importing.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">The resolution is to create a uniquely named object on FortiGate for the conflicting configuration, then import it again. With a unique name, FortiManager can add it to the policy layer without colliding with the existing object. This is the only clean way to resolve the conflict — trying to overwrite the existing object risks breaking other devices that reference it.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="section-mapping-conflicts">
+      <div class="section-label">SECTION 03</div>
+      <h2>Navigating <em>Mapping Conflicts</em></h2>
+      <div class="section-img-wrap">
+        <img src="images/s3-mapping-conflicts.png" class="section-img" alt="Two-column table showing available vs unavailable per-device mapping objects in FortiManager"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s3-mapping-conflicts.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat two-column table illustration, pastel palette, bold outlines. LEFT COLUMN (pastel green header "Supports Per-Device Mapping"): bullet list with icons — Addresses, VIPs, IP Pools, User Groups, LDAP/RADIUS/TACACS+, Metadata Variables, Dynamic Local Cert, Dynamic VPN Tunnel. RIGHT COLUMN (pastel red header "No Per-Device Mapping"): bullet list — Web Filter, Antivirus, IPS, Application Control, Internet Service, Network Service, User Definitions, FortiTokens, most Security Fabric connectors. Between columns: a conflict icon (orange exclamation) with label "Same name = FortiManager must choose." Bottom: resolution tip "Create unique name on FortiGate, re-import." No shadows, clean infographic.</div>
+        </div>
+        <p class="img-caption">Objects that support per-device mapping can share a name across devices with different values; objects that don't require unique names per variation to avoid conflicts.</p>
+      </div>
+
+      <p>Understanding which objects support per-device mapping is critical because importing a configuration from a device that has an object with the same name as an existing policy layer object — for a type that doesn't support per-device mapping — forces FortiManager to choose between the FortiGate value and its own value. This creates a conflict.</p>
+
+      <p><strong>Available</strong> (support per-device mapping):</p>
+      <ul>
+        <li>Firewall Objects: Addresses, VIPs, Virtual IP Groups, IPv4/IPv6 Pools, Virtual Server &amp; IPv6 Virtual Server, ZTNA Server &amp; IPv6 ZTNA Server</li>
+        <li>Security Profiles: N/A (none supported)</li>
+        <li>User &amp; Authentication: User Groups, LDAP Servers, RADIUS Servers, TACACS+</li>
+        <li>Security Fabric: FortiNAC, Fortinet Single Sign-On Agent</li>
+        <li>Advanced: Metadata Variables, Dynamic Local Certificate, Dynamic VPN Tunnel</li>
+      </ul>
+
+      <p><strong>Unavailable</strong> (no per-device mapping — require unique names per device for different configs):</p>
+      <ul>
+        <li>Firewall Objects: Internet Service, Services &amp; Service Groups, Schedules, Network Service, IP Pool Group, Shared Traffic Shapers &amp; Per-IP Traffic Shapers</li>
+        <li>Security Profiles: Antivirus, Web Filter, Video Filter, DNS Filter, Application Control, IPS, SSL Inspection, ICAP, Web Application Firewall, Data Loss Prevention, Virtual Patching, Email Filter, and many more</li>
+        <li>User &amp; Authentication: User Definitions, POP3 Users, FortiTokens, PKI User &amp; Groups, SMS Server</li>
+        <li>Security Fabric: most connectors including NSX-T, vCenter, Public/Private SDN, ClearPass</li>
+        <li>Advanced: Replacement Message Group</li>
+      </ul>
+
+      <p><strong>Conflict resolution:</strong> If a conflict occurs, create a uniquely named object on FortiGate for the conflicting configuration, then import it again to the policy layer. With a unique name, FortiManager can add it without collision.</p>
+
+      <div class="callout"><strong>Exam strategy:</strong> It's worth memorizing the key categories that do support per-device mapping (address objects, IP pools, VIPs, user groups, auth servers, metadata variables) — the rest almost certainly don't. When in doubt on an exam scenario, if it's a security profile, it doesn't support per-device mapping.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Conflict = same object name, different value, unsupported type → FortiManager must choose. Resolution = create unique name on FortiGate, re-import. Memorize: address objects and auth servers support mapping; security profiles and most fabric connectors do not.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-section-mapping-conflicts" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('section-mapping-conflicts','Mapping Conflicts')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-section-mapping-conflicts" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('section-mapping-conflicts')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4 -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · METADATA VARIABLES</span>
+      </div>
+      <p class="socratic-insight">Per-device mapping lets you vary a whole object per device. But sometimes you only want to vary a single field within an object — like the IP/Netmask of a firewall address. Metadata variables let you do exactly that, using a $ prefix to mark a field as dynamic.</p>
+      <ul class="socratic-questions">
+        <li>Where are metadata variables created, and in what two contexts can they be used?</li>
+        <li>How do you activate a metadata variable inside a firewall object field in the FortiManager GUI?</li>
+      </ul>
+      <div class="answer-area" data-section="metadata-variables">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Metadata variables are created and edited in the policy layer, at Policy &amp; Objects → Advanced → Metadata Variables. They can be used in two contexts: within provisioning templates (to inject device-specific values during ZTP/LTP) and within policy layer objects (e.g., as the IP/Netmask value of a firewall address object). They support per-device mapping, so each device can have a different value for the same variable.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">To activate a metadata variable inside a field, type the $ character in the field. A pop-up window appears showing available variables (or a + button to create a new one). The GUI indicates fields that support metadata variables with a magnifying glass icon containing a $ symbol. You then select the variable and it becomes the field value — FortiManager substitutes the per-device value at install time.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="section-metadata-variables">
+      <div class="section-label">SECTION 04</div>
+      <h2>Metadata <em>Variables</em></h2>
+      <div class="section-img-wrap">
+        <img src="images/s4-metadata-variables.png" class="section-img" alt="FortiManager GUI showing metadata variable $ symbol in an address object field and the Metadata Variables management table"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <div class="si-placeholder">
+          <span class="si-filename">images/s4-metadata-variables.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat illustration, pastel palette, bold outlines. LEFT: address object edit form showing "IP/Netmask" field with a magnifying glass + $ symbol icon, field value showing "$Area". A tooltip bubble labeled "This field supports variables." RIGHT: Metadata Variables management table (Policy &amp; Objects → Advanced → Metadata Variables) listing entries: Area, Network1, Network2, Router_IP, WAN — each with a Default Value column and a "Per-Device Mapping" option. Arrows connect from the variable table to the address object field. Clean, no shadows, educational infographic feel.</div>
+        </div>
+        <p class="img-caption">The $ symbol activates metadata variable mode in a compatible field — FortiManager substitutes the per-device value for that variable at install time.</p>
+      </div>
+
+      <p><strong>Metadata variables</strong> are dynamic placeholders used to inject device-specific values into object fields and provisioning templates. They are created and edited in the policy layer at <strong>Policy &amp; Objects → Advanced → Metadata Variables</strong>.</p>
+
+      <p>Two usage contexts:</p>
+      <ul>
+        <li><strong>Provisioning templates:</strong> Variables provide dynamic values during ZTP and LTP device onboarding — for example, injecting the correct IP address range for each new site's LAN interface automatically.</li>
+        <li><strong>Policy layer objects:</strong> Variables can be used as the value of specific object fields — for example, the IP/Netmask field of a firewall address object named "LAN_SUBNET" can reference <code>$Area</code>, which resolves to a different subnet per device.</li>
+      </ul>
+
+      <p>The GUI identifies metadata-capable fields with a <strong>magnifying glass icon containing a $ symbol</strong>. To use a variable, type <code>$</code> in the field — a pop-up lists existing variables and a + button to create new ones. If the variable doesn't exist yet, click + to define it with a name, default value, and description.</p>
+
+      <p>Metadata variables support <strong>per-device mapping</strong>, so each FortiGate can have a different value for the same variable. A default value provides a fallback for devices without a specific mapping configured. Variables can also be used in CLI templates and pre-run CLI templates for scripted provisioning.</p>
+
+      <div class="callout callout-green"><strong>Provisioning power:</strong> Combining metadata variables with CLI templates lets you deploy a full site configuration to a new FortiGate with zero manual input — each device gets the correct IPs, subnets, and settings injected from its variable mapping automatically.</div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Metadata variables: created in Policy &amp; Objects → Advanced → Metadata Variables (policy layer). Used in: provisioning templates AND policy layer object fields. Activated by typing $ in a compatible field (magnifying glass + $ icon). Support per-device mapping with a default fallback value.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-section-metadata-variables" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('section-metadata-variables','Metadata Variables')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-section-metadata-variables" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('section-metadata-variables')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">ON THIS PAGE</div>
+      <nav class="ssnav">
+        <a class="ssnav-item" href="#section-normalized-interfaces">Normalized Interfaces</a>
+        <a class="ssnav-item" href="#section-per-device-mapping">Per-Device Mapping</a>
+        <a class="ssnav-item" href="#section-mapping-conflicts">Mapping Conflicts</a>
+        <a class="ssnav-item" href="#section-metadata-variables">Metadata Variables</a>
+      </nav>
+    </div>
+
+    <a class="hub-link" href="index.html">← Chapter 02 Hub</a>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">PROGRESS</div>
+      <div class="checklist" id="checklist">
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="section-normalized-interfaces" onchange="toggleDone(this)">
+          <span class="check-label">Normalized Interfaces</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="section-per-device-mapping" onchange="toggleDone(this)">
+          <span class="check-label">Per-Device Mapping</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="section-mapping-conflicts" onchange="toggleDone(this)">
+          <span class="check-label">Mapping Conflicts</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="check-input" data-key="section-metadata-variables" onchange="toggleDone(this)">
+          <span class="check-label">Metadata Variables</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">QUICK REFERENCE</div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Normalized Interface</div>
+        <div class="quick-ref-def">Abstract interface name in FortiManager that maps to actual physical ports per device model or per individual device.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Per-Platform Mapping</div>
+        <div class="quick-ref-def">Maps a normalized interface uniformly across all devices of the same hardware model.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Per-Device Mapping</div>
+        <div class="quick-ref-def">Maps a normalized interface or object to a specific value for one individual device. Overrides per-platform when both exist.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Case-Sensitive Interfaces</div>
+        <div class="quick-ref-def">"LAN" and "lan" are treated as different interfaces. Use consistent naming across device and policy layers.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Mapping Conflict</div>
+        <div class="quick-ref-def">Occurs during import when an object name in the device layer matches one in the policy layer but the type doesn't support per-device mapping. Resolution: rename on FortiGate, re-import.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">Metadata Variable</div>
+        <div class="quick-ref-def">Dynamic $ placeholder in a policy layer object field or provisioning template. Resolves to a per-device value at install time.</div>
+      </div>
+      <div class="quick-ref">
+        <div class="quick-ref-term">$ Activation</div>
+        <div class="quick-ref-def">Type $ in a compatible field (shown by magnifying glass + $ icon) to invoke metadata variable selection.</div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<div class="page-nav">
+  <a class="page-nav-btn page-nav-prev" href="subtopic-01-examine-fortimanager-architecture.html">
+    <span class="page-nav-label">← PREVIOUS</span>
+    <span class="page-nav-title">Examine FortiManager Architecture</span>
+  </a>
+  <a class="page-nav-btn page-nav-next" href="subtopic-03-use-scripts.html">
+    <span class="page-nav-label">NEXT →</span>
+    <span class="page-nav-title">Use Scripts on FortiManager</span>
+  </a>
+</div>
+
+<footer>
+  EF-NSE7<span>.</span> Chapter 02<span>.</span> Subtopic 02<span>.</span> Explore Dynamic Objects
+</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-ch02-sub02-dynamic-objects';
+const SECTIONS = {
+  'section-normalized-interfaces': 'Normalized Interfaces',
+  'section-per-device-mapping': 'Per-Device Mapping',
+  'section-mapping-conflicts': 'Mapping Conflicts',
+  'section-metadata-variables': 'Metadata Variables',
+};
+document.querySelectorAll('.socratic-header').forEach(function(h) {
+  h.addEventListener('click', function() { h.closest('.socratic-block').classList.toggle('soc-open'); });
+});
+function getQArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-qs') || '[]'); }
+function saveQArr(qs) { localStorage.setItem(PAGE_KEY+'-qs', JSON.stringify(qs)); }
+function addQuestion(key, name) {
+  const ta = document.getElementById('q-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const qs = getQArr(); qs.push({id: Date.now(), section: key, sectionName: name, text});
+  saveQArr(qs); ta.value = ''; renderQPanel();
+  if (!document.getElementById('qpanel-body').classList.contains('open')) toggleQPanel();
+}
+function deleteQ(id) { saveQArr(getQArr().filter(q => q.id !== id)); renderQPanel(); }
+function toggleQPanel() {
+  const body = document.getElementById('qpanel-body'), header = document.getElementById('qpanel-header'), chevron = document.getElementById('qpanel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-qpanel-open', open);
+}
+function renderQPanel() {
+  const qs = getQArr();
+  const count = document.getElementById('qpanel-count');
+  if (count) { count.textContent = qs.length; count.style.display = qs.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.qpanel-hint');
+  if (hint) hint.textContent = qs.length ? `— ${qs.length} question${qs.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('qpanel-body'); if (!body) return;
+  if (!qs.length) { body.innerHTML = '<p class="no-questions">No questions yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  qs.forEach(q => { if (groups[q.section]) groups[q.section].push(q); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(q => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${q.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteQ(${q.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+function getNotesArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-notes') || '[]'); }
+function saveNotesArr(ns) { localStorage.setItem(PAGE_KEY+'-notes', JSON.stringify(ns)); }
+function addNote(key) {
+  const ta = document.getElementById('note-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const ns = getNotesArr(); ns.push({id: Date.now(), section: key, sectionName: SECTIONS[key]||key, text});
+  saveNotesArr(ns); ta.value = ''; renderNotesPanel();
+  if (!document.getElementById('notes-panel-body').classList.contains('open')) toggleNotesPanel();
+}
+function deleteNote(id) { saveNotesArr(getNotesArr().filter(n => n.id !== id)); renderNotesPanel(); }
+function toggleNotesPanel() {
+  const body = document.getElementById('notes-panel-body'), header = document.getElementById('notes-panel-header'), chevron = document.getElementById('notes-panel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-notes-panel-open', open);
+}
+function renderNotesPanel() {
+  const ns = getNotesArr();
+  const count = document.getElementById('notes-panel-count');
+  if (count) { count.textContent = ns.length; count.style.display = ns.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.notes-panel-hint');
+  if (hint) hint.textContent = ns.length ? `— ${ns.length} note${ns.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('notes-panel-body'); if (!body) return;
+  if (!ns.length) { body.innerHTML = '<p class="no-questions">No notes yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  ns.forEach(n => { if (groups[n.section]) groups[n.section].push(n); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(n => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteNote(${n.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+function toggleDone(input) { localStorage.setItem(PAGE_KEY+'-check-'+input.dataset.key, input.checked); }
+function initChecks() {
+  document.querySelectorAll('.check-input').forEach(function(inp) {
+    inp.checked = localStorage.getItem(PAGE_KEY+'-check-'+inp.dataset.key) === 'true';
+  });
+}
+function saveSocAnswer(btn) {
+  const area = btn.closest('.answer-area'), ta = area.querySelector('.answer-textarea');
+  if (!ta.value.trim()) { ta.focus(); return; }
+  try { localStorage.setItem(PAGE_KEY+'-socans-'+area.dataset.section, ta.value); } catch(e) {}
+  ta.disabled = true; btn.textContent = '✓ Answer saved'; btn.disabled = true;
+  const seeBtn = area.querySelector('.btn-see-answer'); seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+}
+function revealSocAnswer(btn) {
+  if (btn.disabled) return;
+  const answers = btn.closest('.answer-area').querySelector('.model-answers');
+  const isHidden = answers.style.display === 'none' || !answers.style.display;
+  answers.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '▲ Hide Model Answer' : '💡 See Model Answer';
+}
+function togglePrompt(btn) {
+  const c = btn.nextElementSibling;
+  if (c.hasAttribute('hidden')) { c.removeAttribute('hidden'); btn.textContent = '▴ Hide image prompt'; }
+  else { c.setAttribute('hidden', ''); btn.textContent = '▾ Show image prompt'; }
+}
+if (sessionStorage.getItem('pt')) { document.body.style.opacity = '1'; sessionStorage.removeItem('pt'); }
+document.querySelectorAll('a[href]').forEach(function(a) { a.addEventListener('click', function() { sessionStorage.setItem('pt', '1'); }); });
+document.addEventListener('DOMContentLoaded', function() {
+  renderQPanel(); renderNotesPanel(); initChecks();
+  if (localStorage.getItem(PAGE_KEY+'-qpanel-open') === 'true') toggleQPanel();
+  if (localStorage.getItem(PAGE_KEY+'-notes-panel-open') === 'true') toggleNotesPanel();
+  document.querySelectorAll('.answer-area').forEach(function(area) {
+    try {
+      const saved = localStorage.getItem(PAGE_KEY+'-socans-'+area.dataset.section);
+      if (saved) {
+        const ta = area.querySelector('.answer-textarea'); ta.value = saved; ta.disabled = true;
+        const addBtn = area.querySelector('.btn-add-answer'); addBtn.textContent = '✓ Answer saved'; addBtn.disabled = true;
+        const seeBtn = area.querySelector('.btn-see-answer'); seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+      }
+    } catch(e) {}
+  });
+  document.querySelectorAll('.section-img').forEach(function(img) {
+    img.addEventListener('click', () => img.classList.toggle('si-expanded'));
+  });
+});
+(function() {
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      var lnk = document.querySelector('.ssnav-item[href="#'+e.target.id+'"]');
+      if (lnk) lnk.classList.toggle('active', e.isIntersecting);
+    });
+  }, { rootMargin: '-10% 0% -70% 0%' });
+  document.querySelectorAll('.section-block[id]').forEach(function(el) { obs.observe(el); });
+})();
+</script>
+</body>
+</html>
