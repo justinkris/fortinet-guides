@@ -258,6 +258,7 @@ footer span{color:var(--red);}
       <ul class="socratic-questions">
         <li>What is the purpose of an ADOM, and what two databases does every ADOM contain?</li>
         <li>Why does the global ADOM exist as a separate special container, and what is the significance of the "g" prefix?</li>
+        <li>A company has 20 FortiGates across three business units, all added to the default root ADOM. An admin in Business Unit A installs a policy package. What two serious risks does this create?</li>
       </ul>
       <div class="answer-area" data-section="core-functions">
         <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
@@ -273,6 +274,10 @@ footer span{color:var(--red);}
           <div class="model-answer-item">
             <div class="model-answer-q">Q2 — MODEL ANSWER</div>
             <div class="model-answer-text">The global ADOM provides a single source of truth for policies and objects that must be identical across multiple local ADOMs. It distributes global policies downward into per-ADOM policy packages. Objects in the global ADOM use the reserved prefix "g" (e.g., g.none, g.wildcard.google.com) — you cannot create custom objects with this prefix, preventing naming collisions between global and local objects.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q3 — MODEL ANSWER</div>
+            <div class="model-answer-text">Risk 1 — no blast radius control: a policy package install in the shared ADOM can target all 20 FortiGates, allowing one admin's action to overwrite policies on devices in other business units. Risk 2 — no administrative delegation: there is no way to scope an admin to only their own devices, so any admin can see and modify every device. ADOMs solve both problems simultaneously, along with firmware version isolation.</div>
           </div>
         </div>
       </div>
@@ -301,6 +306,8 @@ footer span{color:var(--red);}
       <p>A special <strong>Global ADOM</strong> sits above all regular ADOMs. It stores objects and policies prefixed with the reserved letter <em>g</em> and distributes identical global policies downward to multiple local ADOMs. Global-to-local compatibility spans the same version and two versions earlier: a global ADOM at 7.6 supports local ADOMs at 7.6, 7.4, and 7.2.</p>
 
       <div class="callout"><strong>Key fact:</strong> The prefix <strong>g</strong> is reserved system-wide — you cannot create custom objects using this prefix. This prevents naming collisions between global and local ADOM objects.</div>
+
+      <div class="callout callout-amber"><strong>Common misconception:</strong> "Disabling ADOMs means there is no ADOM structure." Wrong — you are always working inside an ADOM. With ADOMs disabled, that ADOM is named <strong>root</strong>, and it still contains a full device layer + policy layer + FortiGuard. The difference is that every managed device shares it with zero separation.</div>
 
       <div class="mental-note-block">
         <div class="mental-note-block-icon">🧠</div>
@@ -357,6 +364,7 @@ footer span{color:var(--red);}
       <ul class="socratic-questions">
         <li>Why is it not recommended to configure firewall policies in the device layer, even though it is technically possible?</li>
         <li>What is the revision history, and which layer tracks it per device?</li>
+        <li>A colleague edits a firewall address object in the Policy &amp; Objects section of FortiManager. Ten minutes later, the FortiGate still shows the old value. Is this a bug, and what needs to happen next?</li>
       </ul>
       <div class="answer-area" data-section="device-policy-layers">
         <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
@@ -372,6 +380,10 @@ footer span{color:var(--red);}
           <div class="model-answer-item">
             <div class="model-answer-q">Q2 — MODEL ANSWER</div>
             <div class="model-answer-text">The revision history is a per-device log of every configuration snapshot saved in the device layer. Each FortiGate has its own revision counter that increments on every retrieve, auto-retrieve, or install operation. The device layer stores and tracks this history — not the policy layer.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q3 — MODEL ANSWER</div>
+            <div class="model-answer-text">Not a bug. Policy layer changes never push to FortiGate automatically — even if the changed object is referenced in an active firewall policy. The edit lives only in FortiManager's database until an admin explicitly runs Install Policy Package (or Reinstall Policy). The install step is always required.</div>
           </div>
         </div>
       </div>
@@ -398,6 +410,8 @@ footer span{color:var(--red);}
       <p>A critical distinction: <em>changes in the policy layer take effect only after policy deployment and installation approval.</em> The policy layer assignment overwrites the selected revision history ID in the device database. Even though you can configure policies in the device layer, the next policy package install will overwrite those settings — best practice is to restrict device layer use to device-specific (non-policy) settings only.</p>
 
       <div class="callout callout-amber"><strong>Gotcha:</strong> Device layer changes affect FortiGate directly when installed. Policy layer changes are deferred — they only apply after policy package install or reinstall. Never configure firewall policies in the device layer; the next policy install will silently overwrite them.</div>
+
+      <div class="callout"><strong>⚑ NSE7 exam trap:</strong> A policy layer change does not push automatically, even if the changed object is referenced in an active firewall policy. The install step is always required. Think of the policy layer as a Word document on a shared drive — your edits are saved, but the printer (FortiGate) never sees them until you hit print.</div>
 
       <div class="mental-note-block">
         <div class="mental-note-block-icon">🧠</div>
@@ -433,6 +447,8 @@ footer span{color:var(--red);}
       <ul class="socratic-questions">
         <li>What is the key difference between Retrieve and Auto-retrieve — and why does neither update the policy package?</li>
         <li>When would you choose Quick Install over Install Device Settings, and what is the tradeoff?</li>
+        <li>A junior engineer wants to push updated firewall policies to 10 branch FortiGates. They choose Quick Install because it sounds fast. What exactly will Quick Install do, and what will it NOT do?</li>
+        <li>An engineer runs Auto-Retrieve on a FortiGate. Does this update the policy package in FortiManager? What exactly does it update?</li>
       </ul>
       <div class="answer-area" data-section="config-operations">
         <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
@@ -448,6 +464,14 @@ footer span{color:var(--red);}
           <div class="model-answer-item">
             <div class="model-answer-q">Q2 — MODEL ANSWER</div>
             <div class="model-answer-text">Quick Install applies the device layer config to FortiGate immediately without showing an installation preview. Install Device Settings shows you the diff first so you can review and cancel. Use Quick Install for ZTP/automation or when you're confident about the changes — the tradeoff is losing the review checkpoint that Install Device Settings provides.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q3 — MODEL ANSWER</div>
+            <div class="model-answer-text">Quick Install pushes <em>device layer</em> settings (interfaces, routing, system config) from the device database directly to FortiGate. It does NOT push the policy package. The firewall policy changes will not be deployed. The engineer needs to use Install Policy Package instead. This is one of the most common Quick Install misuses on the exam.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q4 — MODEL ANSWER</div>
+            <div class="model-answer-text">No. Auto-Retrieve only updates the device layer database in FortiManager — it captures the current FortiGate configuration and saves it as a new revision. The policy package is not touched. Policy package status remains whatever it was before the retrieve. To move retrieved policies into a policy package, you must run a separate Import operation.</div>
           </div>
         </div>
       </div>
@@ -517,6 +541,8 @@ footer span{color:var(--red);}
 
       <div class="callout callout-amber"><strong>Import conflict trap:</strong> If an object with the same name already exists in the policy layer, FortiManager must choose between the FortiGate value and its own — causing a conflict. Always audit for duplicate object names before importing.</div>
 
+      <div class="callout"><strong>⚑ NSE7 — Direction test:</strong> Retrieve and Auto-Retrieve are <em>inbound</em> (FortiGate → FortiManager) and only touch the device DB. Every install operation is <em>outbound</em> (FortiManager → FortiGate). Mnemonic: <strong>Retrieve pulls, Install pushes.</strong> If an exam question says "Retrieve updated the policy package," that is false.</div>
+
       <div class="mental-note-block">
         <div class="mental-note-block-icon">🧠</div>
         <div class="mental-note-block-inner">
@@ -551,6 +577,7 @@ footer span{color:var(--red);}
       <ul class="socratic-questions">
         <li>What is the difference between "Automatically Install Policies to ADOM Devices" and "Assign" for global policy distribution?</li>
         <li>Why do provisioning templates take precedence over other device layer settings — and why is that significant?</li>
+        <li>A Global ADOM is running FortiOS 7.6. Which local ADOM firmware versions are compatible with it, and why is the "g" prefix significant when distributing global objects?</li>
       </ul>
       <div class="answer-area" data-section="global-provisioning">
         <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
@@ -566,6 +593,10 @@ footer span{color:var(--red);}
           <div class="model-answer-item">
             <div class="model-answer-q">Q2 — MODEL ANSWER</div>
             <div class="model-answer-text">Provisioning templates have precedence over other device layer settings, meaning they can overwrite values already in the device database when assigned. This is significant because it means assigning a template to an existing device can silently change configurations you already have — for example, overwriting interface IPs. Always plan template assignments deliberately and preview before assigning in production.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q3 — MODEL ANSWER</div>
+            <div class="model-answer-text">A Global ADOM at 7.6 supports local ADOMs at the same version and two minor versions earlier: 7.6, 7.4, and 7.2. Anything older than 7.2 is not compatible. The "g" prefix is reserved — FortiManager automatically prefixes every global object with "g", and no custom object in any local ADOM may start with "g". This guarantees there is never a naming collision between a global object and a local object during distribution.</div>
           </div>
         </div>
       </div>
@@ -599,6 +630,8 @@ footer span{color:var(--red);}
       <p><strong>Policy layer ADOM capabilities</strong> include <strong>VPN Manager</strong>, <strong>AP Manager</strong>, and <strong>FortiSwitch Manager</strong>. These set up normalized interfaces such as zones, VLANs, and SSIDs. After configuring these features, changes require a policy package install or reinstall to reach FortiGate.</p>
 
       <div class="callout callout-green"><strong>Best practice:</strong> Use <strong>Assign</strong> (not Auto-Install) for global policy rollouts in production — the installation preview gives you a final safety checkpoint before changes touch the firewalls.</div>
+
+      <div class="callout"><strong>⚑ NSE7 — Compatibility rule:</strong> A Global ADOM at version 7.6 supports local ADOMs at <strong>7.6, 7.4, and 7.2</strong> (same version + two minor versions earlier). ADOMs older than 7.2 are not compatible with a 7.6 global ADOM.</div>
 
       <div class="mental-note-block">
         <div class="mental-note-block-icon">🧠</div>
