@@ -922,54 +922,20 @@ function resetProject(){
 loadProject();
 
 /* ── Prompt generator ── */
+function titleCaseItem(str){
+  return str.split(' ').map(w=>/[A-Z]/.test(w)?w:w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+}
 function generatePrompt(s){
-  const days=daysLeft();
-  const recallBlock=s.prevTitle
-    ?`2. SPACED RECALL\nBefore anything else, ask me: "What do you remember from our last session on ${s.prevTitle}?" Give me time to blurt everything I can recall. Then tell me what I got right, what I missed, and what I had wrong — before we move on to today's topic.`
-    :`2. CALIBRATION (Session 1 — no prior recall)\nInstead of spaced recall, ask me what I already know about FortiGate and enterprise firewall design generally. Gauge my starting level, then calibrate the depth of your explanations accordingly.`;
-
-  return `You are my Socratic tutor for the Fortinet NSE7 Enterprise Firewall exam (EF 7.6).
-My exam is June 30, 2026. I have ${days} day${days===1?'':'s'} left.
-
-━━━ TODAY'S SESSION ━━━
+  const parts=s.subtopic.split('—').map(p=>p.trim());
+  const head=parts[0];
+  const items=parts[1]?parts[1].split(',').map(p=>titleCaseItem(p.trim())):[];
+  let focus=`Subtopic Focus:\n- ${head}`;
+  if(items.length) focus+='\n   - '+items.join('\n   - ');
+  return `━━━ TODAY'S SESSION ━━━
 Session ${s.id} of 33
 Chapter ${s.ch}: ${s.chTitle}
 Topic: ${s.title}
-Subtopic focus: ${s.subtopic}
-
-━━━ SESSION FLOW — follow in this exact order ━━━
-
-1. STORY (2–3 vivid paragraphs)
-Open with a specific, realistic incident story about what went wrong because "${s.subtopic}" was misconfigured, misunderstood, or overlooked. Name a plausible company type (e.g. "a regional bank", "a hospital network"). Describe what broke, who noticed it, and the exact moment the engineer traced the root cause back to this topic. Make it technically accurate — this story should make me want to understand the concept properly so it never happens to me.
-
-${recallBlock}
-
-3. ORIENTATION (2–3 sentences max)
-Give me a concise overview of what we're covering today and exactly why it matters for NSE7 — what exam scenarios or configuration tasks this topic maps to.
-
-4. SOCRATIC TEACHING
-Guide me through the subtopic using Socratic questioning. Before explaining any concept, ask what I already know or think. Build from fundamentals to specifics. Never explain more than one concept without first checking my understanding. Use analogies for abstract or counterintuitive ideas.
-
-5. CHECKPOINTS
-After each major concept, ask me a checkpoint question and wait for my answer before proceeding. If correct, affirm briefly. If wrong, go to step 6.
-
-6. MISCONCEPTION CORRECTION
-When I'm wrong, say "Not quite —" then give the correct explanation clearly. Ask me to restate it in my own words before continuing.
-
-7. COMPARISON DRILLS
-Identify 1–3 concepts in this subtopic that are commonly confused on the NSE7 exam. Run a quick drill for each: "What's the difference between X and Y?" Wait for my answer before responding.
-
-8. NSE7 FOCUS FLAGS
-Use ⚑ NSE7 inline whenever we touch a concept that is a known exam focus area. Don't overuse it — reserve it for genuinely exam-critical items.
-
-9. STAY ON TOPIC
-Do not go beyond today's subtopic unless I explicitly ask. If a tangent comes up, note it and offer to explore it in a future session.
-
-10. FINAL QUIZ
-End with exactly 5 short-answer questions covering today's session. Present all 5 at once. Wait for all of my answers before responding. Then grade each one, explain what was right or wrong, and give me a final score out of 5 with one sentence on what to review.
-
-━━━ BEGIN ━━━
-Start with the story.`;
+${focus}`;
 }
 
 /* ── Render ── */
