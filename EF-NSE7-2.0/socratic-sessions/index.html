@@ -51,6 +51,10 @@ main{max-width:900px;margin:0 auto;padding:2rem}
 .edit-dot{width:7px;height:7px;border-radius:50%;background:var(--coral);box-shadow:0 0 0 0 rgba(224,112,80,.55);animation:editPulse 2.4s ease-in-out infinite}
 @keyframes editPulse{0%,100%{box-shadow:0 0 0 0 rgba(224,112,80,.45)}50%{box-shadow:0 0 0 5px rgba(224,112,80,0)}}
 .copy-block-actions{display:flex;align-items:center;gap:.5rem}
+.copy-block-toggle{background:none;border:0;color:var(--muted);font-size:.8rem;cursor:pointer;padding:.15rem .35rem;line-height:1;transition:color .15s,transform .2s}
+.copy-block-toggle:hover{color:var(--coral)}
+.copy-block.is-open .copy-block-toggle{transform:rotate(180deg)}
+.copy-block:not(.is-open) textarea#projectInstructions{display:none}
 .save-state{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);min-width:60px;text-align:right;transition:color .2s ease}
 .save-state.is-saved{color:var(--green)}
 .save-state.is-dirty{color:var(--gold)}
@@ -92,16 +96,30 @@ details.how-to[open] summary::after{transform:rotate(-180deg)}
 
 /* ── Chapter section ── */
 .chapter-section{margin-bottom:2.5rem}
-.chapter-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.2rem;padding-bottom:.7rem;border-bottom:1px solid #2a1515}
+.chapter-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.2rem;padding-bottom:.7rem;border-bottom:1px solid #2a1515;cursor:pointer;user-select:none}
+.chapter-header:hover .chapter-name{color:var(--coral)}
 .chapter-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 .chapter-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
-.chapter-name{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:600;color:#fff}
+.chapter-name{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:600;color:#fff;transition:color .15s}
+.chapter-count{font-size:.7rem;color:var(--muted);font-weight:500;margin-left:.4rem}
+.chapter-chevron{margin-left:auto;font-size:.85rem;color:var(--muted);transition:transform .2s}
+.chapter-section.is-collapsed .chapter-chevron{transform:rotate(-90deg)}
+.chapter-section.is-collapsed .chapter-header{margin-bottom:0;border-bottom-color:transparent}
+.chapter-section.is-collapsed .chapter-banner,
+.chapter-section.is-collapsed .session-card{display:none}
+.chapter-banner{width:100%;aspect-ratio:3/1;border-radius:10px;overflow:hidden;background:#140808;border:1px solid #2a1515;margin-bottom:1.2rem;display:block}
+.chapter-banner img{display:block;width:100%;height:100%;object-fit:cover}
 
 /* ── Session card ── */
 .session-card{background:#140808;border:1px solid #2a1515;border-radius:10px;overflow:hidden;margin-bottom:.75rem;transition:border-color .15s}
 .session-card:hover{border-color:#3a2020}
 .session-card.done{opacity:.55}
-.session-card-top{display:flex;align-items:flex-start;gap:1rem;padding:1rem 1.2rem .7rem}
+.session-card-top{display:flex;align-items:flex-start;gap:1rem;padding:1rem 1.2rem .7rem;cursor:pointer;user-select:none}
+.session-chevron{font-size:.8rem;color:var(--muted);transition:transform .2s;align-self:center;margin-left:.25rem}
+.session-card.is-collapsed .session-chevron{transform:rotate(-90deg)}
+.session-card.is-collapsed .session-card-top{padding-bottom:1rem}
+.session-card.is-collapsed .prereqs,
+.session-card.is-collapsed .session-actions{display:none}
 .session-num{width:34px;height:34px;min-width:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.71rem;font-weight:700;color:#fff;margin-top:.1rem;font-family:'Courier New',monospace}
 .session-info{flex:1}
 .session-title{font-weight:600;font-size:.97rem;color:var(--text);margin-bottom:.2rem}
@@ -144,7 +162,7 @@ header .tagline,header p.tagline{color:#7a5050}
 .eyebrow-label{color:#9a6060}
 /* Cards and surfaces */
 .content-section,.sidebar-card,.copy-block,.session-card,
-details.how-to,.how-to,.img-placeholder{background:#fff;border-color:#e8d5cc}
+details.how-to,.how-to,.img-placeholder,.chapter-banner{background:#fff;border-color:#e8d5cc}
 .copy-block-header{background:#fdf5f0;border-bottom-color:#e8d5cc}
 .copy-block textarea#projectInstructions{background:#fdf5f0;color:#4a2020;caret-color:var(--coral)}
 .copy-block textarea#projectInstructions:focus{color:#2a1010;background:#fff8f5}
@@ -156,7 +174,7 @@ details.how-to,.how-to,.img-placeholder{background:#fff;border-color:#e8d5cc}
 .reset-btn{border-color:#e8d5cc;color:#9a7070}
 .reset-btn:hover{background:#fdf5f0;border-color:#c0a098;color:#5a3030}
 /* Typography */
-.chapter-name,.session-title{color:#1a0606}
+.chapter-name,.session-title,.section-title{color:#1a0606}
 .copy-block-label,.prereqs-label,
 .session-meta,.flow-box h4,.chapter-label,.progress-label{color:#9a6060}
 .chapter-name{color:#1a0606}
@@ -190,11 +208,10 @@ footer{color:#9a7070;border-top-color:#e8d5cc}
       <span>›</span>
       Socratic Sessions
     </nav>
-    <div class="eyebrow">33 Sessions · NSE7 Enterprise Firewall 7.6 · Exam June 30, 2026</div>
+    <div class="eyebrow">33 Sessions · NSE7 Enterprise Firewall 7.6</div>
     <h1>NSE7 Socratic <em>Study Plan</em></h1>
     <p class="tagline">Story-driven Socratic sessions — one subtopic at a time, from first principles to exam-ready.</p>
     <div class="header-meta">
-      <div class="days-badge" id="daysBadge">— days until exam</div>
       <div class="progress-wrap">
         <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
         <div class="progress-label" id="progressLabel">0 / 33 sessions complete</div>
@@ -210,7 +227,7 @@ footer{color:#9a7070;border-top-color:#e8d5cc}
   ══════════════════════════════════════════ -->
   <div class="section-title" style="margin-bottom:.3rem">Claude Project Instructions</div>
   <div class="section-sub">Edit directly below — changes auto-save to this browser. Paste the final version into the Custom Instructions field of your Claude Project.</div>
-  <div class="copy-block">
+  <div class="copy-block" id="copyBlock">
     <div class="copy-block-header">
       <span class="copy-block-label">
         <span class="edit-dot"></span>
@@ -220,6 +237,7 @@ footer{color:#9a7070;border-top-color:#e8d5cc}
         <span class="save-state" id="saveState">Saved</span>
         <button class="reset-btn" id="resetBtn" onclick="resetProject()" title="Restore default instructions">Reset</button>
         <button class="copy-btn" id="projCopyBtn" onclick="copyProject()">Copy</button>
+        <button class="copy-block-toggle" id="copyBlockToggle" onclick="toggleCopyBlock()" aria-label="Expand instructions" title="Expand instructions">▾</button>
       </div>
     </div>
     <textarea id="projectInstructions" spellcheck="false" aria-label="Editable Claude Project custom instructions"></textarea>
@@ -243,14 +261,14 @@ footer{color:#9a7070;border-top-color:#e8d5cc}
         <div class="step-num">2</div>
         <div class="step-text">
           <strong>Pick a session</strong>
-          <p>Start at Session 01 and work sequentially. Each card below holds the full prompt for that subtopic — including the day count, recall from your last session, and the strict flow Claude must follow.</p>
+          <p>Start at Session 01 and work sequentially. Each card below holds the full prompt for that subtopic — including recall from your last session and the strict flow Claude must follow.</p>
         </div>
       </div>
       <div class="flow-step">
         <div class="step-num">3</div>
         <div class="step-text">
           <strong>Start the Claude session</strong>
-          <p>Open your Claude Project. Click "Copy Prompt" on the session card — the prompt is generated fresh with today's day count. Paste it into Claude and send. Claude will open with the story and follow the full session flow.</p>
+          <p>Open your Claude Project. Click "Copy Prompt" on the session card to copy that session's prompt. Paste it into Claude and send. Claude will open with the story and follow the full session flow.</p>
         </div>
       </div>
       <div class="flow-step">
@@ -294,7 +312,7 @@ footer{color:#9a7070;border-top-color:#e8d5cc}
 
 </main>
 
-<footer>EF-NSE7 2.0 · Socratic Study Plan · 33 Sessions · Exam June 30, 2026</footer>
+<footer>EF-NSE7 2.0 · Socratic Study Plan · 33 Sessions</footer>
 
 <script>
 /* ── Page transitions ── */
@@ -369,18 +387,6 @@ If I am wrong:
 Be direct and accurate.
 
 Do not soften corrections.
-
----
-
-## EXAM DATE
-
-NSE7 Enterprise Firewall (EF 7.6)
-
-Exam Date: June 30, 2026
-
-Treat all sessions as preparation for this date.
-
-Increase emphasis on exam-style thinking, troubleshooting speed, and weak areas as the exam approaches.
 
 ---
 
@@ -864,13 +870,6 @@ const SESSIONS=[
    prevTitle:'Offloading Config (Session 32)'},
 ];
 
-/* ── Exam countdown ── */
-const EXAM_DATE=new Date('2026-06-30T00:00:00');
-function daysLeft(){
-  const now=new Date();now.setHours(0,0,0,0);
-  return Math.max(0,Math.ceil((EXAM_DATE-now)/86400000));
-}
-
 /* ── Progress ── */
 function getStatus(id){return localStorage.getItem('soc2-s'+id)||'';}
 function setStatus(id,v){localStorage.setItem('soc2-s'+id,v);}
@@ -881,7 +880,30 @@ function updateProgress(){
   const pct=Math.round(done/33*100);
   document.getElementById('progressFill').style.width=pct+'%';
   document.getElementById('progressLabel').textContent=done+' / 33 sessions complete';
-  document.getElementById('daysBadge').textContent=daysLeft()+' days until exam';
+}
+
+/* ── Collapsible instructions ── */
+function toggleCopyBlock(){
+  const block=document.getElementById('copyBlock');
+  const btn=document.getElementById('copyBlockToggle');
+  const open=block.classList.toggle('is-open');
+  btn.setAttribute('aria-label',open?'Collapse instructions':'Expand instructions');
+  btn.setAttribute('title',open?'Collapse instructions':'Expand instructions');
+}
+
+/* ── Collapsible chapters & sessions ── */
+function toggleChapter(ch){
+  const sec=document.querySelector('.chapter-section[data-ch="'+ch+'"]');
+  if(!sec) return;
+  const collapsed=sec.classList.toggle('is-collapsed');
+  localStorage.setItem('soc2-ch-collapsed-'+ch,collapsed?'1':'0');
+}
+function toggleSession(e,id){
+  if(e.target.closest('button,a')) return;
+  const card=document.getElementById('session-'+id);
+  if(!card) return;
+  const collapsed=card.classList.toggle('is-collapsed');
+  localStorage.setItem('soc2-sess-collapsed-'+id,collapsed?'1':'0');
 }
 
 /* ── Editable project instructions — load/save/reset ── */
@@ -950,19 +972,28 @@ function render(){
 
     const sec=document.createElement('div');
     sec.className='chapter-section';
-    sec.innerHTML=`<div class="chapter-header">
+    const chTitle=chSessions[0].chTitle;
+    const chCollapsed=localStorage.getItem('soc2-ch-collapsed-'+ch)==='1';
+    if(chCollapsed) sec.classList.add('is-collapsed');
+    sec.dataset.ch=ch;
+    sec.innerHTML=`<div class="chapter-header" onclick="toggleChapter('${ch}')">
       <div class="chapter-dot" style="background:${color}"></div>
       <div>
         <div class="chapter-label">Chapter ${ch}</div>
-        <div class="chapter-name">${chSessions[0].chTitle}</div>
+        <div class="chapter-name">${chTitle}<span class="chapter-count">· ${chSessions.length} session${chSessions.length>1?'s':''}</span></div>
       </div>
+      <span class="chapter-chevron">▾</span>
+    </div>
+    <div class="chapter-banner">
+      <img src="images/ch${ch}-banner.png" alt="Chapter ${ch} — ${chTitle} banner" loading="lazy" onerror="this.style.display='none'">
     </div>`;
 
     chSessions.forEach(s=>{
       const isDone=getStatus(s.id)==='done';
       const status=getStatus(s.id);
       const card=document.createElement('div');
-      card.className='session-card'+(isDone?' done':'');
+      const sessionCollapsed=localStorage.getItem('soc2-sess-collapsed-'+s.id)==='1';
+      card.className='session-card'+(isDone?' done':'')+(sessionCollapsed?' is-collapsed':'');
       card.id='session-'+s.id;
 
       const sLabel=isDone?'Done':status==='started'?'In Progress':'Not Started';
@@ -972,13 +1003,14 @@ function render(){
       const doneText=isDone?'✓ Done':'Mark Done';
 
       card.innerHTML=`
-        <div class="session-card-top">
+        <div class="session-card-top" onclick="toggleSession(event,${s.id})">
           <div class="session-num" style="background:${color}">${String(s.id).padStart(2,'0')}</div>
           <div class="session-info">
             <div class="session-title">${s.title}</div>
             <div class="session-meta">Session ${s.id} &nbsp;·&nbsp; Ch ${s.ch}</div>
           </div>
           <div class="session-status ${sClass}">${sLabel}</div>
+          <span class="session-chevron">▾</span>
         </div>
         <div class="prereqs">
           <div class="prereqs-label">Prerequisites</div>

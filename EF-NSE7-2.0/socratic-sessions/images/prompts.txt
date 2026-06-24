@@ -1,0 +1,131 @@
+Chapter banner image prompts — EF-NSE7 2.0 Socratic Sessions
+
+Style brief (applies to every banner):
+  Flat minimalistic detailed cartoon illustration. Wide banner (3:1 ratio, ~1200x400). Warm light palette
+  matching the webpage: cream/peach background (#fdf5f0 to #fff8f5), coral accents (#e07050), soft brown
+  outlines (#7a5050), occasional muted gold (#d2a541) and sage green (#5ab288) highlights. Clean line work,
+  no gradients, no shadows beyond subtle ones. Generous whitespace. No text, no logos. Composition reads
+  left-to-right as a single horizontal scene. Subjects sit on a faint horizon or floor line.
+
+──────────────────────────────────────────────────────────────────
+
+File: images/ch01-banner.png
+Chapter 01 — Network Security Architecture
+Prompt:
+  Wide horizontal banner, flat minimalistic detailed cartoon, cream/peach background with coral accents.
+  Scene: a stylised enterprise network perimeter — a stack of three flat-shaded FortiGate appliances at
+  centre, coral indicator LEDs glowing softly. To the left, a small cluster of office buildings and a
+  user silhouette behind a translucent shield. To the right, an abstract internet cloud with a few stray
+  threat-arrow shapes deflecting off the shield. Thin coral lines connect the buildings → firewalls →
+  cloud, suggesting zoned traffic flow. Warm muted colour palette, clean outlines, no text.
+
+──────────────────────────────────────────────────────────────────
+
+File: images/ch02-banner.png
+Chapter 02 — Central Management
+Prompt:
+  Wide horizontal banner, flat minimalistic detailed cartoon, cream/peach background with coral accents.
+  Scene: a central FortiManager console depicted as a friendly tablet/server hybrid in the middle, with
+  four smaller FortiGate devices arranged symmetrically around it, connected by thin coral dotted lines
+  carrying tiny policy/script icons (a gear, a script scroll, a tag). Floating labels above each
+  FortiGate are blank rounded rectangles (no text). Sage green checkmarks float near the manager
+  indicating push success. Warm palette, soft brown outlines, generous whitespace.
+
+──────────────────────────────────────────────────────────────────
+
+File: images/ch03-banner.png
+Chapter 03 — VLANs and VDOMs
+Prompt:
+  Wide horizontal banner, flat minimalistic detailed cartoon, cream/peach background with coral accents.
+  Scene: a single large flat-shaded FortiGate appliance bisected vertically into two distinct coloured
+  zones (peach and pale sage) representing two VDOMs, each with its own miniature routing-table icon
+  and tiny stack of policies. Above the appliance, three coloured VLAN trunk lines (coral, gold, sky
+  blue) braid into a single Ethernet cable feeding into the device's port. Small numbered VLAN tag
+  bubbles drift along the lines. Clean outlines, no text, balanced composition.
+
+──────────────────────────────────────────────────────────────────
+
+File: images/ch04-banner.png
+Chapter 04 — High Availability
+Prompt:
+  Wide horizontal banner, flat minimalistic detailed cartoon, cream/peach background with coral accents.
+  Scene: two identical FortiGate appliances side by side in the centre, joined by a coral heartbeat
+  cable that traces a small EKG-style waveform across the middle of the banner. The left unit has a
+  bright coral "active" indicator; the right unit has a softer muted indicator labelled with a small
+  standby dot (no text). Traffic flow arrows enter on the far left, pass through the active unit, and
+  exit to the right, with one dashed alternate path looping through the standby unit. Warm flat palette,
+  generous whitespace.
+
+──────────────────────────────────────────────────────────────────
+
+File: images/ch05-banner.png
+Chapter 05 — Dynamic Routing Protocols
+Prompt:
+  Wide horizontal banner, flat minimalistic detailed cartoon, cream/peach background with coral accents.
+  Scene: a stylised routing topology spread across the banner — five flat-shaded routers (small rounded
+  rectangles with a single coral antenna line) arranged in a loose mesh. Two clusters are grouped by
+  faint pastel circles representing OSPF areas; a separate pair on the right sit in a sage-tinted cloud
+  representing a BGP autonomous system. Thin coral arrows between routers show advertised routes; a few
+  tiny prefix bubbles (rounded rectangles, no text) float along the paths. Clean outlines, warm palette.
+
+──────────────────────────────────────────────────────────────────
+
+File: images/ch06-banner.png
+Chapter 06 — Security Profiles
+Prompt:
+  Wide horizontal banner, flat minimalistic detailed cartoon, cream/peach background with coral accents.
+  Scene: a horizontal traffic pipeline running left to right across the banner. Plain packets (small
+  rounded rectangles) enter on the left and pass through four inspection stations represented as
+  flat-shaded scanner arches: SSL/SSH deep-inspection (a tiny lock that opens), web filter (a small
+  globe with a sieve), application control (a stack of mini app tiles), and IPS (a sage shield with a
+  pulse line). Threats (small coral triangles) are deflected upward out of the pipeline; clean packets
+  continue right. Warm flat palette, soft outlines, no text.
+
+──────────────────────────────────────────────────────────────────
+
+File: images/ch07-banner.png
+Chapter 07 — IPsec
+Prompt:
+  Wide horizontal banner, flat minimalistic detailed cartoon, cream/peach background with coral accents.
+  Scene: two small office buildings on opposite sides of the banner connected by a stylised IPsec tunnel
+  — a long coral cylindrical pipe drawn in flat shading, with subtle lock icons sitting on each end.
+  Inside the pipe, a few generic packet shapes travel through, depicted with light "encrypted" hatching.
+  A thin key-shape hovers above the centre of the tunnel suggesting the negotiated key. Warm palette,
+  clean outlines, generous whitespace, no text.
+
+──────────────────────────────────────────────────────────────────
+
+File: images/ch08-banner.png
+Chapter 08 — Auto-Discovery VPN (ADVPN)
+Prompt:
+  Wide horizontal banner, flat minimalistic detailed cartoon, cream/peach background with coral accents.
+  Scene: one central hub site at the top centre, four spoke sites arrayed across the bottom. Solid
+  coral tunnel lines link every spoke to the hub. Between two of the spokes, a brighter dashed sage-
+  green shortcut tunnel arcs directly spoke-to-spoke, with a small lightning glyph at its midpoint to
+  suggest on-demand creation. Sites are simple flat-shaded buildings. Warm palette, balanced
+  composition, clean outlines, no text.
+
+──────────────────────────────────────────────────────────────────
+
+File: images/ch09-banner.png
+Chapter 09 — Security Fabric
+Prompt:
+  Wide horizontal banner, flat minimalistic detailed cartoon, cream/peach background with coral accents.
+  Scene: a root FortiGate at the centre depicted as a slightly larger flat-shaded appliance with a faint
+  coral halo. Around it, downstream devices fan outward — two smaller FortiGates, a FortiAnalyzer
+  cylinder, a FortiSwitch, and a small cloud-connector node represented as a fluffy cloud icon. Thin
+  coral connecting lines form a web between them. A few tiny sage automation-stitch icons (a small gear
+  with an arrow) sit on some of the links. Warm palette, generous whitespace, no text.
+
+──────────────────────────────────────────────────────────────────
+
+File: images/ch10-banner.png
+Chapter 10 — Hardware Acceleration
+Prompt:
+  Wide horizontal banner, flat minimalistic detailed cartoon, cream/peach background with coral accents.
+  Scene: a cutaway view of a FortiGate chassis stretching most of the banner, drawn in flat shading.
+  Inside, two distinct labelled chip blocks (no text — distinguished by colour and symbol only): a
+  coral-tinted NP processor with parallel fast-lane arrows of packets streaming straight through, and a
+  smaller gold-tinted CP processor depicted with a tiny key/lock motif representing cryptographic
+  offload. A slower zig-zag CPU path runs above the chips for comparison. Warm palette, clean outlines,
+  no text labels.
