@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){if(sessionStorage.getItem('pt'))document.documentElement.style.opacity='0';})()</script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>NSE7 Audio Podcasts · EF-NSE7 2.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;transition:opacity .3s ease}
+body{font-family:'Inter',sans-serif;background:#faf7f5;color:#1a0606;line-height:1.6;transition:opacity .25s ease}
+:root{
+  --coral:#e07050;--violet:#c476b8;--sky:#5aa2d2;--green:#5ab288;
+  --gold:#d2a541;--red:#e87070;--indigo:#6a8ad0;--teal:#52b4c4;
+  --purple:#9878c8;--lime:#9aba6a;
+  --muted:#9a6060
+}
+
+/* ── Header ── */
+header{background:#fff;border-bottom:1px solid #e8d5cc;padding-bottom:2rem}
+.header-inner{max-width:900px;margin:0 auto;padding:1.5rem 2rem 0}
+.breadcrumb{font-size:.8rem;color:var(--muted);margin-bottom:1rem}
+.breadcrumb a{color:var(--muted);text-decoration:none}
+.breadcrumb a:hover{color:var(--coral)}
+.breadcrumb span{margin:0 .4rem;opacity:.5}
+.eyebrow{font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--coral);margin-bottom:.5rem}
+header h1{font-family:'Fraunces',serif;font-size:2.4rem;font-weight:700;color:#1a0606;line-height:1.15;margin-bottom:.5rem}
+header h1 em{color:var(--coral);font-style:italic}
+header .tagline{color:#7a5050;font-size:1rem;max-width:560px}
+.header-meta{display:flex;align-items:center;gap:2rem;margin-top:1.5rem;flex-wrap:wrap}
+.progress-wrap{flex:1;min-width:180px}
+.progress-bar-bg{background:#f0ddd8;border-radius:4px;height:6px;overflow:hidden;margin-bottom:.35rem}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--coral),var(--gold));border-radius:4px;transition:width .4s ease;width:0%}
+.progress-label{font-size:.78rem;color:var(--muted)}
+
+/* ── Main ── */
+main{max-width:900px;margin:0 auto;padding:2rem}
+
+/* ── Section title ── */
+.section-title{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:600;color:#1a0606;margin-bottom:.3rem}
+.section-sub{font-size:.85rem;color:var(--muted);margin-bottom:1rem}
+
+/* ── How to ── */
+details.how-to{background:#fff;border:1px solid #e8d5cc;border-radius:10px;overflow:hidden;margin-bottom:2.5rem}
+details.how-to summary{padding:1rem 1.4rem;cursor:pointer;font-weight:600;font-size:.95rem;color:#1a0606;list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none}
+details.how-to summary::-webkit-details-marker{display:none}
+details.how-to summary::after{content:'▾';font-size:.8rem;color:var(--muted);transition:transform .2s}
+details.how-to[open] summary::after{transform:rotate(-180deg)}
+.how-to-body{padding:0 1.4rem 1.4rem;background:#fff}
+.flow-step{display:flex;gap:1rem;margin-bottom:1.1rem;align-items:flex-start}
+.step-num{background:var(--coral);color:#fff;border-radius:50%;width:24px;height:24px;min-width:24px;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;margin-top:.18rem}
+.step-text strong{display:block;font-size:.9rem;margin-bottom:.15rem;color:#1a0606}
+.step-text p{font-size:.82rem;color:#5a3030}
+.flow-box{background:#fdf5f0;border:1px solid #e8d5cc;border-radius:8px;padding:1rem 1.2rem;margin-top:1.2rem}
+.flow-box h4{font-size:.74rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.7rem}
+.flow-items{display:flex;flex-wrap:wrap;gap:.5rem}
+.flow-chip{background:#f0e5e0;border-radius:5px;padding:.22rem .6rem;font-size:.74rem;color:#7a5050}
+
+/* ── Divider ── */
+.divider{border:none;border-top:1px solid #e8d5cc;margin:2.5rem 0}
+
+/* ── Chapter section ── */
+.chapter-section{margin-bottom:2.5rem}
+.chapter-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.2rem;padding-bottom:.7rem;border-bottom:1px solid #e8d5cc;cursor:pointer;user-select:none}
+.chapter-header:hover .chapter-name{color:var(--coral)}
+.chapter-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.chapter-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.chapter-name{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:600;color:#1a0606;transition:color .15s}
+.chapter-count{font-size:.7rem;color:var(--muted);font-weight:500;margin-left:.4rem}
+.chapter-chevron{margin-left:auto;font-size:.85rem;color:var(--muted);transition:transform .2s}
+.chapter-section.is-collapsed .chapter-chevron{transform:rotate(-90deg)}
+.chapter-section.is-collapsed .chapter-header{margin-bottom:0;border-bottom-color:transparent}
+.chapter-section.is-collapsed .chapter-banner,
+.chapter-section.is-collapsed .episode-card{display:none}
+.chapter-banner{width:100%;aspect-ratio:3/1;border-radius:10px;overflow:hidden;background:#fff;border:1px solid #e8d5cc;margin-bottom:1.2rem;display:block}
+.chapter-banner img{display:block;width:100%;height:100%;object-fit:cover}
+
+/* ── Episode card ── */
+.episode-card{background:#fff;border:1px solid #e8d5cc;border-radius:10px;overflow:hidden;margin-bottom:.75rem;transition:border-color .15s}
+.episode-card:hover{border-color:#c8a898}
+.episode-card.is-complete{opacity:.65}
+.episode-card-top{display:flex;align-items:center;gap:1rem;padding:1rem 1.2rem;cursor:pointer;user-select:none}
+.episode-num{width:36px;height:36px;min-width:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:#fff;font-family:'Courier New',monospace}
+.episode-info{flex:1;min-width:0}
+.episode-title{font-weight:600;font-size:.97rem;color:#1a0606;margin-bottom:.2rem}
+.episode-meta{font-size:.74rem;color:var(--muted)}
+.episode-meta .duration{color:var(--coral);font-weight:600;margin-left:.3rem}
+.episode-state-top{font-size:.73rem;padding:.28rem .75rem;border-radius:20px;font-weight:500;letter-spacing:.02em;white-space:nowrap;border:1px solid #e8d5cc;color:#9a7070;background:none;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.episode-state-top:hover{filter:brightness(.97)}
+.episode-state-top.pod-1{background:#fdf5e0;color:#8a6a20;border-color:#e8d5a0}
+.episode-state-top.pod-2{background:#fdebe5;color:#a04020;border-color:#e8c0a8}
+.episode-state-top.pod-3{background:#e8f5e8;color:#2a7a3a;border-color:#a8d8b0}
+.episode-chevron{font-size:.85rem;color:var(--muted);transition:transform .2s}
+.episode-card.is-collapsed .episode-chevron{transform:rotate(-90deg)}
+.episode-card.is-collapsed .episode-details{display:none}
+
+/* ── Episode details (expanded) ── */
+.episode-details{padding:0 1.2rem 1.1rem 4rem;border-top:1px solid #f0e0d8}
+.detail-label{font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:600;margin:1rem 0 .55rem}
+.coverage-list{list-style:none;padding:0;margin-bottom:1.1rem}
+.coverage-list>li{font-size:.85rem;color:#3a1818;padding:.2rem 0;line-height:1.55}
+.coverage-list>li::before{content:'●';color:var(--coral);font-size:.65rem;margin-right:.55rem;vertical-align:middle}
+.coverage-sub{list-style:none;padding:0 0 0 1.3rem;margin-top:.25rem}
+.coverage-sub li{font-size:.8rem;color:#5a3030;padding:.13rem 0;line-height:1.55}
+.coverage-sub li::before{content:'↳';color:var(--muted);margin-right:.45rem;font-size:.75rem}
+.episode-actions{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:.5rem}
+.btn{display:inline-flex;align-items:center;gap:.3rem;padding:.4rem .85rem;border-radius:6px;font-size:.78rem;font-family:'Inter',sans-serif;font-weight:500;cursor:pointer;text-decoration:none;transition:all .15s;border:1px solid transparent}
+.btn-copy{background:var(--coral);color:#fff;border-color:var(--coral)}
+.btn-copy:hover{filter:brightness(1.08)}
+.btn-copy.copied{background:var(--green);border-color:var(--green)}
+.episode-state-pill{margin-left:auto;background:none;border:1px solid #e8d5cc;color:#9a7070;font-size:.74rem;font-family:'Inter',sans-serif;cursor:pointer;padding:.32rem .85rem;border-radius:20px;transition:all .15s;font-weight:500;letter-spacing:.02em}
+.episode-state-pill:hover{filter:brightness(.97)}
+.episode-state-pill.pod-1{background:#fdf5e0;color:#8a6a20;border-color:#e8d5a0}
+.episode-state-pill.pod-2{background:#fdebe5;color:#a04020;border-color:#e8c0a8}
+.episode-state-pill.pod-3{background:#e8f5e8;color:#2a7a3a;border-color:#a8d8b0}
+.notebooklm-hint{font-size:.72rem;color:var(--muted);margin-top:.6rem;line-height:1.55;font-style:italic}
+
+/* ── Footer ── */
+footer{text-align:center;padding:2rem;font-size:.78rem;color:var(--muted);border-top:1px solid #e8d5cc;margin-top:2rem}
+
+@media(max-width:640px){
+  header h1{font-size:1.8rem}
+  .episode-details{padding-left:1.2rem}
+  .episode-card-top{flex-wrap:wrap}
+  .episode-state-top{order:3;width:100%;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <nav class="breadcrumb">
+      <a href="../index.html">EF-NSE7 2.0 Hub</a>
+      <span>›</span>
+      Audio Podcasts
+    </nav>
+    <div class="eyebrow">33 Episodes · NSE7 Enterprise Firewall 7.6 · NotebookLM</div>
+    <h1>NSE7 Audio <em>Podcasts</em></h1>
+    <p class="tagline">Deep-dive episodes generated with NotebookLM — one per subtopic. Copy the prompt, customize, listen on the go.</p>
+    <div class="header-meta">
+      <div class="progress-wrap">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+        <div class="progress-label" id="progressLabel">0 / 33 episodes complete</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <div class="section-title" style="margin-bottom:.3rem">How It Works</div>
+  <div class="section-sub">A focused workflow for generating each episode in NotebookLM and tracking your library.</div>
+
+  <details class="how-to" open>
+    <summary>NotebookLM Workflow</summary>
+    <div class="how-to-body">
+      <div style="height:.8rem"></div>
+      <div class="flow-step">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <strong>Open NotebookLM and create (or open) a notebook</strong>
+          <p>You can keep one notebook per chapter, or one per episode. Optionally upload Fortinet documentation pages, the EF 7.6 study guide, or your own notes as sources for richer grounding.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <strong>Click "Audio Overview" → "Customize"</strong>
+          <p>NotebookLM's customize box accepts a focus prompt that steers the two-host conversation. That's where each episode's prompt below goes.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <strong>Click "Copy Prompt" on the episode card</strong>
+          <p>The copied prompt enumerates every subtopic, sets the audience (NSE7 candidate with prior FortiGate experience), tone, depth requirements, and ends with 3 exam-style recap questions.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">4</div>
+        <div class="step-text">
+          <strong>Paste, generate, and advance the state pill</strong>
+          <p>Click the state pill on the card to walk it through: <em>Generating</em> while NotebookLM works, <em>Renamed</em> once you've named the downloaded file, <em>Completed</em> when it's in your library.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">5</div>
+        <div class="step-text">
+          <strong>Listen, then come back for the next episode</strong>
+          <p>Sequential listening matches the dependency order baked into the prompts, but you can jump around — each episode is self-contained.</p>
+        </div>
+      </div>
+      <div class="flow-box">
+        <h4>State pill progression</h4>
+        <div class="flow-items">
+          <span class="flow-chip">○ Not Started</span>
+          <span class="flow-chip">◐ Generating</span>
+          <span class="flow-chip">✎ Renamed</span>
+          <span class="flow-chip">✓ Completed</span>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <hr class="divider"/>
+
+  <div id="episodesContainer"></div>
+
+</main>
+
+<footer>EF-NSE7 2.0 · Audio Podcasts · 33 Episodes · Generated with NotebookLM</footer>
+
+<script>
+/* ── Page transitions ── */
+window.addEventListener('load',()=>{
+  document.documentElement.style.opacity='1';
+  if(sessionStorage.getItem('pt')){sessionStorage.removeItem('pt');}
+});
+document.querySelectorAll('a[href]').forEach(a=>{
+  if(!a.getAttribute('href').startsWith('#')){
+    a.addEventListener('click',()=>sessionStorage.setItem('pt','1'));
+  }
+});
+
+/* ── Chapter colors ── */
+const CH_COLORS={
+  '01':'#e07050','02':'#c476b8','03':'#5aa2d2','04':'#5ab288',
+  '05':'#d2a541','06':'#e87070','07':'#6a8ad0','08':'#52b4c4',
+  '09':'#9878c8','10':'#9aba6a'
+};
+
+/* ── Sessions data (kept in sync with socratic-sessions) ── */
+const SESSIONS=[
+  {id:1,ch:'01',chTitle:'Network Security Architecture',title:'Enterprise Firewall Solution',subtopic:'Understand the Enterprise Firewall Solution',prereqs:['Basic FortiGate administration experience','Familiarity with firewall zones and perimeter models','General understanding of firewall policy concepts']},
+  {id:2,ch:'01',chTitle:'Network Security Architecture',title:'Design Secure Networks Using Fortinet',subtopic:'Design Secure Networks Using Fortinet Solutions',prereqs:['Session 01 — Enterprise Firewall Solution']},
+  {id:3,ch:'02',chTitle:'Central Management',title:'FortiManager Architecture',subtopic:'Examine FortiManager Architecture — ADOMs, device registration, policy packages',prereqs:['Sessions 01–02','Basic awareness of FortiManager as a central management platform']},
+  {id:4,ch:'02',chTitle:'Central Management',title:'Dynamic Objects in FortiManager',subtopic:'Explore Dynamic Objects — dynamic address objects, metadata variables, mapping to devices',prereqs:['Session 03 — FortiManager Architecture']},
+  {id:5,ch:'02',chTitle:'Central Management',title:'Scripts on FortiManager',subtopic:'Use Scripts on FortiManager — CLI scripts, TCL scripts, script groups, run targets',prereqs:['Sessions 03–04','Basic CLI familiarity on FortiGate']},
+  {id:6,ch:'03',chTitle:'VLANs and VDOMs',title:'Configure VLANs',subtopic:'Configure VLANs on FortiGate — 802.1Q tagging, VLAN interfaces, aggregate and redundant links',prereqs:['Understanding of 802.1Q VLAN tagging','Basic switch and trunk port concepts']},
+  {id:7,ch:'03',chTitle:'VLANs and VDOMs',title:'Configure VDOMs',subtopic:'Configure VDOMs — VDOM modes, management VDOM, per-VDOM administrators and resource limits',prereqs:['Session 06 — VLANs','Understanding of virtual routing and traffic separation concepts']},
+  {id:8,ch:'03',chTitle:'VLANs and VDOMs',title:'Inter-VDOM Routing',subtopic:'Inter-VDOM Routing — VDOM link types, NPU VDOM links, routing and policy between VDOMs',prereqs:['Sessions 06–07','Basic static routing knowledge']},
+  {id:9,ch:'04',chTitle:'High Availability',title:'Configure HA Clusters',subtopic:'Configure HA Clusters — Active/Active vs Active/Passive, HA groups, initial cluster formation',prereqs:['Sessions 01–02 (network architecture)','Basic understanding of redundancy and failover concepts']},
+  {id:10,ch:'04',chTitle:'High Availability',title:'FGCP — The HA Protocol',subtopic:'FGCP — heartbeat interfaces, master election, monitored ports, session synchronization, failover triggers',prereqs:['Session 09 — HA cluster modes and initial setup']},
+  {id:11,ch:'04',chTitle:'High Availability',title:'FGSP — Standalone Session Sync',subtopic:'FGSP — standalone cluster, asymmetric routing scenarios, session sync without FGCP',prereqs:['Session 10 — FGCP protocol details']},
+  {id:12,ch:'04',chTitle:'High Availability',title:'VRRP for FortiGate',subtopic:'VRRP — virtual router redundancy, master/backup election, preemption, FortiGate-specific config',prereqs:['Sessions 09–11 — HA fundamentals','Basic IP routing concepts']},
+  {id:13,ch:'05',chTitle:'Dynamic Routing Protocols',title:'Configure OSPF',subtopic:'Configure OSPF — areas, LSA types, neighbor adjacency, DR/BDR election, route filtering',prereqs:['Solid understanding of IP routing (subnets, routing tables, administrative distance)','Familiarity with link-state routing concept']},
+  {id:14,ch:'05',chTitle:'Dynamic Routing Protocols',title:'BGP Fundamentals',subtopic:'Configure BGP — AS numbers, iBGP vs eBGP, peering setup, NLRI advertisement, next-hop self',prereqs:['Session 13 — OSPF (establishes routing foundation)','Understanding of autonomous systems and path-vector concept']},
+  {id:15,ch:'05',chTitle:'Dynamic Routing Protocols',title:'BGP Advanced — Path Selection & Filtering',subtopic:'BGP path selection — weight, LOCAL_PREF, AS-path, MED, origin; route maps and prefix-list filtering',prereqs:['Session 14 — BGP Fundamentals']},
+  {id:16,ch:'05',chTitle:'Dynamic Routing Protocols',title:'Route Redistribution',subtopic:'Route Redistribution — OSPF ↔ BGP ↔ connected/static, redistribution maps, metric translation',prereqs:['Sessions 13–15 — OSPF and BGP']},
+  {id:17,ch:'06',chTitle:'Security Profiles',title:'SSL/SSH Inspection',subtopic:'SSL/SSH Inspection — deep inspection, certificate inspection, CA config, exemptions, SSH proxy',prereqs:['Basic PKI and SSL/TLS concepts','Understanding of certificate chains and CA trust anchors']},
+  {id:18,ch:'06',chTitle:'Security Profiles',title:'Web Filter & Application Control',subtopic:'Web Filtering and Application Control — FortiGuard categories, application signatures, flow vs proxy mode',prereqs:['Session 17 — SSL Inspection (required for inspecting encrypted traffic)']},
+  {id:19,ch:'06',chTitle:'Security Profiles',title:'IPS Integration',subtopic:'Integrate IPS — signature-based detection, anomaly-based detection, IPS profiles, rate-based IPS',prereqs:['Sessions 17–18','Basic understanding of intrusion detection vs prevention']},
+  {id:20,ch:'07',chTitle:'IPsec',title:'Configure IPsec Tunnels',subtopic:'Configure IPsec tunnels — policy-based vs route-based, FortiGate tunnel interface and phase configuration',prereqs:['Basic VPN concepts (encryption, authentication, tunneling)','Familiarity with symmetric and asymmetric encryption']},
+  {id:21,ch:'07',chTitle:'IPsec',title:'IKE Phase 1 — Authentication & Proposals',subtopic:'IKE Phase 1 — main mode vs aggressive mode, PSK vs certificate auth, DH groups, SA proposal matching',prereqs:['Session 20 — IPsec tunnel types and setup']},
+  {id:22,ch:'07',chTitle:'IPsec',title:'IKE Phase 2 & SA Negotiation',subtopic:'IKE Phase 2 — quick mode, PFS, IPsec SA lifetime, proxy IDs and traffic selectors',prereqs:['Session 21 — IKE Phase 1']},
+  {id:23,ch:'07',chTitle:'IPsec',title:'IPsec Troubleshooting',subtopic:'IPsec Troubleshooting — debug commands, SA state machine, common failure points, diagnostic logs',prereqs:['Sessions 20–22 — complete IPsec and IKE knowledge']},
+  {id:24,ch:'08',chTitle:'Auto-Discovery VPN',title:'Configure ADVPN',subtopic:'Configure ADVPN — hub-and-spoke architecture, spoke registration, shortcut-eligible tunnel setup',prereqs:['Sessions 20–23 — IPsec fundamentals required','Understanding of hub-spoke VPN topology']},
+  {id:25,ch:'08',chTitle:'Auto-Discovery VPN',title:'ADVPN Shortcut Tunnels',subtopic:'ADVPN Shortcuts — shortcut request/response flow, spoke-to-spoke dynamic tunnel establishment',prereqs:['Session 24 — ADVPN setup and architecture']},
+  {id:26,ch:'08',chTitle:'Auto-Discovery VPN',title:'ADVPN with BGP — Setup',subtopic:'ADVPN with BGP — why BGP is used, spoke route advertisement via hub, configuration integration',prereqs:['Sessions 14–15 (BGP required) and Sessions 24–25 (ADVPN required)']},
+  {id:27,ch:'08',chTitle:'Auto-Discovery VPN',title:'ADVPN with BGP — Route Propagation',subtopic:'ADVPN BGP route propagation — next-hop handling at hub, shortcut route updates, BGP policies over ADVPN',prereqs:['Session 26 — ADVPN BGP setup']},
+  {id:28,ch:'09',chTitle:'Security Fabric',title:'Configure Security Fabric',subtopic:'Configure Security Fabric — root FortiGate, downstream devices, fabric topology, trust and certificates',prereqs:['Sessions 01–02 (network architecture foundation)','Basic FortiAnalyzer awareness helpful']},
+  {id:29,ch:'09',chTitle:'Security Fabric',title:'Fabric Connectors',subtopic:'Fabric Connectors — SDN connectors, cloud provider connectors, dynamic address objects from connectors',prereqs:['Session 28 — Security Fabric topology and trust']},
+  {id:30,ch:'09',chTitle:'Security Fabric',title:'Automation Stitches',subtopic:'Automation Stitches — event triggers, conditions, actions, and event-driven security response automation',prereqs:['Sessions 28–29']},
+  {id:31,ch:'10',chTitle:'Hardware Acceleration',title:'NP and CP Processors',subtopic:'NP and CP Processors — what each offloads, packet flow through hardware, NP6/NP7 architecture',prereqs:['Basic FortiGate hardware architecture awareness','Understanding of software packet processing pipeline']},
+  {id:32,ch:'10',chTitle:'Hardware Acceleration',title:'Offloading Configuration',subtopic:'Hardware Offloading Configuration — NP offload settings, session offload, flow vs proxy mode implications',prereqs:['Session 31 — NP/CP Processors']},
+  {id:33,ch:'10',chTitle:'Hardware Acceleration',title:'Performance Monitoring',subtopic:'Performance Monitoring — FortiGate performance CLI tools, traffic shaping, bottleneck identification',prereqs:['Sessions 31–32 — Hardware Acceleration']},
+];
+
+/* ── State helpers ── */
+function getPodState(id){return parseInt(localStorage.getItem('soc2-pod-'+id)||'0',10);}
+function setPodState(id,v){localStorage.setItem('soc2-pod-'+id,String(v));}
+function completedCount(){return SESSIONS.filter(s=>getPodState(s.id)===3).length;}
+function updateProgress(){
+  const done=completedCount();
+  const pct=Math.round(done/33*100);
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressLabel').textContent=done+' / 33 episodes complete';
+}
+
+/* ── Subtopic parser (em-dash split) ── */
+function titleCaseItem(str){
+  return str.split(' ').map(w=>/[A-Z]/.test(w)?w:w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+}
+function parseSubtopic(s){
+  const parts=s.subtopic.split('—').map(p=>p.trim());
+  return {head:parts[0],items:parts[1]?parts[1].split(',').map(p=>titleCaseItem(p.trim())):[]};
+}
+
+/* ── NotebookLM podcast prompt ── */
+function generatePodcastPrompt(s){
+  const {head,items}=parseSubtopic(s);
+  const subList=items.length
+    ?items.map((it,i)=>`  ${i+1}. ${it}`).join('\n')
+    :`  1. ${head}`;
+  const coverageLine=items.length
+    ?`Treat each numbered subtopic as a dedicated segment. Do not skip any. Do not merge segments. Cover all ${items.length} in order.`
+    :`Treat the primary goal as the single focused segment of this episode.`;
+  const prereqsBlock=s.prereqs.map(p=>`- ${p}`).join('\n');
+  return `Create a deep, conversational two-host podcast episode (~12-15 minutes) for a Fortinet NSE7 Enterprise Firewall (EF 7.6) study plan.
+
+━━━ EPISODE METADATA ━━━
+Session: ${s.id} of 33
+Chapter: ${s.ch} — ${s.chTitle}
+Topic: ${s.title}
+Primary goal: ${head}
+
+━━━ SUBTOPICS TO COVER (cover ALL of these — do not skip) ━━━
+${subList}
+
+${coverageLine}
+
+━━━ AUDIENCE ━━━
+The listener is an engineer preparing for the Fortinet NSE7 Enterprise Firewall (EF 7.6) exam. They already have:
+${prereqsBlock}
+
+Do not re-explain basic firewall concepts, FortiGate GUI navigation, or anything covered by the prerequisites above.
+
+━━━ TONE & FORMAT ━━━
+- Two hosts in a curious, back-and-forth deep-dive style.
+- ~12–15 minutes total.
+- Open with a brief "why this matters" hook tied to a real-world incident or production scenario.
+- Each subtopic gets its own clearly transitioned segment.
+- Use occasional analogies for abstract or counterintuitive ideas, but stay technically precise.
+- Avoid filler, marketing language, and generic security platitudes.
+
+━━━ FOR EACH SUBTOPIC, COVER ━━━
+1. What it is and where it sits in the broader ${s.chTitle} picture.
+2. How it actually works under the hood — the mechanism, not just the definition.
+3. The real configuration workflow (CLI commands or GUI paths where useful).
+4. NSE7 exam traps, common misconceptions, and gotchas candidates miss.
+5. Troubleshooting reasoning — symptoms, likely causes, validation steps.
+6. Direct comparisons to similar-but-different concepts that get confused (call them out by name).
+
+━━━ DEPTH REQUIREMENTS ━━━
+- Push past surface-level definitions. Discuss caveats, edge cases, and the WHY behind design decisions.
+- When a concept has FortiGate-specific behavior that differs from generic networking assumptions, flag it.
+- Mention NP/CP offload, VDOM boundaries, HA implications, and Security Fabric integration WHERE relevant — not as filler.
+
+━━━ END THE EPISODE WITH ━━━
+- A 60-second recap that names every subtopic covered.
+- 3 short exam-style recap questions for the listener to self-test. Don't answer them — leave them open.
+
+Do not number the episode "Episode 1" or invent a podcast brand name. Just dive in.`;
+}
+
+/* ── State pill ── */
+const POD_LABELS=['○ Not Started','◐ Generating','✎ Renamed','✓ Completed'];
+function cycleState(e,id){
+  e.stopPropagation();
+  const next=(getPodState(id)+1)%4;
+  setPodState(id,next);
+  document.querySelectorAll('[data-state-for="'+id+'"]').forEach(el=>{
+    el.dataset.state=next;
+    el.className=el.classList.contains('episode-state-top')
+      ?'episode-state-top pod-'+next
+      :'episode-state-pill pod-'+next;
+    el.textContent=POD_LABELS[next];
+  });
+  const card=document.getElementById('episode-'+id);
+  if(card) card.classList.toggle('is-complete',next===3);
+  updateProgress();
+}
+
+/* ── Copy ── */
+function copyPodcastPrompt(btn,id){
+  const s=SESSIONS.find(x=>x.id===id);
+  navigator.clipboard.writeText(generatePodcastPrompt(s)).then(()=>{
+    const orig=btn.innerHTML;
+    btn.innerHTML='✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(()=>{btn.innerHTML=orig;btn.classList.remove('copied');},2000);
+  });
+}
+
+/* ── Collapse ── */
+function toggleChapter(ch){
+  const sec=document.querySelector('.chapter-section[data-ch="'+ch+'"]');
+  if(!sec) return;
+  const collapsed=sec.classList.toggle('is-collapsed');
+  localStorage.setItem('soc2-pod-ch-collapsed-'+ch,collapsed?'1':'0');
+}
+function toggleEpisode(e,id){
+  if(e.target.closest('button,a')) return;
+  const card=document.getElementById('episode-'+id);
+  if(!card) return;
+  const collapsed=card.classList.toggle('is-collapsed');
+  localStorage.setItem('soc2-pod-ep-collapsed-'+id,collapsed?'1':'0');
+}
+
+/* ── Render ── */
+function render(){
+  updateProgress();
+  const container=document.getElementById('episodesContainer');
+  const chapters=[...new Set(SESSIONS.map(s=>s.ch))];
+
+  chapters.forEach(ch=>{
+    const chSessions=SESSIONS.filter(s=>s.ch===ch);
+    const color=CH_COLORS[ch]||'#888';
+    const chTitle=chSessions[0].chTitle;
+
+    const sec=document.createElement('div');
+    sec.className='chapter-section';
+    sec.dataset.ch=ch;
+    if(localStorage.getItem('soc2-pod-ch-collapsed-'+ch)==='1') sec.classList.add('is-collapsed');
+    sec.innerHTML=`<div class="chapter-header" onclick="toggleChapter('${ch}')">
+      <div class="chapter-dot" style="background:${color}"></div>
+      <div>
+        <div class="chapter-label">Chapter ${ch}</div>
+        <div class="chapter-name">${chTitle}<span class="chapter-count">· ${chSessions.length} episode${chSessions.length>1?'s':''}</span></div>
+      </div>
+      <span class="chapter-chevron">▾</span>
+    </div>
+    <div class="chapter-banner">
+      <img src="../socratic-sessions/images/ch${ch}-banner.png" alt="Chapter ${ch} — ${chTitle} banner" loading="lazy" onerror="this.style.display='none'">
+    </div>`;
+
+    chSessions.forEach(s=>{
+      const state=getPodState(s.id);
+      const {head,items}=parseSubtopic(s);
+      const card=document.createElement('div');
+      const collapsed=localStorage.getItem('soc2-pod-ep-collapsed-'+s.id)==='1';
+      card.className='episode-card'+(state===3?' is-complete':'')+(collapsed?' is-collapsed':'');
+      card.id='episode-'+s.id;
+
+      const subListHtml=items.length
+        ?`<ul class="coverage-list">
+            <li>${head}<ul class="coverage-sub">${items.map(i=>`<li>${i}</li>`).join('')}</ul></li>
+          </ul>`
+        :`<ul class="coverage-list"><li>${head}</li></ul>`;
+
+      card.innerHTML=`
+        <div class="episode-card-top" onclick="toggleEpisode(event,${s.id})">
+          <div class="episode-num" style="background:${color}">${String(s.id).padStart(2,'0')}</div>
+          <div class="episode-info">
+            <div class="episode-title">${s.title}</div>
+            <div class="episode-meta">Episode ${s.id} &nbsp;·&nbsp; Ch ${s.ch} &nbsp;·&nbsp; <span class="duration">~12–15 min</span></div>
+          </div>
+          <button class="episode-state-top pod-${state}" data-state="${state}" data-state-for="${s.id}" onclick="cycleState(event,${s.id})" title="Click to advance state">${POD_LABELS[state]}</button>
+          <span class="episode-chevron">▾</span>
+        </div>
+        <div class="episode-details">
+          <div class="detail-label">Episode Covers</div>
+          ${subListHtml}
+          <div class="episode-actions">
+            <button class="btn btn-copy" onclick="copyPodcastPrompt(this,${s.id})">⎘ Copy NotebookLM Prompt</button>
+            <button class="episode-state-pill pod-${state}" data-state="${state}" data-state-for="${s.id}" onclick="cycleState(event,${s.id})">${POD_LABELS[state]}</button>
+          </div>
+          <p class="notebooklm-hint">Paste this prompt into NotebookLM's Audio Overview Customize box, then click Generate. Advance the state pill as you progress through generate → rename → complete.</p>
+        </div>`;
+      sec.appendChild(card);
+    });
+    container.appendChild(sec);
+  });
+}
+
+render();
+</script>
+</body>
+</html>

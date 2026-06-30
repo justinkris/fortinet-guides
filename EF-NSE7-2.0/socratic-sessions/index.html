@@ -138,6 +138,8 @@ details.how-to[open] summary::after{transform:rotate(-180deg)}
 .btn-copy{background:var(--coral);color:#fff;border-color:var(--coral)}
 .btn-copy:hover{filter:brightness(1.1)}
 .btn-copy.copied{background:var(--green);border-color:var(--green)}
+.btn-view{background:#0a1a0a;color:var(--green);border-color:var(--green)}
+.btn-view:hover{background:var(--green);color:#fff}
 .btn-done-toggle{margin-left:auto;background:none;border:1px solid #2a1515;color:var(--muted);padding:.3rem .7rem;border-radius:6px;font-size:.76rem;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s}
 .btn-done-toggle:hover{border-color:var(--green);color:var(--green)}
 .btn-done-toggle.is-done{border-color:var(--green);color:var(--green);background:#0a1a0a}
@@ -195,6 +197,8 @@ footer{color:#9a7070;border-top-color:#e8d5cc}
 .btn-done-toggle{border-color:#e8d5cc;color:#9a7070}
 .btn-done-toggle:hover{border-color:var(--coral);color:var(--coral)}
 .btn-done-toggle.is-done{border-color:var(--green,#5ab288);color:var(--green,#5ab288);background:#f0f8f0}
+.btn-view{background:#f0f8f0;color:#2a7a3a;border-color:#a8d8b0}
+.btn-view:hover{background:#5ab288;color:#fff;border-color:#5ab288}
 .session-card:hover{border-color:#c8a898}
 .session-card.done{opacity:.5}
 </style>
@@ -693,7 +697,8 @@ const SESSIONS=[
    title:'Dynamic Objects in FortiManager',
    subtopic:'Explore Dynamic Objects — dynamic address objects, metadata variables, mapping to devices',
    prereqs:['Session 03 — FortiManager Architecture'],
-   prevTitle:'FortiManager Architecture (Session 03)'},
+   prevTitle:'FortiManager Architecture (Session 03)',
+   completedHref:'../completed-socratic-session/subtopic-02-dynamic-objects.html'},
 
   {id:5,ch:'02',chTitle:'Central Management',
    title:'Scripts on FortiManager',
@@ -947,10 +952,12 @@ loadProject();
 function titleCaseItem(str){
   return str.split(' ').map(w=>/[A-Z]/.test(w)?w:w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
 }
-function generatePrompt(s){
+function parseSubtopic(s){
   const parts=s.subtopic.split('—').map(p=>p.trim());
-  const head=parts[0];
-  const items=parts[1]?parts[1].split(',').map(p=>titleCaseItem(p.trim())):[];
+  return {head:parts[0],items:parts[1]?parts[1].split(',').map(p=>titleCaseItem(p.trim())):[]};
+}
+function generatePrompt(s){
+  const {head,items}=parseSubtopic(s);
   let focus=`Subtopic Focus:\n- ${head}`;
   if(items.length) focus+='\n   - '+items.join('\n   - ');
   return `━━━ TODAY'S SESSION ━━━
@@ -959,6 +966,7 @@ Chapter ${s.ch}: ${s.chTitle}
 Topic: ${s.title}
 ${focus}`;
 }
+
 
 /* ── Render ── */
 function render(){
@@ -1018,6 +1026,7 @@ function render(){
         </div>
         <div class="session-actions">
           <button class="btn btn-copy" onclick="copyPrompt(this,${s.id})">⎘ Copy Prompt</button>
+          ${s.completedHref?`<a class="btn btn-view" href="${s.completedHref}">📖 View Session</a>`:''}
           <button class="btn-done-toggle${doneClass}" onclick="toggleDone(${s.id},this)">${doneText}</button>
         </div>`;
       sec.appendChild(card);

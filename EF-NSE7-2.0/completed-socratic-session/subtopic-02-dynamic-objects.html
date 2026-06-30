@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>if(sessionStorage.getItem('pt')){document.documentElement.classList.add('pt-init')}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subtopic 02 — Dynamic Objects in FortiManager</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Epilogue:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#fff5f5; --surface:#ffffff; --surface-2:#fef2f2;
+    --border:#f0c8c8; --border-dim:#fde8e8;
+    --text:#1a0606; --text-soft:#4a1212; --text-muted:#8a3a3a;
+    --red:#c0392b; --red-vivid:#e03e2d; --red-glow:rgba(192,57,43,0.07);
+    --red-dim:#f8b4b4; --red-deep:#7f1d1d; --red-light:#fef2f2; --red-border:#f8b4b4;
+    --green:#1a7c4a; --green-light:#d4f0e0; --green-border:#a7e0c0;
+    --amber:#b45309; --amber-light:#fef9c3; --amber-border:#fde68a;
+  }
+  html{scroll-behavior:smooth;transition:opacity .3s ease;}
+  html.pt-init body{opacity:0;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Epilogue',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+  header{padding:48px 60px 36px;background:#1a0606;display:flex;align-items:flex-end;gap:32px;}
+  .header-left{flex:1;}
+  .breadcrumb{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);letter-spacing:0.08em;margin-bottom:12px;flex-wrap:wrap;}
+  .breadcrumb a{color:#e87070;text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .breadcrumb-sep{color:rgba(232,112,112,0.35);}
+  .header-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(232,112,112,0.1);border:1px solid rgba(232,112,112,0.25);padding:5px 14px;border-radius:20px;font-size:11px;color:#e87070;letter-spacing:0.08em;margin-bottom:14px;}
+  .dot-live{width:6px;height:6px;background:#e87070;border-radius:50%;display:inline-block;animation:blink 2.4s ease-in-out infinite;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+  header h1{font-family:'Fraunces',serif;font-size:44px;font-weight:700;line-height:1.0;color:#fff;margin-bottom:10px;}
+  header h1 em{font-style:italic;font-weight:400;color:#e87070;}
+  header p{font-size:13px;color:rgba(255,255,255,0.42);margin-top:10px;line-height:1.7;}
+
+  .motivation-banner{padding:20px 60px;min-height:84px;display:flex;flex-direction:column;justify-content:center;border-bottom:1px solid var(--border);background:var(--surface);}
+  .motivation-text{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--text);}
+  .motivation-text em{font-style:italic;color:var(--red);}
+  .motivation-sub{font-size:12px;color:var(--text-muted);line-height:1.7;margin-top:4px;}
+
+  .top-panels{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+  .top-panels .qpanel{border-bottom:none;border-right:1px solid var(--border);}
+  .top-panels .qpanel-header{padding-left:32px;padding-right:32px;}
+  .top-panels .qpanel-body{padding-left:32px;padding-right:32px;}
+  .qpanel{background:var(--surface);}
+  .qpanel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 20px;cursor:pointer;background:var(--surface);border:none;font-family:'Epilogue',sans-serif;text-align:left;}
+  .qpanel-header:hover,.qpanel-header.open{background:var(--surface-2);}
+  .qpanel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+  .qpanel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+  .qpanel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+  .qpanel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+  .qpanel-body{display:none;padding:0 20px 22px;}
+  .qpanel-body.open{display:block;}
+  .notes-panel{background:var(--surface);}
+  .notes-panel-header{width:100%;display:flex;align-items:center;gap:12px;padding:13px 32px;cursor:pointer;background:var(--surface);border:none;font-family:'Epilogue',sans-serif;text-align:left;}
+  .notes-panel-header:hover,.notes-panel-header.open{background:var(--surface-2);}
+  .notes-panel-title{font-size:11px;font-weight:600;letter-spacing:0.14em;color:var(--text);}
+  .notes-panel-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:none;}
+  .notes-panel-hint{font-size:11px;color:var(--text-muted);margin-left:4px;}
+  .notes-panel-chevron{margin-left:auto;font-size:13px;color:var(--text-muted);}
+  .notes-panel-body{display:none;padding:0 32px 22px;}
+  .notes-panel-body.open{display:block;}
+  .q-group{margin-bottom:16px;}
+  .q-group-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+  .q-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-dim);}
+  .q-item:last-child{border-bottom:none;}
+  .q-num{font-size:10px;font-weight:700;color:var(--red);min-width:16px;margin-top:2px;}
+  .q-text{font-size:12px;color:var(--text-soft);line-height:1.5;flex:1;}
+  .q-del{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0 4px;margin-top:1px;}
+  .q-del:hover{color:var(--red);}
+  .no-questions{font-size:12px;color:var(--text-muted);padding:8px 0;}
+  .btn-add-q{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Epilogue',sans-serif;}
+  .btn-add-q:hover{opacity:0.85;}
+
+  .section-nav{position:sticky;top:0;z-index:90;display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);padding:0 32px;overflow-x:auto;}
+  .nav-tab{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);text-decoration:none;padding:12px 18px;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
+  .nav-tab:hover{color:var(--text);}
+  .nav-tab.active{color:var(--red);border-bottom-color:var(--red);}
+
+  main{max-width:1200px;margin:0 auto;padding:0;}
+  .main-content{padding:36px 60px 60px 60px;}
+
+  .section-block{margin-bottom:48px;}
+  .section-label{font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+  .section-block h2{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1.15;margin-bottom:16px;padding-left:16px;border-left:3px solid var(--red);}
+  .section-block h2 em{font-style:italic;font-weight:400;color:var(--red);}
+  .section-block p{font-size:14px;line-height:1.8;color:var(--text-soft);margin-bottom:14px;}
+  .section-block p strong{color:var(--text);font-weight:600;}
+  .section-block p em{color:var(--red);font-style:italic;}
+  .section-block ul,.section-block ol{padding-left:22px;margin-bottom:14px;}
+  .section-block li{font-size:14px;line-height:1.75;color:var(--text-soft);margin-bottom:4px;}
+  .section-block li strong{color:var(--text);font-weight:600;}
+
+  .callout{border-left:3px solid var(--red-border);background:var(--red-light);border-radius:0 10px 10px 0;padding:12px 18px;margin:16px 0;font-size:13.5px;line-height:1.65;color:var(--text-soft);}
+  .callout strong{color:var(--text);}
+  .callout-green{border-left-color:var(--green-border);background:var(--green-light);}
+  .callout-amber{border-left-color:var(--amber-border);background:var(--amber-light);}
+
+  .data-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;}
+  .data-table th{background:#1a0606;color:#e87070;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:10px 14px;text-align:left;}
+  .data-table td{padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text-soft);line-height:1.5;}
+  .data-table tr:hover td{background:var(--red-glow);}
+  .data-table td:first-child{color:var(--text);font-weight:600;}
+
+  .code-block{background:#1a0606;border-radius:10px;padding:0;margin:16px 0;overflow:hidden;}
+  .code-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#e87070;padding:8px 16px;background:rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.08);}
+  .code-block pre{padding:16px;overflow-x:auto;}
+  .code-block code{font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:12.5px;line-height:1.65;color:#f0d0c0;}
+
+  .img-caption{font-size:11px;color:var(--text-muted);text-align:center;margin-top:6px;line-height:1.4;font-style:italic;}
+  .section-img-wrap{margin:0 0 20px;display:flex;flex-direction:column;align-items:center;}
+  .section-img{width:260px;max-width:100%;border-radius:12px;cursor:zoom-in;transition:width 0.3s ease;border:1px solid var(--border);display:block;}
+  .section-img.si-expanded{width:100%;cursor:zoom-out;border-radius:16px;}
+  .si-placeholder{display:none;width:260px;max-width:100%;border:2px dashed var(--border);border-radius:12px;background:var(--surface-2);padding:14px 16px;flex-direction:column;align-items:flex-start;gap:8px;}
+  .si-placeholder.si-show{display:flex;}
+  .si-filename{font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'SF Mono','Fira Code',monospace;}
+
+  .socratic-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:16px;border-top:3px solid var(--red);}
+  .socratic-header{display:flex;align-items:center;gap:8px;margin-bottom:0;cursor:pointer;user-select:none;}
+  .socratic-header::after{content:'▸ Expand';margin-left:auto;font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);font-family:'Epilogue',sans-serif;}
+  .socratic-block.soc-open .socratic-header{margin-bottom:10px;}
+  .socratic-block.soc-open .socratic-header::after{content:'▾ Collapse';}
+  .socratic-block:not(.soc-open) .socratic-insight,
+  .socratic-block:not(.soc-open) .socratic-questions,
+  .socratic-block:not(.soc-open) .answer-area{display:none;}
+  .socratic-icon{font-size:17px;flex-shrink:0;}
+  .socratic-label{font-size:9px;font-weight:700;letter-spacing:0.18em;color:var(--text-muted);}
+  .socratic-insight{font-size:13px;color:var(--text-soft);line-height:1.75;margin-bottom:12px;border-left:3px solid var(--border);padding-left:12px;font-style:italic;}
+  .socratic-questions{list-style:none;padding:0;margin:0;}
+  .socratic-questions li{font-size:12.5px;color:var(--text);padding:7px 0 7px 22px;position:relative;border-bottom:1px solid var(--border-dim);line-height:1.6;}
+  .socratic-questions li:last-child{border-bottom:none;}
+  .socratic-questions li::before{content:'?';position:absolute;left:0;font-weight:700;font-size:12px;top:8px;color:var(--red);}
+  .answer-area{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+  .answer-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Epilogue',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+  .answer-textarea:focus{border-color:var(--text);}
+  .answer-textarea:disabled{opacity:0.7;background:var(--surface-2);cursor:default;}
+  .answer-buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+  .btn-add-answer{background:#1a0606;color:#e87070;border:none;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Epilogue',sans-serif;}
+  .btn-add-answer:hover:not(:disabled){opacity:0.85;}
+  .btn-add-answer:disabled{opacity:0.5;cursor:default;}
+  .btn-see-answer{background:var(--surface);color:var(--text-muted);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:11px;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'Epilogue',sans-serif;}
+  .btn-see-answer:disabled{opacity:0.5;cursor:not-allowed;}
+  .btn-see-answer:not(:disabled){color:var(--red);border-color:var(--red);}
+  .btn-see-answer:hover:not(:disabled){background:var(--red-glow);}
+  .model-answers{margin-top:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+  .model-answer-item{padding:10px 0;border-bottom:1px solid var(--border-dim);}
+  .model-answer-item:first-child{padding-top:0;}
+  .model-answer-item:last-child{border-bottom:none;padding-bottom:0;}
+  .model-answer-q{font-size:9px;font-weight:700;letter-spacing:0.14em;color:var(--text-muted);margin-bottom:4px;}
+  .model-answer-text{font-size:13px;color:var(--text-soft);line-height:1.7;}
+
+  .mental-note-block{border-radius:10px;padding:12px 16px;margin:16px 0;display:flex;gap:10px;align-items:flex-start;background:rgba(192,57,43,0.07);border:1px solid var(--border);}
+  .mental-note-block-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+  .mental-note-block-inner{flex:1;}
+  .mental-note-block-label{font-size:9px;font-weight:700;letter-spacing:0.16em;color:var(--red);margin-bottom:3px;}
+  .mental-note-block-text{font-size:13px;font-weight:600;line-height:1.55;color:var(--text);}
+
+  .analogy-box{background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #b45309;border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0;}
+  .analogy-label{display:flex;align-items:center;gap:6px;user-select:none;cursor:pointer;font-size:9px;font-weight:700;letter-spacing:0.16em;color:#b45309;margin-bottom:4px;}
+  .analogy-label::after{content:'▾  Reveal illustration';margin-left:auto;font-size:10px;font-weight:600;letter-spacing:0.04em;text-transform:none;opacity:0.75;}
+  .analogy-label:hover::after{opacity:1;}
+  .analogy-box.expanded>.analogy-label::after{content:'▴  Hide illustration';}
+  .analogy-text{font-size:13px;color:#78350f;line-height:1.65;font-style:italic;}
+  .analogy-summary{font-style:normal;font-weight:600;color:#92400e;margin-bottom:10px;}
+  .analogy-text ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;}
+  .analogy-text li{padding-left:18px;position:relative;}
+  .analogy-text li::before{content:'•';position:absolute;left:0;font-weight:700;color:#b45309;}
+  .analogy-box>.analogy-img{display:none;}
+  .analogy-box.expanded>.analogy-img{display:block;}
+  .analogy-img img{max-width:360px;width:100%;cursor:zoom-in;transition:max-width 0.25s ease;border-radius:8px;margin-top:10px;}
+  .analogy-img img.zoomed{max-width:100%;cursor:zoom-out;}
+  .analogy-img .img-missing-msg{display:none!important;}
+  .prompt-toggle{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:10px;font-weight:600;letter-spacing:0.08em;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'Epilogue',sans-serif;text-transform:uppercase;}
+  .prompt-toggle:hover{color:var(--text);border-color:var(--text);}
+  .prompt-content{margin-top:10px;padding:10px 14px;background:rgba(0,0,0,0.04);border-radius:8px;font-size:11.5px;color:var(--text-muted);font-style:italic;line-height:1.65;text-align:left;}
+  .prompt-content[hidden]{display:none;}
+
+  .lesson-tools{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:40px;}
+  .lesson-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .tool-label{font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+  .tool-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Epilogue',sans-serif;font-size:13px;color:var(--text);background:var(--surface);resize:vertical;min-height:60px;outline:none;line-height:1.6;}
+  .tool-textarea:focus{border-color:var(--red);}
+  .tool-row{margin-top:8px;display:flex;gap:8px;}
+
+  .page-nav{display:flex;border-top:2px solid var(--border);background:var(--surface);}
+  .page-nav-btn{flex:1;display:flex;flex-direction:column;gap:4px;padding:16px 28px;text-decoration:none;transition:background 0.15s;cursor:pointer;}
+  .page-nav-btn:hover:not(.page-nav-disabled){background:var(--surface-2);}
+  .page-nav-prev{border-right:1px solid var(--border);}
+  .page-nav-next{text-align:right;}
+  .page-nav-disabled{opacity:0.3;pointer-events:none;}
+  .page-nav-label{font-size:10px;font-weight:600;letter-spacing:0.14em;color:var(--text-muted);display:block;}
+  .page-nav-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;color:var(--red);display:block;}
+
+  footer{font-size:11px;letter-spacing:0.12em;color:var(--text-muted);text-transform:uppercase;padding:20px 60px;border-top:1px solid var(--border);}
+  footer span{color:var(--red);}
+
+  @media(max-width:720px){header{padding:28px 24px 24px;}header h1{font-size:32px;}.motivation-banner{padding:16px 24px;}.main-content{padding:24px 24px 40px;}.section-nav{padding:0 16px;}.top-panels{grid-template-columns:1fr;}.top-panels .qpanel{border-right:none;border-bottom:1px solid var(--border);}.lesson-tools-grid{grid-template-columns:1fr;}footer{padding:16px 24px;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="breadcrumb">
+      <a href="../nse7-ef-study-guide-hub.html">EF-NSE7</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="index.html">Chapter 02 — Central Management</a>
+      <span class="breadcrumb-sep">›</span>
+      Subtopic 02
+    </div>
+    <div class="header-eyebrow"><span class="dot-live"></span> Study Guide · EF-NSE7</div>
+    <h1>Dynamic Objects in <em>FortiManager</em></h1>
+    <p>How per-device mapping and metadata variables let one object serve many firewalls — each with its own value.</p>
+  </div>
+</header>
+
+<div class="motivation-banner">
+  <div class="motivation-text">One object name. Fifty firewalls. Fifty <em>different values</em> — all managed from a single place.</div>
+  <p class="motivation-sub">Dynamic objects are the mechanism that makes centralised policy management scale. Without them, every branch firewall would demand its own unique object — destroying the entire value of FortiManager.</p>
+</div>
+
+<div class="top-panels">
+  <div class="qpanel" id="qpanel">
+    <button class="qpanel-header" onclick="toggleQPanel()" id="qpanel-header">
+      <span class="qpanel-title">MY QUESTIONS</span>
+      <span class="qpanel-count" id="qpanel-count">0</span>
+      <span class="qpanel-hint">— click to expand</span>
+      <span class="qpanel-chevron" id="qpanel-chevron">▾</span>
+    </button>
+    <div class="qpanel-body" id="qpanel-body"></div>
+  </div>
+  <div class="notes-panel" id="notes-panel">
+    <button class="notes-panel-header" onclick="toggleNotesPanel()" id="notes-panel-header">
+      <span class="notes-panel-title">MY NOTES</span>
+      <span class="notes-panel-count" id="notes-panel-count">0</span>
+      <span class="notes-panel-hint">— click to expand</span>
+      <span class="notes-panel-chevron" id="notes-panel-chevron">▾</span>
+    </button>
+    <div class="notes-panel-body" id="notes-panel-body"></div>
+  </div>
+</div>
+
+<nav class="section-nav" id="section-nav">
+  <a class="nav-tab active" href="#section-the-problem">The Problem</a>
+  <a class="nav-tab" href="#section-per-device-mapping">Per-Device Mapping</a>
+  <a class="nav-tab" href="#section-metadata-variables">Metadata Variables</a>
+  <a class="nav-tab" href="#section-limitations-and-install">Limitations &amp; Install</a>
+</nav>
+
+<main>
+  <div class="main-content">
+
+    <!-- ═══════════════════════════════ SECTION 1 ═══════════════════════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · THE PROBLEM</span>
+      </div>
+      <p class="socratic-insight">FortiManager is built to be a single source of truth. But in a real enterprise, 50 branches each have a LAN interface — and none of them share the same subnet. Before dynamic objects existed, this created a fundamental contradiction between centralisation and device-specific reality.</p>
+      <ul class="socratic-questions">
+        <li>You are managing 50 branch FortiGates from a single FortiManager. Every branch has an address object called LAN, but each uses a different subnet. What problem does this create, and why can't you just create 50 uniquely named address objects to solve it?</li>
+        <li>If you were a junior engineer who created 50 separate address objects — one per branch — what would your troubleshooting experience look like when a policy stops working at Branch37?</li>
+      </ul>
+      <div class="answer-area" data-section="the-problem">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Creating 50 unique address objects defeats the purpose of centralised management. Every policy change would require updating 50 objects individually, multiplied across every object type in the ADOM. Scale makes this operationally unworkable, and any policy that references a device-specific object can no longer be shared across firewalls in a common policy package.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">With 50 uniquely named objects, a troubleshooting engineer must first identify which object belongs to Branch37, then locate every policy that references it, then cross-reference that against the installed configuration. A single shared object name with per-device mapping means you look at one object and immediately understand how every branch resolves it — dramatically reducing diagnostic time.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="section-the-problem">
+      <div class="section-label">SECTION 01</div>
+      <h2>The Problem Dynamic Objects <em>Solve</em></h2>
+      <div class="section-img-wrap">
+        <img src="images/s1-the-problem.png" class="section-img" alt="Diagram showing 50 branch FortiGates connected to a single FortiManager, each with a different LAN subnet but sharing one object name"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <p class="img-caption">One object name — LAN — resolves differently on every branch firewall.</p>
+        <div class="si-placeholder">
+          <span class="si-filename">images/s1-the-problem.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat minimalistic cartoon illustration. Highly detailed, clean, and easy to understand. Modern vector-art aesthetic. Bold clean outlines. Warm and inviting colour palette. Cream/peach background (#fdf5f0). Coral accents (#e07050). Soft brown outlines (#7a5050). Muted gold (#d2a541). Sage green (#5ab288). No gradients. No photorealism. No 3D rendering.
+
+Show a central FortiManager appliance icon in muted gold at the top of the image, bold and prominent. From it, four arrows fan downward to four small FortiGate device icons labelled Branch1, Branch2, Branch3, and Branch4. Each FortiGate has a small badge below it showing a different subnet: 172.16.0.0/24, 192.168.0.0/24, 10.10.0.0/24, and 10.20.0.0/24 in sage green text. Above the fan of arrows, a single coral-coloured object badge reads "LAN" in bold. A dashed boundary box around all four FortiGates is labelled "Same Policy Package" in soft brown. The illustration communicates that one shared object name resolves to a different value on each device. Use directional arrows to show the resolution flowing from FortiManager down to each firewall. Minimal text beyond labels already described.</div>
+        </div>
+      </div>
+      <p>FortiManager's entire value proposition rests on <strong>centralised policy management</strong> — one policy package deployed across many devices. But real enterprise networks are not uniform. Each branch firewall has device-specific values: different LAN subnets, different interface names, different BGP AS numbers. Without a mechanism to handle this variation, you would need a separate policy package for every device — which is not centralised management at all.</p>
+      <p>Dynamic objects solve this by separating the <strong>object name</strong> from the <strong>object value</strong>. The policy package references a single object called <em>LAN</em>. FortiManager then resolves that name to the correct device-specific value at install time. The FortiGate receives a clean, resolved configuration — it is completely unaware that any mapping logic existed. This keeps policy packages shared and manageable while still delivering the correct configuration to each individual firewall.</p>
+      <div class="callout callout-green">
+        <strong>Remember:</strong> FortiGate receives only the resolved value — it never sees the mapping logic. The intelligence lives entirely in FortiManager. This means a FortiGate will always look like it has a normal, locally defined address object after a policy install.
+      </div>
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Dynamic objects exist because centralisation and device-specific values are in direct conflict. The solution is to separate the name from the value — one object name in FortiManager, one resolved value per device. FortiGate only ever sees the resolved result.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-section-the-problem" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('section-the-problem','The Problem')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-section-the-problem" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('section-the-problem')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════ SECTION 2 ═══════════════════════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · PER-DEVICE MAPPING</span>
+      </div>
+      <p class="socratic-insight">Per-device mapping is the first and most direct form of dynamic object in FortiManager. It is attached to a specific object and stores a different value for each device underneath that single object name. Understanding exactly what it is scoped to — and what FortiGate receives — is the foundation of this entire topic.</p>
+      <ul class="socratic-questions">
+        <li>You configure the LAN address object in FortiManager with per-device mapping: Branch1 maps to 172.16.0.0/24 and Branch2 maps to 192.168.0.0/24. When FortiManager installs the policy package to Branch1 — what exactly does Branch1 receive, and what does it NOT receive?</li>
+        <li>Per-device mapping is described as being "attached to a specific object." What does that mean in terms of its limitation — what problem can it NOT solve on its own?</li>
+      </ul>
+      <div class="answer-area" data-section="per-device-mapping">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">Branch1 receives a clean address object called LAN with the value 172.16.0.0/24. It does not receive the mapping table, the Branch2 value, or any knowledge that other mappings exist. FortiManager resolves the correct value before installing — FortiGate simply sees a locally defined address object.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Per-device mapping is scoped to a single object. If the same subnet value needs to be referenced in multiple places — a CLI template, a BGP template, a static route, and an address object — each one would need its own per-device mapping configured independently. Changing the subnet for one device would require updating every object and template separately, which reintroduces the administrative overhead the feature was supposed to eliminate.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="section-per-device-mapping">
+      <div class="section-label">SECTION 02</div>
+      <h2>Per-Device Mapping on <em>Address Objects</em></h2>
+      <div class="section-img-wrap">
+        <img src="images/s2-per-device-mapping.png" class="section-img" alt="Split diagram showing a single LAN address object in FortiManager branching to Branch1 with 172.16.0.0/24 and Branch2 with 192.168.0.0/24"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <p class="img-caption">Per-device mapping stores device-specific values inside a single object. The mapping is invisible to FortiGate after install.</p>
+        <div class="si-placeholder">
+          <span class="si-filename">images/s2-per-device-mapping.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat minimalistic cartoon illustration. Highly detailed, clean, and easy to understand. Modern vector-art aesthetic. Bold clean outlines. Warm and inviting colour palette. Cream/peach background (#fdf5f0). Coral accents (#e07050). Soft brown outlines (#7a5050). Muted gold (#d2a541). Sage green (#5ab288). No gradients. No photorealism. No 3D rendering.
+
+Show a single muted gold address object box at the top centre labelled "LAN" in bold. Inside the box, show a small mapping table with two rows: Branch1 → 172.16.0.0/24 and Branch2 → 192.168.0.0/24. Two arrows extend downward from the LAN object box — one to a FortiGate icon labelled Branch1, one to a FortiGate icon labelled Branch2. Each FortiGate has a resolved object badge below it: Branch1 shows "LAN = 172.16.0.0/24" in sage green, Branch2 shows "LAN = 192.168.0.0/24" in sage green. A subtle lock or boundary line around the mapping table inside the LAN object reinforces that the mapping is scoped only to this object. A small label below the FortiGates reads "FortiGate sees only the resolved value" in soft brown italic. Clean layout, directional arrows, minimal text beyond labels described.</div>
+        </div>
+      </div>
+      <p>Per-device mapping is configured directly on a supported object in FortiManager — most commonly address objects such as firewall addresses, Virtual IPs, and IP pools. Within the object configuration, you specify a default value and then add device-specific overrides for each FortiGate that needs a different value. At install time, FortiManager substitutes the correct value for the target device before pushing the configuration.</p>
+      <p>The key characteristic of per-device mapping is that it is <strong>scoped to the individual object</strong>. Each object carries its own mapping table. This works well for simple deployments where one object's value varies per device. However, when many objects and templates across the policy package all reference the same piece of device-specific information — such as a branch LAN subnet — per-device mapping requires that subnet to be configured independently in every one of those objects. This is where metadata variables become necessary.</p>
+
+      <div class="callout">
+        <strong>Exam tip:</strong> Not all objects support per-device mapping. Security Profiles — including Web Filter, Antivirus, and IPS — do not support per-device mapping. If different branches need different web filter behaviour, you must create uniquely named profiles for each variation. Attempting per-device mapping on an unsupported object causes a conflict during install.
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Object Type</th>
+            <th>Supports Per-Device Mapping?</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Firewall Addresses</td><td>✅ Yes</td><td>Most common use case — branch LAN subnets</td></tr>
+          <tr><td>Virtual IPs &amp; VIP Groups</td><td>✅ Yes</td><td>Useful for NAT differences per site</td></tr>
+          <tr><td>IP Pools &amp; IPv6 Pools</td><td>✅ Yes</td><td>Per-site NAT pool variation</td></tr>
+          <tr><td>User Groups / LDAP / RADIUS</td><td>✅ Yes</td><td>Per-site authentication servers</td></tr>
+          <tr><td>Metadata Variables</td><td>✅ Yes</td><td>Listed under Policy &amp; Objects > Advanced</td></tr>
+          <tr><td>Web Filter Profile</td><td>❌ No</td><td>Must use unique profile names per variation</td></tr>
+          <tr><td>Antivirus / IPS Profiles</td><td>❌ No</td><td>Security Profiles are excluded</td></tr>
+          <tr><td>Application Control</td><td>❌ No</td><td>Create separate profiles per site</td></tr>
+        </tbody>
+      </table>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Per-device mapping = one object, many values. It is attached to the object itself and scoped only to that object. Security Profiles do not support it — if you need different profiles per device, you need unique profile names. FortiGate never sees the mapping; it only receives the resolved value.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-section-per-device-mapping" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('section-per-device-mapping','Per-Device Mapping')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-section-per-device-mapping" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('section-per-device-mapping')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════ SECTION 3 ═══════════════════════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · METADATA VARIABLES</span>
+      </div>
+      <p class="socratic-insight">Metadata variables solve the multi-touchpoint problem that per-device mapping cannot. A single variable carries a per-device value that can be referenced across address objects, CLI templates, BGP templates, and policy packages simultaneously. One change propagates everywhere.</p>
+      <ul class="socratic-questions">
+        <li>You have a metadata variable called $LAN_SUBNET. Branch1 is mapped to 172.16.0.0/24. You reference $LAN_SUBNET in a CLI template, a BGP template, and a firewall address object. Branch1's subnet changes to 10.99.0.0/24 next month. What do you change in FortiManager — and what is the outcome?</li>
+        <li>Where in the FortiManager GUI are metadata variables created and managed, and in which two places can they be referenced?</li>
+      </ul>
+      <div class="answer-area" data-section="metadata-variables">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">You change the value of $LAN_SUBNET for Branch1 from 172.16.0.0/24 to 10.99.0.0/24 in one place — the metadata variable configuration. Because the CLI template, BGP template, and address object all reference $LAN_SUBNET, all three automatically resolve to the new value on the next install. No individual object or template needs to be edited.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">Metadata variables are created and managed under Policy &amp; Objects > Advanced > Metadata Variables. They can be referenced in two places: provisioning templates (device layer) and the policy layer — including directly within policy package objects such as firewall address configurations. The GUI identifies metadata variables with a magnifying glass and dollar sign icon.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="section-metadata-variables">
+      <div class="section-label">SECTION 03</div>
+      <h2>Metadata Variables — <em>One Change, Everywhere</em></h2>
+      <div class="section-img-wrap">
+        <img src="images/s3-metadata-variables.png" class="section-img" alt="Diagram showing a single $LAN_SUBNET metadata variable fanning out to three templates and an address object, all resolving per device"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <p class="img-caption">$LAN_SUBNET is defined once. Every object and template that references it resolves the correct value per device automatically.</p>
+        <div class="si-placeholder">
+          <span class="si-filename">images/s3-metadata-variables.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat minimalistic cartoon illustration. Highly detailed, clean, and easy to understand. Modern vector-art aesthetic. Bold clean outlines. Warm and inviting colour palette. Cream/peach background (#fdf5f0). Coral accents (#e07050). Soft brown outlines (#7a5050). Muted gold (#d2a541). Sage green (#5ab288). No gradients. No photorealism. No 3D rendering.
+
+The illustration is divided into two clearly labelled side-by-side panels separated by a soft brown dividing line.
+
+LEFT PANEL — labelled "Per-Device Mapping" in bold coral text at the top. Show a single address object box labelled "LAN" in muted gold at the top centre. Below it, two arrows branch downward — one pointing to a small FortiGate device icon labelled Branch1 with a subnet tag 172.16.0.0/24 in sage green, and one pointing to a second FortiGate device icon labelled Branch2 with a subnet tag 192.168.0.0/24 in sage green. A subtle lock icon or boundary line around the LAN object reinforces that the mapping is scoped only to this one object.
+
+RIGHT PANEL — labelled "Metadata Variable" in bold coral text at the top. Show a single centrally placed variable badge at the top labelled "$LAN_SUBNET" in coral with a magnifying glass and dollar sign icon. From this single variable, three arrows fan outward downward — one pointing to an address object box labelled "LAN Address Object", one pointing to a CLI template box labelled "CLI Template", and one pointing to a BGP template box labelled "BGP Template". All three objects are in muted gold. Below each object, a single downward arrow points to a FortiGate device icon. Branch1 shows 172.16.0.0/24 in sage green and Branch2 shows 192.168.0.0/24 in sage green. A callout label near the $LAN_SUBNET badge reads "Change once — updates everywhere" in soft brown italic text.
+
+Both panels share the same two FortiGate device icons at the bottom — Branch1 and Branch2 — styled consistently with small rack-mounted firewall silhouettes, bold outlines, and coral LED indicators. Subtle directional flow arrows use sage green. Clean whitespace between elements.</div>
+        </div>
+      </div>
+
+      <p>A metadata variable is a <strong>named, reusable variable</strong> that holds a per-device value and can be referenced across multiple configuration items simultaneously. While per-device mapping is embedded within a single object, a metadata variable lives independently — created under <em>Policy &amp; Objects > Advanced > Metadata Variables</em> — and any supported object or template can reference it using the <strong>$ prefix</strong>. In the GUI, metadata variables are identified by a magnifying glass with a dollar sign icon.</p>
+
+      <p>The power of a metadata variable becomes clear at scale. Imagine a branch LAN subnet is referenced in a firewall address object, a CLI template configuring a static route, and a BGP provisioning template. With per-device mapping alone, that subnet value must be entered and maintained separately in each of those three locations. With a metadata variable, <strong>all three reference $LAN_SUBNET</strong> — and when that value changes for a device, a single update to the metadata variable propagates to every object and template that references it on the next install.</p>
+
+      <div class="analogy-box">
+        <div class="analogy-label">Analogy</div>
+        <div class="analogy-text">
+          <p class="analogy-summary">Think of a metadata variable like a master contact card in a company address book.</p>
+          <ul>
+            <li>Per-device mapping is like writing a phone number directly on each individual document that needs it — if the number changes, you update every document separately.</li>
+            <li>A metadata variable is like a contact card referenced by all those documents — change the card once, and every document that references it automatically reflects the new number.</li>
+            <li>In Fortinet terms: the contact card is the metadata variable; the documents are your CLI templates, BGP templates, and address objects. One update to the variable, resolved everywhere on the next install.</li>
+          </ul>
+        </div>
+        <div class="analogy-img" style="margin-top:14px;background:rgba(255,255,255,0.5);border-radius:10px;padding:14px;text-align:center;">
+          <img src="images/a1-metadata-contact-card.png" alt="Contact card analogy for metadata variables"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='block';"
+               style="max-width:100%;border-radius:8px;display:block;margin:0 auto 4px;">
+          <p class="img-caption" style="margin-bottom:8px;">One contact card — referenced everywhere. Change it once.</p>
+          <div class="img-missing-msg" style="display:none;padding:24px 12px;background:rgba(0,0,0,0.03);border:1px dashed #fde68a;border-radius:8px;color:#78350f;font-size:12px;margin-bottom:10px;">📷 <strong>images/a1-metadata-contact-card.png</strong> — add this image</div>
+          <button class="prompt-toggle" onclick="togglePrompt(this)" type="button">▾ Show analogy image prompt</button>
+          <div class="prompt-content" hidden>Flat minimalistic cartoon illustration. Highly detailed, clean, and easy to understand. Modern vector-art aesthetic. Bold clean outlines. Warm and inviting colour palette. Cream/peach background (#fdf5f0). Coral accents (#e07050). Soft brown outlines (#7a5050). Muted gold (#d2a541). Sage green (#5ab288). No gradients. No photorealism. No 3D rendering.
+
+Show a central golden contact card icon labelled "$LAN_SUBNET" with a magnifying glass and dollar symbol in coral. Three document icons surround it connected by sage green arrows — labelled "CLI Template", "BGP Template", and "LAN Address Object". Each document shows a small reference tag pointing back to the contact card. To the side, show a "before" and "after" scenario: before shows the old value 172.16.0.0/24 on the card, after shows 10.99.0.0/24. All three documents automatically reflect the new value. Clean, simple, warm illustration style.</div>
+        </div>
+      </div>
+
+      <div class="callout callout-green">
+        <strong>Remember:</strong> Metadata variables are created in the policy layer under Policy &amp; Objects > Advanced > Metadata Variables. They can be referenced in two places: provisioning templates (device layer) and directly within policy layer objects and packages. The per-device value assignment lives inside the metadata variable configuration itself — not inside each object that references it.
+      </div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Metadata variable = one value, many references. Per-device mapping = one object, one mapping table. Choose metadata variables when the same device-specific value needs to appear in more than one object or template. A single update to the variable propagates to every reference point on the next install.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-section-metadata-variables" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('section-metadata-variables','Metadata Variables')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-section-metadata-variables" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('section-metadata-variables')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════ SECTION 4 ═══════════════════════════════ -->
+    <div class="socratic-block">
+      <div class="socratic-header">
+        <span class="socratic-icon">💭</span>
+        <span class="socratic-label">THINK FIRST · LIMITATIONS &amp; INSTALL</span>
+      </div>
+      <p class="socratic-insight">Knowing how dynamic objects work is not enough — you also need to know where they break down, and what it takes to actually deliver configuration to a firewall. Two of the most common NSE7 traps live here: which objects cannot use per-device mapping, and the fact that two separate install operations are required for device-layer and policy-layer changes.</p>
+      <ul class="socratic-questions">
+        <li>A candidate wants to use per-device mapping to give Branch1 a permissive web filter profile and Branch2 a restrictive one — both under the same profile name in FortiManager. Is this possible, and if not, what is the correct approach?</li>
+        <li>You have onboarded Branch51 and added it to the $LAN_SUBNET metadata variable. You have also assigned a CLI provisioning template and a policy package to it. What two operations must you perform to ensure Branch51 receives all configuration, and why are they separate?</li>
+      </ul>
+      <div class="answer-area" data-section="limitations-and-install">
+        <textarea class="answer-textarea" placeholder="Write your own thoughts before revealing the model answer..." rows="3"></textarea>
+        <div class="answer-buttons">
+          <button class="btn-add-answer" onclick="saveSocAnswer(this)">+ Add My Answer</button>
+          <button class="btn-see-answer" onclick="revealSocAnswer(this)" disabled>🔒 See Model Answer</button>
+        </div>
+        <div class="model-answers" style="display:none;">
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q1 — MODEL ANSWER</div>
+            <div class="model-answer-text">This is not possible. Security Profiles — including Web Filter — do not support per-device mapping. The correct approach is to create two uniquely named profiles: for example, WebFilter_Branch1 and WebFilter_Branch2. Each policy package or per-device policy then references the appropriate profile. Attempting to use per-device mapping on a Web Filter profile would result in a conflict at install time.</div>
+          </div>
+          <div class="model-answer-item">
+            <div class="model-answer-q">Q2 — MODEL ANSWER</div>
+            <div class="model-answer-text">You must perform Install Device Settings to push provisioning templates from the device layer, and Install Policy Package to push policies and address objects from the policy layer. These are separate operations because the device layer and policy layer are distinct in FortiManager. One can succeed while the other fails, potentially leaving Branch51 in a partially configured state. Both are required for a complete deployment.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block" id="section-limitations-and-install">
+      <div class="section-label">SECTION 04</div>
+      <h2>Limitations, Install Operations, and <em>Production Traps</em></h2>
+      <div class="section-img-wrap">
+        <img src="images/s4-limitations-and-install.png" class="section-img" alt="Diagram showing two separate install operations — Install Device Settings and Install Policy Package — and an unsupported Security Profile per-device mapping scenario"
+             onerror="this.style.display='none';this.nextElementSibling.classList.add('si-show');">
+        <p class="img-caption">Two separate install operations push device-layer and policy-layer configuration. Security Profiles cannot use per-device mapping — a common exam trap.</p>
+        <div class="si-placeholder">
+          <span class="si-filename">images/s4-limitations-and-install.png</span>
+          <button class="prompt-toggle" onclick="togglePrompt(this)">▾ Show image prompt</button>
+          <div class="prompt-content" hidden>Flat minimalistic cartoon illustration. Highly detailed, clean, and easy to understand. Modern vector-art aesthetic. Bold clean outlines. Warm and inviting colour palette. Cream/peach background (#fdf5f0). Coral accents (#e07050). Soft brown outlines (#7a5050). Muted gold (#d2a541). Sage green (#5ab288). No gradients. No photorealism. No 3D rendering.
+
+Show a central FortiManager appliance icon at the top. Below it, two distinct vertical lanes extend downward side by side, separated by a soft brown dashed divider.
+
+LEFT LANE — labelled "Device Layer" in muted gold. Show a provisioning template icon and a CLI template icon. Below them, a downward sage green arrow labelled "Install Device Settings" pointing to a FortiGate icon at the bottom.
+
+RIGHT LANE — labelled "Policy Layer" in muted gold. Show a policy package icon and an address object icon. Below them, a downward sage green arrow labelled "Install Policy Package" pointing to a FortiGate icon at the bottom.
+
+Between the two FortiGate icons at the bottom, a small warning badge in coral reads "Both required for full deployment". 
+
+In the top-right corner, a separate small callout panel shows a Web Filter profile icon with a red X over it and the label "No Per-Device Mapping" in coral. Below it, two separate profile icons labelled WebFilter_Branch1 and WebFilter_Branch2 in sage green with a checkmark, labelled "Correct approach".
+
+Clean layout, directional arrows, minimal text beyond labels described.</div>
+        </div>
+      </div>
+
+      <p>Not all FortiManager objects support per-device mapping — and this is a deliberate design decision. <strong>Security Profiles are excluded</strong>: Web Filter, Antivirus, IPS, Application Control, and related profiles cannot be mapped per device. This prevents a situation where the same profile name carries fundamentally different inspection behaviour depending on which firewall is receiving it — a scenario that would make centralised security auditing unreliable. If branches genuinely require different security profile behaviour, the correct approach is to create <strong>uniquely named profiles</strong> for each variation and reference them appropriately per device or per policy.</p>
+
+      <p>The second production trap is the install operation. FortiManager maintains two distinct layers — the device layer and the policy layer — and changes to each are pushed by <strong>separate install operations</strong>. Provisioning templates (CLI templates, BGP templates, SD-WAN templates) are pushed by <em>Install Device Settings</em>. Policy packages and their associated address objects are pushed by <em>Install Policy Package</em>. When onboarding a new device or making changes that span both layers, both operations must be completed. If only one is performed, the firewall will be partially configured — which is a difficult failure mode to diagnose because each layer may appear correct in isolation.</p>
+
+      <div class="callout">
+        <strong>Exam tip:</strong> The NSE7 exam commonly presents a scenario where a candidate configures a metadata variable and assigns templates — then asks whether the firewall has received the configuration. The answer is no — an install operation must still be triggered. Mapping a device in FortiManager never automatically pushes configuration.
+      </div>
+
+      <div class="callout callout-amber">
+        <strong>Common misconception:</strong> Candidates often assume that because per-device mapping works on address objects, it must work on security profiles too — after all, they are both objects in the policy layer. This is incorrect. Security Profiles are explicitly excluded from per-device mapping. If you import a configuration from the device layer that the policy layer does not support (such as a Web Filter profile with the same name but different settings), it creates a conflict and FortiManager must choose between its own value and the FortiGate value.
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Mechanism</th>
+            <th>What It Is Attached To</th>
+            <th>Where It Can Be Used</th>
+            <th>Best For</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Per-Device Mapping</td>
+            <td>A specific object (address, VIP, IP pool, etc.)</td>
+            <td>Policy layer and device layer (on supported objects)</td>
+            <td>Simple deployments where one object's value varies per device</td>
+          </tr>
+          <tr>
+            <td>Metadata Variable</td>
+            <td>Independent variable (Policy &amp; Objects > Advanced)</td>
+            <td>Provisioning templates and policy layer objects/packages</td>
+            <td>When the same value is referenced across multiple objects and templates</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="code-block">
+        <div class="code-label">FortiManager — CLI Template Using a Metadata Variable</div>
+        <pre><code>config router static
+    edit 1
+        set dst $LAN_SUBNET
+        set gateway 10.0.0.1
+        set device "port2"
+    next
+end</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label">FortiManager — Metadata Variable GUI Path</div>
+        <pre><code>Policy &amp; Objects > Advanced > Metadata Variables
+  → Create New
+  → Name: LAN_SUBNET
+  → Type: Subnet
+  → Default Value: 0.0.0.0/0
+  → Per-Device Mapping:
+      Branch1 → 172.16.0.0/24
+      Branch2 → 192.168.0.0/24
+      Branch51 → 10.99.0.0/24</code></pre>
+      </div>
+
+      <div class="mental-note-block">
+        <div class="mental-note-block-icon">🧠</div>
+        <div class="mental-note-block-inner">
+          <div class="mental-note-block-label">MENTAL NOTE</div>
+          <div class="mental-note-block-text">Two install operations, two layers: Install Device Settings for provisioning templates; Install Policy Package for policies and objects. Security Profiles do not support per-device mapping — use unique profile names instead. Configuring a metadata variable never automatically pushes anything — you must trigger the install.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-tools">
+      <div class="lesson-tools-grid">
+        <div>
+          <div class="tool-label">ASK A QUESTION</div>
+          <textarea class="tool-textarea" id="q-section-limitations-and-install" placeholder="What are you unsure about in this section?" rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addQuestion('section-limitations-and-install','Limitations & Install')">Add Question</button></div>
+        </div>
+        <div>
+          <div class="tool-label">ADD A NOTE</div>
+          <textarea class="tool-textarea" id="note-section-limitations-and-install" placeholder="Write a note about this section..." rows="3"></textarea>
+          <div class="tool-row"><button class="btn-add-q" onclick="addNote('section-limitations-and-install')">+ Add Note</button></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="page-nav">
+  <a class="page-nav-btn page-nav-prev" href="subtopic-01-fortimanager-architecture.html">
+    <span class="page-nav-label">← PREVIOUS</span>
+    <span class="page-nav-title">FortiManager Architecture</span>
+  </a>
+  <a class="page-nav-btn page-nav-next" href="subtopic-03-scripts.html">
+    <span class="page-nav-label">NEXT →</span>
+    <span class="page-nav-title">Scripts on FortiManager</span>
+  </a>
+</div>
+
+<footer>
+  EF-NSE7<span>.</span> Chapter 02<span>.</span> Subtopic 02<span>.</span> Dynamic Objects in FortiManager
+</footer>
+
+<script>
+const PAGE_KEY = 'ef-nse7-ch02-sub02-dynamic-objects';
+
+const SECTIONS = {
+  'section-the-problem': 'The Problem',
+  'section-per-device-mapping': 'Per-Device Mapping',
+  'section-metadata-variables': 'Metadata Variables',
+  'section-limitations-and-install': 'Limitations & Install',
+};
+
+/* ── Everything below is fixed — do not modify ── */
+document.querySelectorAll('.socratic-header').forEach(function(h) {
+  h.addEventListener('click', function() { h.closest('.socratic-block').classList.toggle('soc-open'); });
+});
+function getQArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-qs') || '[]'); }
+function saveQArr(qs) { localStorage.setItem(PAGE_KEY+'-qs', JSON.stringify(qs)); }
+function addQuestion(key, name) {
+  const ta = document.getElementById('q-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const qs = getQArr(); qs.push({id: Date.now(), section: key, sectionName: name, text});
+  saveQArr(qs); ta.value = ''; renderQPanel();
+  if (!document.getElementById('qpanel-body').classList.contains('open')) toggleQPanel();
+}
+function deleteQ(id) { saveQArr(getQArr().filter(q => q.id !== id)); renderQPanel(); }
+function toggleQPanel() {
+  const body = document.getElementById('qpanel-body');
+  const header = document.getElementById('qpanel-header');
+  const chevron = document.getElementById('qpanel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-qpanel-open', open);
+}
+function renderQPanel() {
+  const qs = getQArr();
+  const count = document.getElementById('qpanel-count');
+  if (count) { count.textContent = qs.length; count.style.display = qs.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.qpanel-hint');
+  if (hint) hint.textContent = qs.length ? `— ${qs.length} question${qs.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('qpanel-body'); if (!body) return;
+  if (!qs.length) { body.innerHTML = '<p class="no-questions">No questions yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  qs.forEach(q => { if (groups[q.section]) groups[q.section].push(q); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(q => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${q.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteQ(${q.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+function getNotesArr() { return JSON.parse(localStorage.getItem(PAGE_KEY+'-notes') || '[]'); }
+function saveNotesArr(ns) { localStorage.setItem(PAGE_KEY+'-notes', JSON.stringify(ns)); }
+function addNote(key) {
+  const ta = document.getElementById('note-'+key);
+  const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const ns = getNotesArr(); ns.push({id: Date.now(), section: key, sectionName: SECTIONS[key]||key, text});
+  saveNotesArr(ns); ta.value = ''; renderNotesPanel();
+  if (!document.getElementById('notes-panel-body').classList.contains('open')) toggleNotesPanel();
+}
+function deleteNote(id) { saveNotesArr(getNotesArr().filter(n => n.id !== id)); renderNotesPanel(); }
+function toggleNotesPanel() {
+  const body = document.getElementById('notes-panel-body');
+  const header = document.getElementById('notes-panel-header');
+  const chevron = document.getElementById('notes-panel-chevron');
+  const open = body.classList.toggle('open');
+  header.classList.toggle('open', open); chevron.textContent = open ? '▴' : '▾';
+  localStorage.setItem(PAGE_KEY+'-notes-panel-open', open);
+}
+function renderNotesPanel() {
+  const ns = getNotesArr();
+  const count = document.getElementById('notes-panel-count');
+  if (count) { count.textContent = ns.length; count.style.display = ns.length ? 'inline' : 'none'; }
+  const hint = document.querySelector('.notes-panel-hint');
+  if (hint) hint.textContent = ns.length ? `— ${ns.length} note${ns.length>1?'s':''}, click to expand` : '— click to expand';
+  const body = document.getElementById('notes-panel-body'); if (!body) return;
+  if (!ns.length) { body.innerHTML = '<p class="no-questions">No notes yet. Add one below each section.</p>'; return; }
+  const groups = Object.fromEntries(Object.keys(SECTIONS).map(k => [k, []]));
+  ns.forEach(n => { if (groups[n.section]) groups[n.section].push(n); });
+  let html = ''; let num = 0;
+  Object.entries(groups).forEach(([key, items]) => {
+    if (!items.length) return;
+    html += `<div class="q-group"><div class="q-group-label">${SECTIONS[key]||key}</div>`;
+    items.forEach(n => { num++; html += `<div class="q-item"><div class="q-num">${num}</div><div class="q-text">${n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div><button class="q-del" onclick="deleteNote(${n.id})" title="Remove">✕</button></div>`; });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+function saveSocAnswer(btn) {
+  const area = btn.closest('.answer-area');
+  const ta = area.querySelector('.answer-textarea');
+  if (!ta.value.trim()) { ta.focus(); return; }
+  const key = PAGE_KEY+'-socans-'+area.dataset.section;
+  try { localStorage.setItem(key, ta.value); } catch(e) {}
+  ta.disabled = true; btn.textContent = '✓ Answer saved'; btn.disabled = true;
+  const seeBtn = area.querySelector('.btn-see-answer');
+  seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+}
+function revealSocAnswer(btn) {
+  if (btn.disabled) return;
+  const answers = btn.closest('.answer-area').querySelector('.model-answers');
+  const isHidden = answers.style.display === 'none' || !answers.style.display;
+  answers.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '▲ Hide Model Answer' : '💡 See Model Answer';
+}
+function togglePrompt(btn) {
+  const c = btn.nextElementSibling;
+  const isHidden = c.hasAttribute('hidden');
+  if (isHidden) { c.removeAttribute('hidden'); btn.textContent = '▴ Hide prompt'; }
+  else { c.setAttribute('hidden', ''); btn.textContent = '▾ Show image prompt'; }
+}
+if (sessionStorage.getItem('pt')) { document.documentElement.classList.remove('pt-init'); sessionStorage.removeItem('pt'); }
+document.querySelectorAll('a[href]').forEach(function(a) {
+  a.addEventListener('click', function() { sessionStorage.setItem('pt', '1'); });
+});
+document.addEventListener('DOMContentLoaded', function() {
+  renderQPanel(); renderNotesPanel();
+  if (localStorage.getItem(PAGE_KEY+'-qpanel-open') === 'true') toggleQPanel();
+  if (localStorage.getItem(PAGE_KEY+'-notes-panel-open') === 'true') toggleNotesPanel();
+  document.querySelectorAll('.answer-area').forEach(function(area) {
+    const key = PAGE_KEY+'-socans-'+area.dataset.section;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const ta = area.querySelector('.answer-textarea'); ta.value = saved; ta.disabled = true;
+        const addBtn = area.querySelector('.btn-add-answer'); addBtn.textContent = '✓ Answer saved'; addBtn.disabled = true;
+        const seeBtn = area.querySelector('.btn-see-answer'); seeBtn.disabled = false; seeBtn.textContent = '💡 See Model Answer';
+      }
+    } catch(e) {}
+  });
+  document.querySelectorAll('.analogy-box').forEach(function(box) {
+    if (box.dataset.collapsibleInit) return;
+    box.dataset.collapsibleInit = '1';
+    box.classList.add('expanded');
+    const label = box.querySelector(':scope > .analogy-label');
+    if (label) label.addEventListener('click', () => box.classList.toggle('expanded'));
+  });
+  document.querySelectorAll('.analogy-img img').forEach(function(img) {
+    if (img.dataset.zoomInit) return;
+    img.dataset.zoomInit = '1';
+    img.addEventListener('click', () => img.classList.toggle('zoomed'));
+  });
+  document.querySelectorAll('.section-img').forEach(function(img) {
+    img.addEventListener('click', () => img.classList.toggle('si-expanded'));
+  });
+});
+</script>
+</body>
+</html>

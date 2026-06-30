@@ -1,0 +1,103 @@
+Image prompts — Subtopic 02: Dynamic Objects in FortiManager
+Shared style preamble (every image):
+  Flat minimalistic cartoon illustration. Highly detailed, clean, and easy to understand.
+  Modern vector-art aesthetic. Bold clean outlines. Warm and inviting colour palette.
+  Cream/peach background (#fdf5f0). Coral accents (#e07050). Soft brown outlines (#7a5050).
+  Muted gold (#d2a541). Sage green (#5ab288). No gradients. No photorealism. No 3D rendering.
+
+──────────────────────────────────────────────────────────────────
+
+File: images/s1-the-problem.png
+Alt: Diagram showing 50 branch FortiGates connected to a single FortiManager, each with a different LAN subnet but sharing one object name.
+Caption: One object name — LAN — resolves differently on every branch firewall.
+Prompt:
+  Show a central FortiManager appliance icon in muted gold at the top of the image, bold and prominent.
+  From it, four arrows fan downward to four small FortiGate device icons labelled Branch1, Branch2,
+  Branch3, and Branch4. Each FortiGate has a small badge below it showing a different subnet:
+  172.16.0.0/24, 192.168.0.0/24, 10.10.0.0/24, and 10.20.0.0/24 in sage green text. Above the fan
+  of arrows, a single coral-coloured object badge reads "LAN" in bold. A dashed boundary box around
+  all four FortiGates is labelled "Same Policy Package" in soft brown. The illustration communicates
+  that one shared object name resolves to a different value on each device. Use directional arrows
+  to show the resolution flowing from FortiManager down to each firewall. Minimal text beyond labels
+  already described.
+
+──────────────────────────────────────────────────────────────────
+
+File: images/s2-per-device-mapping.png
+Alt: Split diagram showing a single LAN address object in FortiManager branching to Branch1 with 172.16.0.0/24 and Branch2 with 192.168.0.0/24.
+Prompt:
+  Show a single muted gold address object box at the top centre labelled "LAN" in bold. Inside the
+  box, show a small mapping table with two rows: Branch1 → 172.16.0.0/24 and Branch2 → 192.168.0.0/24.
+  Two arrows extend downward from the LAN object box — one to a FortiGate icon labelled Branch1,
+  one to a FortiGate icon labelled Branch2. Each FortiGate has a resolved object badge below it:
+  Branch1 shows "LAN = 172.16.0.0/24" in sage green, Branch2 shows "LAN = 192.168.0.0/24" in sage
+  green. A subtle lock or boundary line around the mapping table inside the LAN object reinforces
+  that the mapping is scoped only to this object. A small label below the FortiGates reads
+  "FortiGate sees only the resolved value" in soft brown italic. Clean layout, directional arrows,
+  minimal text beyond labels described.
+
+──────────────────────────────────────────────────────────────────
+
+File: images/s3-metadata-variables.png
+Alt: Diagram showing a single $LAN_SUBNET metadata variable fanning out to three templates and an address object, all resolving per device.
+Prompt:
+  The illustration is divided into two clearly labelled side-by-side panels separated by a soft
+  brown dividing line.
+
+  LEFT PANEL — labelled "Per-Device Mapping" in bold coral text at the top. Show a single address
+  object box labelled "LAN" in muted gold at the top centre. Below it, two arrows branch downward
+  — one pointing to a small FortiGate device icon labelled Branch1 with a subnet tag 172.16.0.0/24
+  in sage green, and one pointing to a second FortiGate device icon labelled Branch2 with a subnet
+  tag 192.168.0.0/24 in sage green. A subtle lock icon or boundary line around the LAN object
+  reinforces that the mapping is scoped only to this one object.
+
+  RIGHT PANEL — labelled "Metadata Variable" in bold coral text at the top. Show a single centrally
+  placed variable badge at the top labelled "$LAN_SUBNET" in coral with a magnifying glass and
+  dollar sign icon. From this single variable, three arrows fan outward downward — one pointing to
+  an address object box labelled "LAN Address Object", one pointing to a CLI template box labelled
+  "CLI Template", and one pointing to a BGP template box labelled "BGP Template". All three objects
+  are in muted gold. Below each object, a single downward arrow points to a FortiGate device icon.
+  Branch1 shows 172.16.0.0/24 in sage green and Branch2 shows 192.168.0.0/24 in sage green. A
+  callout label near the $LAN_SUBNET badge reads "Change once — updates everywhere" in soft brown
+  italic text.
+
+  Both panels share the same two FortiGate device icons at the bottom — Branch1 and Branch2 —
+  styled consistently with small rack-mounted firewall silhouettes, bold outlines, and coral LED
+  indicators. Subtle directional flow arrows use sage green. Clean whitespace between elements.
+
+──────────────────────────────────────────────────────────────────
+
+File: images/a1-metadata-contact-card.png
+Alt: Contact card analogy for metadata variables.
+Caption: One contact card — referenced everywhere. Change it once.
+Prompt:
+  Show a central golden contact card icon labelled "$LAN_SUBNET" with a magnifying glass and dollar
+  symbol in coral. Three document icons surround it connected by sage green arrows — labelled "CLI
+  Template", "BGP Template", and "LAN Address Object". Each document shows a small reference tag
+  pointing back to the contact card. To the side, show a "before" and "after" scenario: before
+  shows the old value 172.16.0.0/24 on the card, after shows 10.99.0.0/24. All three documents
+  automatically reflect the new value. Clean, simple, warm illustration style.
+
+──────────────────────────────────────────────────────────────────
+
+File: images/s4-limitations-and-install.png
+Alt: Diagram showing two separate install operations — Install Device Settings and Install Policy Package — and an unsupported Security Profile per-device mapping scenario.
+Prompt:
+  Show a central FortiManager appliance icon at the top. Below it, two distinct vertical lanes
+  extend downward side by side, separated by a soft brown dashed divider.
+
+  LEFT LANE — labelled "Device Layer" in muted gold. Show a provisioning template icon and a CLI
+  template icon. Below them, a downward sage green arrow labelled "Install Device Settings"
+  pointing to a FortiGate icon at the bottom.
+
+  RIGHT LANE — labelled "Policy Layer" in muted gold. Show a policy package icon and an address
+  object icon. Below them, a downward sage green arrow labelled "Install Policy Package" pointing
+  to a FortiGate icon at the bottom.
+
+  Between the two FortiGate icons at the bottom, a small warning badge in coral reads "Both
+  required for full deployment".
+
+  In the top-right corner, a separate small callout panel shows a Web Filter profile icon with a
+  red X over it and the label "No Per-Device Mapping" in coral. Below it, two separate profile
+  icons labelled WebFilter_Branch1 and WebFilter_Branch2 in sage green with a checkmark, labelled
+  "Correct approach".
